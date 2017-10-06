@@ -21,7 +21,9 @@
 
         <service
             android:name=".server.BackgroundService"
-            android:exported="false"></service>
+            android:enabled="true"
+            android:exported="true"
+            android:stopWithTask="false" />
     </application>
 
 </manifest>

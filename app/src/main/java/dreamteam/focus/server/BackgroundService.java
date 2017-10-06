@@ -1,101 +1,69 @@
 package dreamteam.focus.server;
 
-import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
-import android.content.Context;
+import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 
-/**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p>
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
- */
-public class BackgroundService extends IntentService {
-    // TODO: Rename actions, choose action names that describe tasks that this
-    // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-    private static final String ACTION_FOO = "dreamteam.focus.server.action.FOO";
-    private static final String ACTION_BAZ = "dreamteam.focus.server.action.BAZ";
-
-    // TODO: Rename parameters
-    private static final String EXTRA_PARAM1 = "dreamteam.focus.server.extra.PARAM1";
-    private static final String EXTRA_PARAM2 = "dreamteam.focus.server.extra.PARAM2";
-
+public class BackgroundService extends Service {
+    public Runnable mRunnable = null;
     private static final String tag = "BackgroundService";
+    private int seconds = 40;
+    private DatabaseConnector DBConnector;
 
     public BackgroundService() {
-        super("BackgroundService");
-    }
-
-    /**
-     * Starts this service to perform action Foo with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
-     */
-    // TODO: Customize helper method
-    public static void startActionFoo(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, BackgroundService.class);
-        intent.setAction(ACTION_FOO);
-        intent.putExtra(EXTRA_PARAM1, param1);
-        intent.putExtra(EXTRA_PARAM2, param2);
-        context.startService(intent);
-    }
-
-    /**
-     * Starts this service to perform action Baz with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
-     */
-    // TODO: Customize helper method
-    public static void startActionBaz(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, BackgroundService.class);
-        intent.setAction(ACTION_BAZ);
-        intent.putExtra(EXTRA_PARAM1, param1);
-        intent.putExtra(EXTRA_PARAM2, param2);
-        context.startService(intent);
+        DBConnector = new DatabaseConnector();
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        if (intent != null) {
-            final String action = intent.getAction();
-            Log.i(tag, "BackgroundService started.");
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ie) {
-                Log.i(tag, "Interrupted");
-                Thread.currentThread().interrupt();
-            }
-//            if (ACTION_FOO.equals(action)) {
-//                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-//                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-//                handleActionFoo(param1, param2);
-//            } else if (ACTION_BAZ.equals(action)) {
-//                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-//                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-//                handleActionBaz(param1, param2);
-//            }
+    public IBinder onBind(Intent intent) {
+        // TODO: Return the communication channel to the service.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+
+    /*
+     * src:
+     * https://stackoverflow.com/questions/28292682/using-an-sqlite-database-from-a-service-in-android
+     */
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        final Handler mHandler = new Handler();
+        if (mRunnable == null) {
+            Log.i(tag, "BackgroundService created");
+            mRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    mHandler.postDelayed(mRunnable, seconds * 1000);
+                    Log.i(tag, "false!");
+                }
+            };
+            mHandler.postDelayed(mRunnable, seconds * 1000);
         }
+        return super.onStartCommand(intent, flags, startId);
     }
 
-    /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionFoo(String param1, String param2) {
-        // TODO: Handle action Foo
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 
-    /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
+    public void tick() {
+        // read database
+        // get schedule objects from db
+        // get systemTime
+        // list appsToBlock
+        // list appsToUnblock
+        // loop through Schedules
+        //  for each Schedule:
+        //      get Map of ProfileInSchedule
+        //      for each ProfileInSchedule:
+        //          if ProfileInSchedule.getStartTime() == systemTime:
+        //              get profile object
+        //              get apps from profile
+        //              push all apps to block onto appsToBlock
+        //          else if ProfileInSchedule.getEndTime() == systemTime:
+        //              get profile object
+        //              get apps from profile
+        //              push all apps to unblock onto appsToUnblock
+        //      set Schedule to active/inactive, update database
+        // write to appBlock module: appsToBlock, appsToUnblock
     }
 }
