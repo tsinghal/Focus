@@ -1,5 +1,6 @@
 package dreamteam.focus.client;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 
 import dreamteam.focus.R;
+import dreamteam.focus.server.BackgroundService;
 
 public class MainActivity extends AppCompatActivity {
     private Button schedulesButton;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+        startService(new Intent(this, BackgroundService.class));
     }
 
     @Override
