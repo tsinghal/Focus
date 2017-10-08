@@ -2,6 +2,8 @@ package dreamteam.focus.server;
 
 import android.app.ActivityManager;
 import android.app.Service;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -10,12 +12,20 @@ import android.service.notification.NotificationListenerService;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import static android.content.ContentValues.TAG;
+
 public class BackgroundService extends Service {
     public Runnable mRunnable = null;
     private static final String tag = "BackgroundService";
     private int seconds = 5;
     private DatabaseConnector DBConnector;
     private NotificationService notificationService;
+
+    //global variable for blockApps so that overlap works
 
     public BackgroundService() {
         DBConnector = new DatabaseConnector();
@@ -43,6 +53,8 @@ public class BackgroundService extends Service {
                     // TODO: round to next minute
                     mHandler.postDelayed(mRunnable, seconds * 1000);
                     Log.i(tag, "Ping!");
+                    printForegroundTask();
+                    notificationService.dismissNotification("com.facebook.orca");
                 }
             };
             mHandler.postDelayed(mRunnable, seconds * 1000);
@@ -74,14 +86,20 @@ public class BackgroundService extends Service {
         // write to notificationBlock module: appsToBlock, appsToUnblock
     }
 
+    //function to check for instant profile activation -- how to know when to check
+
+    public void blockApps(){
+
+    }
 
     /**
      * to dismiss notifications:
      * instantiate NotificationService, call dismissNotification
      */
-    private class NotificationService extends NotificationListenerService {
+    public class NotificationService extends NotificationListenerService {
         public NotificationService() {
             super();
+
         }
 
         public void dismissNotification(String app) {
@@ -91,7 +109,7 @@ public class BackgroundService extends Service {
     }
 
     /**
-     * src= https://stackoverflow.com/questions/19604097/killbackgroundprocesses-no-working
+     * src = https://stackoverflow.com/questions/19604097/killbackgroundprocesses-no-working
      *
      * @param app: string of app to be killed
      */
@@ -111,6 +129,31 @@ public class BackgroundService extends Service {
                 "Killed : " + app,
                 Toast.LENGTH_LONG
         ).show();
+    }
+
+    /**
+     * src = https://stackoverflow.com/questions/2166961/determining-the-current-foreground-application-from-a-background-task-or-service
+     *  check which app comes to foreground, TODO: need to define a way so that this is fast and there is no delay(doesnt rely on original runnable),
+     *  Todo: and also make killing app faster so that app main screen doesn't show up.
+     */
+    public void printForegroundTask() {
+        String currentApp = "NULL";
+
+        UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
+        long time = System.currentTimeMillis();
+        List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,  time - 1000*1000, time);
+        if (appList != null && appList.size() > 0) {
+            SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
+            for (UsageStats usageStats : appList) {
+                mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
+            }
+            if (mySortedMap != null && !mySortedMap.isEmpty()) {
+                currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+            }
+        }
+
+
+        Log.i(TAG, "Current App in foreground is: " + currentApp);
     }
 
 }
