@@ -19,9 +19,11 @@ import java.util.TreeMap;
 import static android.content.ContentValues.TAG;
 
 public class BackgroundService extends Service {
-    public Runnable mRunnable = null;
+    private Runnable scheduleThread = null;
+    private Runnable blockingThread = null;
     private static final String tag = "BackgroundService";
-    private int seconds = 5;
+    private final int SCHEDULE_TIMEOUT = 60;
+    private final int BLOCKING_TIMEOUT = 2;
     private DatabaseConnector DBConnector;
     private NotificationService notificationService;
 
@@ -45,25 +47,35 @@ public class BackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         final Handler mHandler = new Handler();
-        if (mRunnable == null) {
+        if (scheduleThread == null) {
             Log.i(tag, "BackgroundService created");
-            mRunnable = new Runnable() {
+            scheduleThread = new Runnable() {
                 @Override
                 public void run() {
-                    // TODO: round to next minute
-                    mHandler.postDelayed(mRunnable, seconds * 1000);
-                    Log.i(tag, "Ping!");
-                    printForegroundTask();
-                    notificationService.dismissNotification("com.facebook.orca");
+                    // TODO: round to next minute-2sec
+                    mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
+                    Log.i(tag, "scheduleThread!");
+//                    printForegroundTask();
+//                    notificationService.dismissNotification("com.facebook.orca");
                 }
             };
-            mHandler.postDelayed(mRunnable, seconds * 1000);
+            blockingThread = new Runnable() {
+                @Override
+                public void run() {
+                    mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
+                    Log.i(tag, "blockingThread");
+                }
+            }
+
+            mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
+            mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
         }
         return super.onStartCommand(intent, flags, startId);
     }
 
 
     public void tick() {
+        // TODO
         // read database
         // get schedule objects from db
         // get systemTime
@@ -88,7 +100,7 @@ public class BackgroundService extends Service {
 
     //function to check for instant profile activation -- how to know when to check
 
-    public void blockApps(){
+    public void blockApps() {
 
     }
 
@@ -97,14 +109,21 @@ public class BackgroundService extends Service {
      * instantiate NotificationService, call dismissNotification
      */
     public class NotificationService extends NotificationListenerService {
+        // TODO
         public NotificationService() {
             super();
-
         }
 
         public void dismissNotification(String app) {
             Log.i("dismissNotification", app);
             cancelNotification(app);
+        }
+
+        public void sendNotification(String msg) {
+            /**
+             * req 8.1, 8.2,
+             * 8.3 side: "you have unread notifications", user tap, redirect to notificationViewActivity
+             */
         }
     }
 
@@ -115,6 +134,9 @@ public class BackgroundService extends Service {
      */
     public void killApp(String app) {
         Log.i("killApp", app);
+        // some in-built exceptions to the kill app function
+        if (app.equals("com.htc.launcher") || app.equals("dreamteam.focus")) return;
+
         ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
         // go back to main screen
@@ -133,29 +155,37 @@ public class BackgroundService extends Service {
 
     /**
      * src = https://stackoverflow.com/questions/2166961/determining-the-current-foreground-application-from-a-background-task-or-service
-     *  check which app comes to foreground, TODO: need to define a way so that this is fast and there is no delay(doesnt rely on original runnable),
-     *  Todo: and also make killing app faster so that app main screen doesn't show up.
+     * check which app comes to foreground,
+     * TODO: need to define a way so that this is fast and there is no delay(doesnt rely on original runnable),
+     * Todo: and also make killing app faster so that app main screen doesn't show up.
      */
     public void printForegroundTask() {
         String currentApp = "NULL";
 
         UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
         long time = System.currentTimeMillis();
-        List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,  time - 1000*1000, time);
+        List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
         if (appList != null && appList.size() > 0) {
             SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
             for (UsageStats usageStats : appList) {
                 mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
             }
-            if (mySortedMap != null && !mySortedMap.isEmpty()) {
+            if (!mySortedMap.isEmpty()) {
                 currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
             }
         }
-
-
-        Log.i(TAG, "Current App in foreground is: " + currentApp);
+        Log.i(TAG, "Current app on the foreground is: " + currentApp);
     }
 
 }
 
 
+/**
+ * TODO
+ * - blockApp(String): Toast user the app is blocked
+ * - unblockApp(String)
+ * - check SQLite version number
+ * -
+ * -
+ * -
+ */
