@@ -6,6 +6,9 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
@@ -22,11 +25,12 @@ public class BackgroundService extends Service {
 
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
+    private static final String tag = "BackgroundService";
+    private final int SCHEDULE_TIMEOUT = 60;
+    private final int BLOCKING_TIMEOUT = 1;
     private DatabaseConnector DBConnector;
     private NotificationService notificationService;
 
-    private static final int SCHEDULE_TIMEOUT = 60;
-    private static final int BLOCKING_TIMEOUT = 2;
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
 
     //global variable for blockApps so that overlap works
@@ -59,20 +63,20 @@ public class BackgroundService extends Service {
 //                    Log.d(tag, "scheduleThread");
                 }
             };
+            mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
         }
+
         if (blockingThread == null) {
-            Log.d(TAG, "blockingThread created");
             blockingThread = new Runnable() {
                 @Override
                 public void run() {
                     mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
-//                    Log.d(tag, "blockingThread");
-//                    printForegroundTask();
-                    notificationService.dismissNotification("com.facebook.orca");
+                   // Log.d(tag, "blockingThread");
+                  //notificationService.dismissNotification("com.facebook.orca");
+                    printForegroundTask();
                 }
             };
 
-            mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
             mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
         }
         return super.onStartCommand(intent, flags, startId);
@@ -118,14 +122,10 @@ public class BackgroundService extends Service {
         final String TAG = "killApp";
 
         // some in-built exceptions to the kill app function
-        if (app.equals("com.htc.launcher") ||
-                app.equals("dreamteam.focus") ||
-                app.equals("com.google.android.apps.nexuslauncher")
-                ) {
+        if (app.equals("com.htc.launcher") || app.equals("dreamteam.focus") || app.equals("com.google.android.apps.nexuslauncher"))
             return;
-        }
-        Log.i(TAG, app);
 
+        Log.i(TAG, app);
         ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
         // go back to main screen
@@ -137,9 +137,26 @@ public class BackgroundService extends Service {
         // kill process
         am.killBackgroundProcesses(app);
         Toast.makeText(getBaseContext(),
-                "Killed : " + app,
+                "Focus! has blocked " + getAppNameFromPackage(app),
                 Toast.LENGTH_LONG
         ).show();
+    }
+
+    /**
+     * src = https://stackoverflow.com/questions/41054355/how-to-get-app-name-by-package-name-in-android
+     *
+     * @param packageName: string of package name from which app name is derived
+     */
+    public String getAppNameFromPackage(String packageName) {
+        PackageManager manager = getApplicationContext().getPackageManager();
+        ApplicationInfo info;
+        try {
+            info = manager.getApplicationInfo(packageName, 0);
+        } catch (final Exception e) {
+            info = null;
+        }
+        String appName = (String) (info != null ? manager.getApplicationLabel(info) : "this app");
+        return appName;
     }
 
     /**
@@ -152,19 +169,29 @@ public class BackgroundService extends Service {
         final String TAG = "printForegroundTask";
         String currentApp = "NULL";
 
-        UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
-        long time = System.currentTimeMillis();
-        List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
-        if (appList != null && appList.size() > 0) {
-            SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
-            for (UsageStats usageStats : appList) {
-                mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
-            }
-            if (!mySortedMap.isEmpty()) {
-                currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+
+            UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,  time - 1000*1000, time);
+
+            if (appList != null && appList.size() > 0) {
+                SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
+                for (UsageStats usageStats : appList) {
+                    mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
+                }
+                if (mySortedMap != null && !mySortedMap.isEmpty()) {
+                    currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+                }
             }
             Log.i(TAG, currentApp);
+
+        } else {
+            ActivityManager am = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningAppProcessInfo> tasks = am.getRunningAppProcesses();
+            currentApp = tasks.get(0).processName;
         }
+        killApp(currentApp);
     }
 
     /**
