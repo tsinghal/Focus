@@ -34,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         startService(new Intent(this, BackgroundService.class));
+        startService(new Intent(this, BackgroundService.NotificationService.class));
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction("com.github.chagall.notificationlistenerexample");
     }
 
     @Override

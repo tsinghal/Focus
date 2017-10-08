@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -16,16 +17,17 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static android.content.ContentValues.TAG;
-
 public class BackgroundService extends Service {
+    private static final String TAG = "BackgroundService";
+
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
-    private static final String tag = "BackgroundService";
-    private final int SCHEDULE_TIMEOUT = 60;
-    private final int BLOCKING_TIMEOUT = 2;
     private DatabaseConnector DBConnector;
     private NotificationService notificationService;
+
+    private static final int SCHEDULE_TIMEOUT = 60;
+    private static final int BLOCKING_TIMEOUT = 2;
+    private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
 
     //global variable for blockApps so that overlap works
 
@@ -40,32 +42,35 @@ public class BackgroundService extends Service {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-
     /**
      * src= https://stackoverflow.com/questions/28292682/using-an-sqlite-database-from-a-service-in-android
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        final String TAG = "onStartCommand";
         final Handler mHandler = new Handler();
         if (scheduleThread == null) {
-            Log.i(tag, "BackgroundService created");
+            Log.d(TAG, "scheduleThread created");
             scheduleThread = new Runnable() {
                 @Override
                 public void run() {
                     // TODO: round to next minute-2sec
                     mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
-                    Log.i(tag, "scheduleThread!");
-//                    printForegroundTask();
-//                    notificationService.dismissNotification("com.facebook.orca");
+//                    Log.d(tag, "scheduleThread");
                 }
             };
+        }
+        if (blockingThread == null) {
+            Log.d(TAG, "blockingThread created");
             blockingThread = new Runnable() {
                 @Override
                 public void run() {
                     mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
-                    Log.i(tag, "blockingThread");
+//                    Log.d(tag, "blockingThread");
+//                    printForegroundTask();
+                    notificationService.dismissNotification("com.facebook.orca");
                 }
-            }
+            };
 
             mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
             mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
@@ -105,37 +110,21 @@ public class BackgroundService extends Service {
     }
 
     /**
-     * to dismiss notifications:
-     * instantiate NotificationService, call dismissNotification
-     */
-    public class NotificationService extends NotificationListenerService {
-        // TODO
-        public NotificationService() {
-            super();
-        }
-
-        public void dismissNotification(String app) {
-            Log.i("dismissNotification", app);
-            cancelNotification(app);
-        }
-
-        public void sendNotification(String msg) {
-            /**
-             * req 8.1, 8.2,
-             * 8.3 side: "you have unread notifications", user tap, redirect to notificationViewActivity
-             */
-        }
-    }
-
-    /**
      * src = https://stackoverflow.com/questions/19604097/killbackgroundprocesses-no-working
      *
      * @param app: string of app to be killed
      */
     public void killApp(String app) {
-        Log.i("killApp", app);
+        final String TAG = "killApp";
+
         // some in-built exceptions to the kill app function
-        if (app.equals("com.htc.launcher") || app.equals("dreamteam.focus")) return;
+        if (app.equals("com.htc.launcher") ||
+                app.equals("dreamteam.focus") ||
+                app.equals("com.google.android.apps.nexuslauncher")
+                ) {
+            return;
+        }
+        Log.i(TAG, app);
 
         ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
@@ -160,6 +149,7 @@ public class BackgroundService extends Service {
      * Todo: and also make killing app faster so that app main screen doesn't show up.
      */
     public void printForegroundTask() {
+        final String TAG = "printForegroundTask";
         String currentApp = "NULL";
 
         UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
@@ -173,9 +163,66 @@ public class BackgroundService extends Service {
             if (!mySortedMap.isEmpty()) {
                 currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
             }
+            Log.i(TAG, currentApp);
         }
-        Log.i(TAG, "Current app on the foreground is: " + currentApp);
     }
+
+    /**
+     * to dismiss notifications:
+     * instantiate NotificationService, call dismissNotification
+     */
+
+    public class NotificationService extends NotificationListenerService {
+        private final String TAG = "NotificationService";
+
+        public NotificationService() {
+            super();
+        }
+
+        @Override
+        public IBinder onBind(Intent intent) {
+            return super.onBind(intent);
+        }
+
+        @Override
+        public void onNotificationPosted(StatusBarNotification sbn) {
+            Log.d(TAG, "Posted");
+            String app = getNameFromSBN(sbn);
+            Intent intent = new Intent("com.github.chagall.notificationlistenerexample");
+            intent.putExtra("app", app);
+            sendBroadcast(intent);
+        }
+
+        @Override
+        public void onNotificationRemoved(StatusBarNotification sbn) {
+            Log.d(TAG, "Removed");
+            String app = getNameFromSBN(sbn);
+            StatusBarNotification[] activeNotifications = this.getActiveNotifications();
+
+            if (activeNotifications != null && activeNotifications.length > 0) {
+                for (int i = 0; i < activeNotifications.length; i++) {
+                    if (app.equals(getNameFromSBN(activeNotifications[i]))) {
+                        Intent intent = new Intent("com.github.chagall.notificationlistenerexample");
+                        intent.putExtra("app", app);
+                        sendBroadcast(intent);
+                        return;
+                    }
+                }
+            }
+        }
+
+        private String getNameFromSBN(StatusBarNotification sbn) {
+            String packageName = sbn.getPackageName();
+            Log.d(TAG, packageName);
+            return packageName;
+        }
+
+        public void dismissNotification(String app) {
+            Log.d(TAG, "dismiss " + app);
+            cancelNotification(app);
+        }
+    }
+
 
 }
 
