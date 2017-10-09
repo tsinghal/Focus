@@ -1,15 +1,25 @@
 package dreamteam.focus.client;
 
+import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import dreamteam.focus.R;
 import dreamteam.focus.server.BackgroundService;
@@ -33,11 +43,40 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+
+        Intent intent = new Intent(getApplicationContext(), BackgroundService.class);
+        intent.putExtra("command", "get_status");
+        //starting service
         startService(new Intent(this, BackgroundService.class));
-        startService(new Intent(this, BackgroundService.NotificationService.class));
-//        IntentFilter intentFilter = new IntentFilter();
-//        intentFilter.addAction("com.github.chagall.notificationlistenerexample");
+        }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // register broadcast receiver for the intent MyTaskStatus
+        LocalBroadcastManager.getInstance(this).registerReceiver(MyReceiver, new IntentFilter(BackgroundService.ACTION_STATUS_BROADCAST));
+
     }
+
+    //Defining broadcast receiver
+    private BroadcastReceiver MyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i("MainActivity", "Broadcast Recieved: "+intent.getStringExtra("serviceMessage"));
+            String message = intent.getStringExtra("serviceMessage");
+            //Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(MyReceiver);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -1,11 +1,14 @@
 package dreamteam.focus.server;
 
 import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -13,6 +16,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,30 +24,37 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class BackgroundService extends Service {
+import dreamteam.focus.R;
+
+/*
+    src: https://stackoverflow.com/questions/41425986/call-a-notification-listener-inside-a-background-service-in-android-studio
+ */
+
+public class BackgroundService extends NotificationListenerService {
     private static final String TAG = "BackgroundService";
 
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
-    private static final String tag = "BackgroundService";
     private final int SCHEDULE_TIMEOUT = 60;
     private final int BLOCKING_TIMEOUT = 1;
     private DatabaseConnector DBConnector;
-    private NotificationService notificationService;
 
-    private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
+    public static final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
+    private NLServiceReceiver nlservicereciver;
+
+    private int nAdded=0;               //The number of notifications added (since the service started)
+
+    private int nRemoved=0;             //The number of notifications removed (since the service started)
 
     //global variable for blockApps so that overlap works
 
     public BackgroundService() {
         DBConnector = new DatabaseConnector();
-        notificationService = new NotificationService();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        return super.onBind(intent);
     }
 
     /**
@@ -60,7 +71,7 @@ public class BackgroundService extends Service {
                 public void run() {
                     // TODO: round to next minute-2sec
                     mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
-//                    Log.d(tag, "scheduleThread");
+                    Log.d(TAG, "scheduleThread");
                 }
             };
             mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
@@ -71,15 +82,145 @@ public class BackgroundService extends Service {
                 @Override
                 public void run() {
                     mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
-                   // Log.d(tag, "blockingThread");
-                  //notificationService.dismissNotification("com.facebook.orca");
+                    Log.d(TAG, "blockingThread");
                     printForegroundTask();
                 }
             };
 
             mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
         }
-        return super.onStartCommand(intent, flags, startId);
+        if(intent!= null) {
+            if (intent.hasExtra("command")) {
+                Log.i("NotificationService", "Started for command '" + intent.getStringExtra("command"));
+                broadcastStatus();
+            } else if (intent.hasExtra("id")) {
+                int id = intent.getIntExtra("id", 0);
+                String message = intent.getStringExtra("msg");
+                Log.i("NotificationService", "Requested to start explicitly - id : " + id + " message : " + message);
+            }
+        }
+         super.onStartCommand(intent, flags, startId);
+
+        // NOTE: We return STICKY to prevent the automatic service termination
+        return START_STICKY;
+    }
+
+
+    @Override
+    public void onNotificationPosted(StatusBarNotification sbn) {
+        final String TAG = "Notification service";
+
+        Log.i(TAG,"**********  onNotificationPosted");
+        Log.i(TAG,"ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
+
+
+        String packageName = getNameFromSBN(sbn);
+        //Intent i = new  Intent("notification received");
+        //i.putExtra("notification_event","onNotificationPosted :" + sbn.getPackageName() + "\n");
+        //i.putExtra("notification_event", packageName);
+        //sendBroadcast(i);
+
+        if(packageName.equals("com.whatsapp"))
+            dismissNotification(sbn);
+        nAdded++;
+
+        broadcastStatus();
+    }
+
+    @Override
+    public void onNotificationRemoved(StatusBarNotification sbn) {
+
+        final String TAG = "Notification service";
+        Log.i(TAG,"********** onNOtificationRemoved");
+        Log.i(TAG,"ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText +"\t" + sbn.getPackageName());
+//        Intent i = new  Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
+//        i.putExtra("notification_event","onNotificationRemoved :" + sbn.getPackageName() + "\n");
+//        sendBroadcast(i);
+
+        nRemoved++;
+        broadcastStatus();
+    }
+
+    public void onListenerDisconnected() {
+        super.onListenerDisconnected();
+        Log.w("NotificationService", "Notification listener DISCONNECTED from the notification service! Scheduling a reconnect...");
+    }
+
+    @Override
+    public void onListenerConnected() {
+        super.onListenerConnected();
+        Log.w("NotificationService", "Notification listener connected with the notification service!");
+    }
+
+    private String getNameFromSBN(StatusBarNotification sbn) {
+        String packageName = sbn.getPackageName();
+        Log.d(TAG, packageName);
+        return packageName;
+    }
+
+    /**
+     * to dismiss notifications
+     */
+
+    public void dismissNotification(StatusBarNotification sbn) {
+        Log.d(TAG, "dismiss " + sbn.getPackageName() +"notification");
+        if(getAppNameFromPackage(sbn.getPackageName()).equals("Whatsapp"))
+            cancelNotification(sbn.getKey());
+    }
+
+    private void broadcastStatus() {
+        Log.i("NotificationService", "Broadcasting status added("+nAdded+")/removed("+nRemoved+")");
+        Intent i1 = new  Intent(ACTION_STATUS_BROADCAST);
+        i1.putExtra("serviceMessage","Added: "+nAdded+" | Removed: "+nRemoved);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i1);
+
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.i("NotificationService", "NotificationService created!");
+        nlservicereciver = new NLServiceReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.example.notifyservice.NOTIFICATION_LISTENER_SERVICE_EXAMPLE");
+        registerReceiver(nlservicereciver,filter);
+        Log.i("NotificationService", "NotificationService created!");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(nlservicereciver);
+        Log.i("NotificationService", "NotificationService destroyed!");
+    }
+
+    /**
+     * Notification Broadcast Receiver
+     * */
+
+    class NLServiceReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if(intent.getStringExtra("command").equals("list")){
+                Intent i1 = new  Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
+                i1.putExtra("notification_event","=====================");
+                sendBroadcast(i1);
+                int i=1;
+                for (StatusBarNotification sbn : BackgroundService.this.getActiveNotifications()) {
+                    Intent i2 = new  Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
+                    i2.putExtra("notification_event",i +" " + sbn.getPackageName() + "\n");
+                    sendBroadcast(i2);
+                    i++;
+                }
+                Intent i3 = new  Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
+                i3.putExtra("notification_event","===== Notification List ====");
+                sendBroadcast(i3);
+
+            }
+
+        }
     }
 
 
@@ -109,22 +250,18 @@ public class BackgroundService extends Service {
 
     //function to check for instant profile activation -- how to know when to check
 
-    public void blockApps() {
-
-    }
-
     /**
      * src = https://stackoverflow.com/questions/19604097/killbackgroundprocesses-no-working
      *
      * @param app: string of app to be killed
      */
-    public void killApp(String app) {
-        final String TAG = "killApp";
+    public void blockApps(String app) {
+        final String TAG = "blockApps";
 
         // some in-built exceptions to the kill app function
         if (app.equals("com.htc.launcher") || app.equals("dreamteam.focus") || app.equals("com.google.android.apps.nexuslauncher"))
             return;
-
+        else if(app.equals("com.whatsapp")){
         Log.i(TAG, app);
         ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
@@ -138,8 +275,8 @@ public class BackgroundService extends Service {
         am.killBackgroundProcesses(app);
         Toast.makeText(getBaseContext(),
                 "Focus! has blocked " + getAppNameFromPackage(app),
-                Toast.LENGTH_LONG
-        ).show();
+                Toast.LENGTH_SHORT
+        ).show();}
     }
 
     /**
@@ -184,72 +321,17 @@ public class BackgroundService extends Service {
                     currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
                 }
             }
-            Log.i(TAG, currentApp);
 
         } else {
             ActivityManager am = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.RunningAppProcessInfo> tasks = am.getRunningAppProcesses();
             currentApp = tasks.get(0).processName;
         }
-        killApp(currentApp);
+
+        Log.i(TAG, currentApp);
+
+        blockApps(currentApp);
     }
-
-    /**
-     * to dismiss notifications:
-     * instantiate NotificationService, call dismissNotification
-     */
-
-    public class NotificationService extends NotificationListenerService {
-        private final String TAG = "NotificationService";
-
-        public NotificationService() {
-            super();
-        }
-
-        @Override
-        public IBinder onBind(Intent intent) {
-            return super.onBind(intent);
-        }
-
-        @Override
-        public void onNotificationPosted(StatusBarNotification sbn) {
-            Log.d(TAG, "Posted");
-            String app = getNameFromSBN(sbn);
-            Intent intent = new Intent("com.github.chagall.notificationlistenerexample");
-            intent.putExtra("app", app);
-            sendBroadcast(intent);
-        }
-
-        @Override
-        public void onNotificationRemoved(StatusBarNotification sbn) {
-            Log.d(TAG, "Removed");
-            String app = getNameFromSBN(sbn);
-            StatusBarNotification[] activeNotifications = this.getActiveNotifications();
-
-            if (activeNotifications != null && activeNotifications.length > 0) {
-                for (int i = 0; i < activeNotifications.length; i++) {
-                    if (app.equals(getNameFromSBN(activeNotifications[i]))) {
-                        Intent intent = new Intent("com.github.chagall.notificationlistenerexample");
-                        intent.putExtra("app", app);
-                        sendBroadcast(intent);
-                        return;
-                    }
-                }
-            }
-        }
-
-        private String getNameFromSBN(StatusBarNotification sbn) {
-            String packageName = sbn.getPackageName();
-            Log.d(TAG, packageName);
-            return packageName;
-        }
-
-        public void dismissNotification(String app) {
-            Log.d(TAG, "dismiss " + app);
-            cancelNotification(app);
-        }
-    }
-
 
 }
 
@@ -259,7 +341,7 @@ public class BackgroundService extends Service {
  * - blockApp(String): Toast user the app is blocked
  * - unblockApp(String)
  * - check SQLite version number
- * -
+ * - request user to grant permission :   src: https://developer.android.com/training/permissions/requesting.html
  * -
  * -
  */
