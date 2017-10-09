@@ -134,7 +134,11 @@ public class DatabaseConnector {
     /**
      * @return an array of all the schedules present in the database
      */
-    public ArrayList<Profile> getSchedules() {
+    public ArrayList<Schedule> getSchedules() {
         return null;
+    }
+
+    public long getDatabaseVersion() {
+        return 0l;
     }
 }
