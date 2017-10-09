@@ -139,7 +139,7 @@ public class BackgroundService extends NotificationListenerService {
     public void onNotificationRemoved(StatusBarNotification sbn) {
 
         final String TAG = "Notification service";
-        Log.i(TAG, "********** onNOtificationRemoved");
+        Log.i(TAG, "********** onNotificationRemoved");
         Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
 //        Intent i = new  Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
 //        i.putExtra("notification_event","onNotificationRemoved :" + sbn.getPackageName() + "\n");
@@ -162,7 +162,7 @@ public class BackgroundService extends NotificationListenerService {
 
     private String getNameFromSBN(StatusBarNotification sbn) {
         String packageName = sbn.getPackageName();
-        Log.d(TAG, packageName);
+        Log.d("getNameFromSBN", packageName);
         return packageName;
     }
 
@@ -171,13 +171,13 @@ public class BackgroundService extends NotificationListenerService {
      */
 
     public void dismissNotification(StatusBarNotification sbn) {
-        Log.d(TAG, "dismiss " + sbn.getPackageName() + "notification");
+        Log.d("dismissNotification", "dismiss " + sbn.getPackageName() + "notification");
         if (getAppNameFromPackage(sbn.getPackageName()).equals("Whatsapp"))
             cancelNotification(sbn.getKey());
     }
 
     private void broadcastStatus() {
-        Log.i("NotificationService", "Broadcasting status added(" + nAdded + ")/removed(" + nRemoved + ")");
+        Log.i("broadcastStatus", "Broadcasting status added(" + nAdded + ")/removed(" + nRemoved + ")");
         Intent i1 = new Intent(ACTION_STATUS_BROADCAST);
         i1.putExtra("serviceMessage", "Added: " + nAdded + " | Removed: " + nRemoved);
         LocalBroadcastManager.getInstance(this).sendBroadcast(i1);
@@ -187,19 +187,19 @@ public class BackgroundService extends NotificationListenerService {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i("NotificationService", "NotificationService created!");
+        Log.i("onCreate", "begin");
         nlservicereciver = new NLServiceReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.example.notifyservice.NOTIFICATION_LISTENER_SERVICE_EXAMPLE");
         registerReceiver(nlservicereciver, filter);
-        Log.i("NotificationService", "NotificationService created!");
+        Log.i("onCreate", "NotificationService created!");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(nlservicereciver);
-        Log.i("NotificationService", "NotificationService destroyed!");
+        Log.i("NotificationService", "NotificationService destroyed.");
     }
 
 
@@ -340,8 +340,7 @@ public class BackgroundService extends NotificationListenerService {
         } catch (final Exception e) {
             info = null;
         }
-        String appName = (String) (info != null ? manager.getApplicationLabel(info) : "this app");
-        return appName;
+        return (String) (info != null ? manager.getApplicationLabel(info) : "this app");
     }
 
     /**
@@ -370,16 +369,12 @@ public class BackgroundService extends NotificationListenerService {
                         currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
                     }
                 }
-                Log.i(TAG, currentApp);
-
             } else {
                 ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.RunningAppProcessInfo> tasks = am.getRunningAppProcesses();
                 currentApp = tasks.get(0).processName;
             }
-
             Log.i(TAG, currentApp);
-
             blockApps(currentApp);
         }
 
