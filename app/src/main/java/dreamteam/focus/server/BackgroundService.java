@@ -41,7 +41,7 @@ import dreamteam.focus.client.MainActivity;
  */
 
 public class BackgroundService extends NotificationListenerService {
-    public final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
+    public static final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
     private final String TAG = "BackgroundService";
     private final int SCHEDULE_TIMEOUT = 60;
     private final int BLOCKING_TIMEOUT = 1;
@@ -59,6 +59,8 @@ public class BackgroundService extends NotificationListenerService {
     private long databaseVersion;
     private HashSet<String> blockedApps;
     private NLServiceReceiver nlServiceReceiver;
+    NotificationManager mNotifyMgr;
+    Notification.Builder mBuilder;
 
     private int nAdded = 0; // Number of notifications added (since the service started)
     private int nRemoved = 0; // Number of notifications removed (since the service started)
@@ -100,7 +102,7 @@ public class BackgroundService extends NotificationListenerService {
                 public void run() {
                     mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
 //                    Log.d(TAG, "blockingThread");
-                    printForegroundTask();
+                    blockApps();
                 }
             };
 
@@ -133,47 +135,41 @@ public class BackgroundService extends NotificationListenerService {
         //i.putExtra("notification_event", packageName);
         //sendBroadcast(i);
 
-
         if (packageName.equals("com.whatsapp")) {
-            // Gets an instance of the NotificationManager service
-            NotificationManager mNotifyMgr =
-                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            Notification.Builder mBuilder;
 
-            Intent resultIntent = new Intent(this, MainActivity.class);
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            this,
-                            0,
-                            resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                    );
-
-            mBuilder = new Notification.Builder(getApplicationContext())
-                    .setSmallIcon(R.drawable.ic_stat_name_notify)
-                    .setContentTitle("My notification")
-                    .setContentText("Hello World!");
-
-            mBuilder.setContentIntent(resultPendingIntent);
-
-
-            // Sets an ID for the notification
+             // Sets an ID for the notification
             int mNotificationId = 1;
-
-            // Builds the notification and issues it.
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
-            Log.d("onNotificationPosted", "notification thrown!");
+            sendNotification(mNotificationId, "Notification blocked by Focus!");
 
             cancelNotification(sbn.getKey());
         }
-        // TODO kill only specific notification thrown above instead of blanket kill all notifications from dreamteam.focus
+
         if (packageName.equals("dreamteam.focus")) {
-            cancelNotification(sbn.getKey());
+            if(sbn.getId() == 1)                    //cancel only that nofication which is used to block notifications of other apps
+                cancelNotification(sbn.getKey());
         }
-
         nAdded++;
-
         broadcastStatus();
+    }
+
+    //send out notification to user from Focus
+    public void sendNotification(int id, String message) {
+
+        // Gets an instance of the NotificationManager service
+        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder = new Notification.Builder(getApplicationContext())
+                .setSmallIcon(R.drawable.ic_stat_name_notify)
+                .setContentTitle("Focus")
+                .setContentText(message);
+
+        mBuilder.setContentIntent(resultPendingIntent);     //defines where the user will be directed if notification is clicked
+
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(id, mBuilder.build());
+        Log.d("onNotificationPosted", "notification thrown!");
     }
 
     @Override
@@ -284,19 +280,22 @@ public class BackgroundService extends NotificationListenerService {
 
     /**
      * src = https://stackoverflow.com/questions/19604097/killbackgroundprocesses-no-working
-     *
-     * @param app: string of app to be killed
      */
-    public void blockApps(String app) {
+    public void blockApps() {
+
+        String appInForeground = getForegroundTask();
+        if(appInForeground == null)
+            return;
+
 //        for (String app : blockedApps) {}
 
         // some in-built exceptions to the kill app function
         for (String whitelistedApp : BLOCK_APP_WHITELIST) {
-            if (app.equals(whitelistedApp)) return;
+            if (appInForeground.equals(whitelistedApp)) return;
         }
 
-        if (app.equals("com.whatsapp")) {
-            Log.i(TAG, "blockApps(" + app + ")");
+        if (appInForeground.equals("com.whatsapp")) {
+            Log.i(TAG, "blockApps(" + appInForeground + ")");
             ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
             // go back to main screen
@@ -306,14 +305,39 @@ public class BackgroundService extends NotificationListenerService {
             this.startActivity(startMain);
 
             // kill process
-            am.killBackgroundProcesses(app);
+            am.killBackgroundProcesses(appInForeground);
             Toast.makeText(getBaseContext(),
-                    "Focus! has blocked " + getAppNameFromPackage(app),
+                    "Focus! has blocked " + getAppNameFromPackage(appInForeground),
                     Toast.LENGTH_SHORT
             ).show();
         }
     }
 
+    /**
+     * src = https://stackoverflow.com/questions/2166961/determining-the-current-foreground-application-from-a-background-task-or-service
+     * check which app comes to foreground,
+     */
+    public String getForegroundTask() {
+        String currentApp = null;
+        if (isUsageAccessGranted()) {
+            currentApp = "NULL";
+            UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
+
+            if (appList != null && appList.size() > 0) {
+                SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
+                for (UsageStats usageStats : appList) {
+                    mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
+                }
+                if (!mySortedMap.isEmpty()) {
+                    currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+                }
+            }
+            Log.i(TAG, "printForegroundTask: " + currentApp);
+        }
+        return currentApp;
+    }
     /**
      * Checks local database version number against remote version number
      *
@@ -332,7 +356,6 @@ public class BackgroundService extends NotificationListenerService {
         databaseVersion = databaseConnector.getDatabaseVersion();
         Log.i(TAG, "completed update");
     }
-
 
     /**
      * src = https://github.com/kpbird/NotificationListenerService-Example/blob/master/NLSExample/src/main/java/com/kpbird/nlsexample/NLService.java
@@ -374,32 +397,6 @@ public class BackgroundService extends NotificationListenerService {
     }
 
     /**
-     * src = https://stackoverflow.com/questions/2166961/determining-the-current-foreground-application-from-a-background-task-or-service
-     * check which app comes to foreground,
-     */
-    public void printForegroundTask() {
-        if (isUsageAccessGranted()) {
-            String currentApp = "NULL";
-            UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
-            long time = System.currentTimeMillis();
-            List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
-
-            if (appList != null && appList.size() > 0) {
-                SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
-                for (UsageStats usageStats : appList) {
-                    mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
-                }
-                if (!mySortedMap.isEmpty()) {
-                    currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
-                }
-            }
-            Log.i(TAG, "printForegroundTask: " + currentApp);
-            blockApps(currentApp);
-        }
-    }
-
-
-    /**
      * src = https://stackoverflow.com/questions/38686632/how-to-get-usage-access-permission-programatically
      *
      * @return True if enabled, false otherwise.
@@ -417,7 +414,6 @@ public class BackgroundService extends NotificationListenerService {
             return false;
         }
     }
-
 
     /**
      * Notification Broadcast Receiver
