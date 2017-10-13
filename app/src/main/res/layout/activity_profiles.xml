@@ -1,5 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="dreamteam.focus.client.Profiles">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/blue"
+        android:textColor="@color/white"
+        android:text="Profiles"
+        android:typeface="serif"
+        android:textSize="36dp"
+        android:textAlignment="center"
+        android:id="@+id/textViewProfiles"/>
+
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/blue"
+        android:text="+"
+        android:id="@+id/buttonAddProfile"
+        android:textColor="@color/white"
+        android:layout_alignParentEnd="true"
+        android:textSize="36dp"
+
+        />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/textViewProfiles">
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </ListView>
+    </ScrollView>
+
 
 </RelativeLayout>

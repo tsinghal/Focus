@@ -1,39 +1,46 @@
 package dreamteam.focus.server;
 
+import java.lang.reflect.Array;
+import java.util.HashMap;
+
+import dreamteam.focus.Profile;
+import dreamteam.focus.ProfileInSchedule;
+import dreamteam.focus.Schedule;
+
 /**
  * Created by bowie on 10/2/17.
  */
 
 public class DatabaseConnector {
-    public bool createProfile(Profile profile) {}
+    public boolean createProfile(Profile profile) {return false;}
 
-    public bool removeProfile(Profile profile) {}
+    public boolean removeProfile(Profile profile) {return false;}
 
-    public bool updateProfile(Profile profile) {}
+    public boolean updateProfile(Profile profile) {return false;}
 
-    public bool activateProfile(Profile profile) {}
+    public boolean activateProfile(Profile profile) {return false;}
 
-    public bool deactivateProfile(Profile profile) {}
+    public boolean deactivateProfile(Profile profile) {return false;}
 
-    public HashMap<String, Integer> getNotificationsForProfile(Profile profile) {}
+    public boolean getNotificationsForProfile(Profile profile) {return false;}
 
-    public bool addSchedule(Schedule schedule) {}
+    public boolean addSchedule(Schedule schedule) {return false;}
 
-    public bool removeSchedule(Schedule schedule) {}
+    public boolean removeSchedule(Schedule schedule) {return false;}
 
-    public bool updateSchedule(Schedule schedule) {}
+    public boolean updateSchedule(Schedule schedule) {return false;}
 
-    public bool addProfileToSchedule(ProfileInSchedule pis, Schedule schedule) {}
+    public boolean addProfileToSchedule(ProfileInSchedule pis, Schedule schedule) {return false;}
 
-    public bool removeProfileToSchedule(ProfileInSchedule pis, Schedule schedule) {}
+    public boolean removeProfileToSchedule(ProfileInSchedule pis, Schedule schedule) {return false;}
 
-    public bool activateSchedule(Schedule schedule) {}
+    public boolean activateSchedule(Schedule schedule) {return false;}
 
-    public bool deactivateSchedule(Schedule schedule) {}
+    public boolean deactivateSchedule(Schedule schedule) {return false;}
 
-    public HashMap<String, Integer> getNotificationsForSchedule(Schedule schedule) {}
+    public boolean getNotificationsForSchedule(Schedule schedule) {return false;}
 
-    public Array<Profile> getProfiles() {}
+    public boolean getProfiles() {return false;}
 
-    public Array<Profile> getSchedules() {}
+    public boolean getSchedules() {return false;}
 }
