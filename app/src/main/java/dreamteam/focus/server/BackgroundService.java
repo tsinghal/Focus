@@ -2,6 +2,9 @@ package dreamteam.focus.server;
 
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
@@ -11,6 +14,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -30,7 +35,9 @@ import java.util.TreeMap;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
+import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
+import dreamteam.focus.client.MainActivity;
 
 /*
     src: https://stackoverflow.com/questions/41425986/call-a-notification-listener-inside-a-background-service-in-android-studio
@@ -116,6 +123,9 @@ public class BackgroundService extends NotificationListenerService {
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
+
+
+
         final String TAG = "Notification service";
 
         Log.i(TAG, "**********  onNotificationPosted");
@@ -128,8 +138,47 @@ public class BackgroundService extends NotificationListenerService {
         //i.putExtra("notification_event", packageName);
         //sendBroadcast(i);
 
+
+
         if (packageName.equals("com.whatsapp"))
+        {
+            // Gets an instance of the NotificationManager service
+            NotificationManager mNotifyMgr =
+                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            Notification.Builder mBuilder;
+
+            Intent resultIntent = new Intent(this, MainActivity.class);
+            PendingIntent resultPendingIntent =
+                                PendingIntent.getActivity(
+                                        this,
+                                        0,
+                                        resultIntent,
+                                        PendingIntent.FLAG_UPDATE_CURRENT
+                                );
+
+            mBuilder =
+                    new Notification.Builder(getApplicationContext())
+                            .setSmallIcon(R.drawable.ic_stat_name_notify)
+                            .setContentTitle("My notification")
+                            .setContentText("Hello World!");
+
+            mBuilder.setContentIntent(resultPendingIntent);
+
+
+            // Sets an ID for the notification
+            int mNotificationId = 001;
+
+            // Builds the notification and issues it.
+            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+            Log.d("new notif", "notification thrown!");
+
             cancelNotification(sbn.getKey());
+        }
+        if (packageName.equals("dreamteam.focus"))
+        {
+            cancelNotification(sbn.getKey());
+        }
+
         nAdded++;
 
         broadcastStatus();
@@ -431,14 +480,16 @@ public class BackgroundService extends NotificationListenerService {
 
 
     }
+
+
 }
 
 /**
  * TODO
- * - blockApp(String): Toast user the app is blocked
- * - unblockApp(String)
+ * - blockApps(String):
+ * - unblockApp(String) : release notifications
  * - check SQLite version number
  * - request user to grant permission :   src: https://developer.android.com/training/permissions/requesting.html
- * -
+ * - handle thread deletions
  * -
  */
