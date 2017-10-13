@@ -65,7 +65,7 @@ public class ProfileInSchedule {
      */
     public boolean repeatsOn(Repeat_Enum day) {
         for (Repeat_Enum repeat : repeats) {
-            if (repeat == day) {
+            if (repeat.equals(day)) {
                 return true;
             }
         }

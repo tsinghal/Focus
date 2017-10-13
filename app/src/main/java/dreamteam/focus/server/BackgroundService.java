@@ -14,8 +14,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -33,7 +31,6 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
@@ -44,27 +41,32 @@ import dreamteam.focus.client.MainActivity;
  */
 
 public class BackgroundService extends NotificationListenerService {
-    public static final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
-    private static final String TAG = "BackgroundService";
+    public final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
+    private final String TAG = "BackgroundService";
     private final int SCHEDULE_TIMEOUT = 60;
     private final int BLOCKING_TIMEOUT = 1;
+    private final String[] BLOCK_APP_WHITELIST = {
+            "com.htc.launcher",
+            "dreamteam.focus",
+            "com.google.android.apps.nexuslauncher",
+            "com.android.systemui"
+    };
+
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
-    private DatabaseConnector databaseConnector;
-    private ArrayList<Profile> profiles;
+    private final DatabaseConnector databaseConnector;
     private ArrayList<Schedule> schedules;
     private long databaseVersion;
     private HashSet<String> blockedApps;
-    private NLServiceReceiver nlservicereciver;
+    private NLServiceReceiver nlServiceReceiver;
 
-    private int nAdded = 0;               //The number of notifications added (since the service started)
-    private int nRemoved = 0;             //The number of notifications removed (since the service started)
+    private int nAdded = 0; // Number of notifications added (since the service started)
+    private int nRemoved = 0; // Number of notifications removed (since the service started)
 
     public BackgroundService() {
         databaseConnector = new DatabaseConnector();
-        profiles = new ArrayList<>();
         schedules = new ArrayList<>();
-        if (checkForUpdate()) updateFromServer();
+        if (checkForUpdates()) updateFromServer();
         blockedApps = new HashSet<>();
     }
 
@@ -78,7 +80,6 @@ public class BackgroundService extends NotificationListenerService {
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final String TAG = "onStartCommand";
         final Handler mHandler = new Handler();
         if (scheduleThread == null) {
             Log.d(TAG, "scheduleThread created");
@@ -86,18 +87,19 @@ public class BackgroundService extends NotificationListenerService {
                 @Override
                 public void run() {
                     mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
-                    Log.d(TAG, "scheduleThread");
+//                    Log.d(TAG, "scheduleThread");
                 }
             };
             mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
         }
 
         if (blockingThread == null) {
+            Log.d(TAG, "blockingThread created");
             blockingThread = new Runnable() {
                 @Override
                 public void run() {
                     mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
-                    Log.d(TAG, "blockingThread");
+//                    Log.d(TAG, "blockingThread");
                     printForegroundTask();
                 }
             };
@@ -120,17 +122,10 @@ public class BackgroundService extends NotificationListenerService {
         return START_STICKY;
     }
 
-
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-
-
-
-        final String TAG = "Notification service";
-
-        Log.i(TAG, "**********  onNotificationPosted");
+        Log.i(TAG, "********** onNotificationPosted");
         Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
-
 
         String packageName = getNameFromSBN(sbn);
         //Intent i = new  Intent("notification received");
@@ -139,9 +134,7 @@ public class BackgroundService extends NotificationListenerService {
         //sendBroadcast(i);
 
 
-
-        if (packageName.equals("com.whatsapp"))
-        {
+        if (packageName.equals("com.whatsapp")) {
             // Gets an instance of the NotificationManager service
             NotificationManager mNotifyMgr =
                     (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -149,33 +142,32 @@ public class BackgroundService extends NotificationListenerService {
 
             Intent resultIntent = new Intent(this, MainActivity.class);
             PendingIntent resultPendingIntent =
-                                PendingIntent.getActivity(
-                                        this,
-                                        0,
-                                        resultIntent,
-                                        PendingIntent.FLAG_UPDATE_CURRENT
-                                );
+                    PendingIntent.getActivity(
+                            this,
+                            0,
+                            resultIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
 
-            mBuilder =
-                    new Notification.Builder(getApplicationContext())
-                            .setSmallIcon(R.drawable.ic_stat_name_notify)
-                            .setContentTitle("My notification")
-                            .setContentText("Hello World!");
+            mBuilder = new Notification.Builder(getApplicationContext())
+                    .setSmallIcon(R.drawable.ic_stat_name_notify)
+                    .setContentTitle("My notification")
+                    .setContentText("Hello World!");
 
             mBuilder.setContentIntent(resultPendingIntent);
 
 
             // Sets an ID for the notification
-            int mNotificationId = 001;
+            int mNotificationId = 1;
 
             // Builds the notification and issues it.
             mNotifyMgr.notify(mNotificationId, mBuilder.build());
-            Log.d("new notif", "notification thrown!");
+            Log.d("onNotificationPosted", "notification thrown!");
 
             cancelNotification(sbn.getKey());
         }
-        if (packageName.equals("dreamteam.focus"))
-        {
+        // TODO kill only specific notification thrown above instead of blanket kill all notifications from dreamteam.focus
+        if (packageName.equals("dreamteam.focus")) {
             cancelNotification(sbn.getKey());
         }
 
@@ -186,8 +178,6 @@ public class BackgroundService extends NotificationListenerService {
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
-
-        final String TAG = "Notification service";
         Log.i(TAG, "********** onNotificationRemoved");
         Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
 //        Intent i = new  Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
@@ -200,7 +190,8 @@ public class BackgroundService extends NotificationListenerService {
 
     public void onListenerDisconnected() {
         super.onListenerDisconnected();
-        Log.w("NotificationService", "Notification listener DISCONNECTED from the notification service! Scheduling a reconnect...");
+        Log.w("NotificationService", "Notification listener DISCONNECTED from the notification service! " +
+                "\nScheduling a reconnect...");
     }
 
     @Override
@@ -211,22 +202,12 @@ public class BackgroundService extends NotificationListenerService {
 
     private String getNameFromSBN(StatusBarNotification sbn) {
         String packageName = sbn.getPackageName();
-        Log.d("getNameFromSBN", packageName);
+        Log.d(TAG, "getNameFromSBN" + packageName);
         return packageName;
     }
 
-    /**
-     * to dismiss notifications
-     */
-
-    public void dismissNotification(StatusBarNotification sbn) {
-        Log.d("dismissNotification", "dismiss " + sbn.getPackageName() + "notification");
-        if (getAppNameFromPackage(sbn.getPackageName()).equals("Whatsapp"))
-            cancelNotification(sbn.getKey());
-    }
-
     private void broadcastStatus() {
-        Log.i("broadcastStatus", "Broadcasting status added(" + nAdded + ")/removed(" + nRemoved + ")");
+        Log.i(TAG, "Broadcasting status added(" + nAdded + ")/removed(" + nRemoved + ")");
         Intent i1 = new Intent(ACTION_STATUS_BROADCAST);
         i1.putExtra("serviceMessage", "Added: " + nAdded + " | Removed: " + nRemoved);
         LocalBroadcastManager.getInstance(this).sendBroadcast(i1);
@@ -236,18 +217,18 @@ public class BackgroundService extends NotificationListenerService {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i("onCreate", "begin");
-        nlservicereciver = new NLServiceReceiver();
+        Log.i(TAG, "onCreate");
+        nlServiceReceiver = new NLServiceReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.example.notifyservice.NOTIFICATION_LISTENER_SERVICE_EXAMPLE");
-        registerReceiver(nlservicereciver, filter);
+        registerReceiver(nlServiceReceiver, filter);
         Log.i("onCreate", "NotificationService created!");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(nlservicereciver);
+        unregisterReceiver(nlServiceReceiver);
         Log.i("NotificationService", "NotificationService destroyed.");
     }
 
@@ -255,24 +236,27 @@ public class BackgroundService extends NotificationListenerService {
     public void tick() {
         // TODO
         final String TAG = "BackgroundService.update";
-        if (checkForUpdate()) updateFromServer();
+        if (checkForUpdates()) updateFromServer();
         Date now = new Date();
         long millis = now.getTime();
         for (Schedule schedule : schedules) {
             Log.i(TAG, schedule.getName());
             for (ProfileInSchedule pis : schedule.getCalendar()) {
-                if (pis.getStartTime().equals(now)) { // TODO: time too short!
+                if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT * 1000 <= millis &&
+                        millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT * 1000) {
                     for (String app : pis.getProfile().getApps()) {
                         Log.i(TAG, "App blocked" + app);
                         blockedApps.add(app);
                     }
-                } else if (pis.getEndTime().equals(now)) {
+                } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT * 1000 <= millis &&
+                        millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT * 1000) {
                     for (String app : pis.getProfile().getApps()) {
                         Log.i(TAG, "App unblocked" + app);
                         blockedApps.remove(app);
                     }
                 }
             }
+            // set Schedule to active/inactive, update database
         }
         // read database
         // get schedule objects from db
@@ -296,7 +280,7 @@ public class BackgroundService extends NotificationListenerService {
         // write to notificationBlock module: appsToBlock, appsToUnblock
     }
 
-    //function to check for instant profile activation -- how to know when to check
+    // TODO: function to check for instant profile activation -- how to know when to check
 
     /**
      * src = https://stackoverflow.com/questions/19604097/killbackgroundprocesses-no-working
@@ -304,16 +288,15 @@ public class BackgroundService extends NotificationListenerService {
      * @param app: string of app to be killed
      */
     public void blockApps(String app) {
-        final String TAG = "blockApps";
+//        for (String app : blockedApps) {}
 
         // some in-built exceptions to the kill app function
-        if (app.equals("com.htc.launcher") ||
-                app.equals("dreamteam.focus") ||
-                app.equals("com.google.android.apps.nexuslauncher") ||
-                app.equals("com.android.systemui"))
-            return;
-        else if (app.equals("com.whatsapp")) {
-            Log.i(TAG, app);
+        for (String whitelistedApp : BLOCK_APP_WHITELIST) {
+            if (app.equals(whitelistedApp)) return;
+        }
+
+        if (app.equals("com.whatsapp")) {
+            Log.i(TAG, "blockApps(" + app + ")");
             ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
             // go back to main screen
@@ -336,7 +319,7 @@ public class BackgroundService extends NotificationListenerService {
      *
      * @return True if local data is up to date, false otherwise
      */
-    private boolean checkForUpdate() {
+    private boolean checkForUpdates() {
         return databaseVersion >= databaseConnector.getDatabaseVersion();
     }
 
@@ -344,11 +327,10 @@ public class BackgroundService extends NotificationListenerService {
      * Pulls data from server.
      */
     private void updateFromServer() {
-        Log.i("updateFromServer", "getting update from server");
-        profiles = databaseConnector.getProfiles();
+        Log.i(TAG, "getting update from server");
         schedules = databaseConnector.getSchedules();
         databaseVersion = databaseConnector.getDatabaseVersion();
-        Log.i("updateFromServer", "completed update");
+        Log.i(TAG, "completed update");
     }
 
 
@@ -363,8 +345,8 @@ public class BackgroundService extends NotificationListenerService {
                 "enabled_notification_listeners");
         if (!TextUtils.isEmpty(flat)) {
             final String[] names = flat.split(":");
-            for (int i = 0; i < names.length; i++) {
-                final ComponentName cn = ComponentName.unflattenFromString(names[i]);
+            for (String name : names) {
+                final ComponentName cn = ComponentName.unflattenFromString(name);
                 if (cn != null) {
                     if (TextUtils.equals(pkgName, cn.getPackageName())) {
                         return true;
@@ -374,7 +356,6 @@ public class BackgroundService extends NotificationListenerService {
         }
         return false;
     }
-
 
     /**
      * src = https://stackoverflow.com/questions/41054355/how-to-get-app-name-by-package-name-in-android
@@ -395,38 +376,26 @@ public class BackgroundService extends NotificationListenerService {
     /**
      * src = https://stackoverflow.com/questions/2166961/determining-the-current-foreground-application-from-a-background-task-or-service
      * check which app comes to foreground,
-     * TODO: need to define a way so that this is fast and there is no delay(doesnt rely on original runnable),
-     * Todo: and also make killing app faster so that app main screen doesn't show up.
      */
     public void printForegroundTask() {
         if (isUsageAccessGranted()) {
-            final String TAG = "printForegroundTask";
             String currentApp = "NULL";
+            UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-
-                UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
-                long time = System.currentTimeMillis();
-                List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
-
-                if (appList != null && appList.size() > 0) {
-                    SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
-                    for (UsageStats usageStats : appList) {
-                        mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
-                    }
-                    if (!mySortedMap.isEmpty()) {
-                        currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
-                    }
+            if (appList != null && appList.size() > 0) {
+                SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
+                for (UsageStats usageStats : appList) {
+                    mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
                 }
-            } else {
-                ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.RunningAppProcessInfo> tasks = am.getRunningAppProcesses();
-                currentApp = tasks.get(0).processName;
+                if (!mySortedMap.isEmpty()) {
+                    currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+                }
             }
-            Log.i(TAG, currentApp);
+            Log.i(TAG, "printForegroundTask: " + currentApp);
             blockApps(currentApp);
         }
-
     }
 
 
@@ -477,11 +446,7 @@ public class BackgroundService extends NotificationListenerService {
             }
 
         }
-
-
     }
-
-
 }
 
 /**
@@ -489,7 +454,6 @@ public class BackgroundService extends NotificationListenerService {
  * - blockApps(String):
  * - unblockApp(String) : release notifications
  * - check SQLite version number
- * - request user to grant permission :   src: https://developer.android.com/training/permissions/requesting.html
  * - handle thread deletions
  * -
  */
