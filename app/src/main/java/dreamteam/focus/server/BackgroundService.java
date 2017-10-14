@@ -42,10 +42,10 @@ import dreamteam.focus.client.MainActivity;
 
 public class BackgroundService extends NotificationListenerService {
     public static final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
-    private final String TAG = "BackgroundService";
-    private final int SCHEDULE_TIMEOUT = 60;
-    private final int BLOCKING_TIMEOUT = 1;
-    private final String[] BLOCK_APP_WHITELIST = {
+    private static final String TAG = "BackgroundService";
+    private static final int SCHEDULE_TIMEOUT_SEC = 60;
+    private static final int BLOCKING_TIMEOUT_SEC = 1;
+    private static final String[] BLOCK_APP_WHITELIST = {
             "com.htc.launcher",
             "dreamteam.focus",
             "com.google.android.apps.nexuslauncher",
@@ -88,11 +88,11 @@ public class BackgroundService extends NotificationListenerService {
             scheduleThread = new Runnable() {
                 @Override
                 public void run() {
-                    mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
+                    mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
 //                    Log.d(TAG, "scheduleThread");
                 }
             };
-            mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT * 1000);
+            mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
         }
 
         if (blockingThread == null) {
@@ -100,13 +100,13 @@ public class BackgroundService extends NotificationListenerService {
             blockingThread = new Runnable() {
                 @Override
                 public void run() {
-                    mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
+                    mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
 //                    Log.d(TAG, "blockingThread");
                     blockApps();
                 }
             };
 
-            mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT * 1000);
+            mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
         }
         if (intent != null) {
             if (intent.hasExtra("command")) {
@@ -137,7 +137,7 @@ public class BackgroundService extends NotificationListenerService {
 
         if (packageName.equals("com.whatsapp")) {
 
-             // Sets an ID for the notification
+            // Sets an ID for the notification
             int mNotificationId = 1;
             sendNotification(mNotificationId, "Notification blocked by Focus!");
 
@@ -145,7 +145,7 @@ public class BackgroundService extends NotificationListenerService {
         }
 
         if (packageName.equals("dreamteam.focus")) {
-            if(sbn.getId() == 1)                    //cancel only that nofication which is used to block notifications of other apps
+            if (sbn.getId() == 1)                    //cancel only that nofication which is used to block notifications of other apps
                 cancelNotification(sbn.getKey());
         }
         nAdded++;
@@ -223,6 +223,7 @@ public class BackgroundService extends NotificationListenerService {
 
     @Override
     public void onDestroy() {
+        // TODO check handle thread deletions?
         super.onDestroy();
         unregisterReceiver(nlServiceReceiver);
         Log.i("NotificationService", "NotificationService destroyed.");
@@ -230,50 +231,72 @@ public class BackgroundService extends NotificationListenerService {
 
 
     public void tick() {
-        // TODO
         final String TAG = "BackgroundService.update";
         if (checkForUpdates()) updateFromServer();
-        Date now = new Date();
-        long millis = now.getTime();
+        long millis = new Date().getTime();
+        HashSet<String> oldBlockedApps = new HashSet<>();
+        for (String app : blockedApps) {
+            oldBlockedApps.add(app);
+        }
+        blockedApps.clear();
         for (Schedule schedule : schedules) {
             Log.i(TAG, schedule.getName());
-            for (ProfileInSchedule pis : schedule.getCalendar()) {
-                if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT * 1000 <= millis &&
-                        millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT * 1000) {
-                    for (String app : pis.getProfile().getApps()) {
-                        Log.i(TAG, "App blocked" + app);
-                        blockedApps.add(app);
+            if (schedule.isActive()) {
+                for (ProfileInSchedule pis : schedule.getCalendar()) {
+                    if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
+                            millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
+                        // TODO: 10/14/17 Notify user profile activated
+
+                    } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
+                            millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
+                        // TODO: 10/14/17 Notify user profile deactivated
+
                     }
-                } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT * 1000 <= millis &&
-                        millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT * 1000) {
-                    for (String app : pis.getProfile().getApps()) {
-                        Log.i(TAG, "App unblocked" + app);
-                        blockedApps.remove(app);
+
+                    // reconstruct blockedApps
+                    if (pis.getProfile().isActive()) {
+                        for (String app : pis.getProfile().getApps()) {
+                            blockedApps.add(app);
+                        }
                     }
                 }
             }
-            // set Schedule to active/inactive, update database
+            // TODO: set Schedule to active/inactive, update database
+
+            // compare old and new list, call appropriate function as necessary
+            if (!blockedApps.equals(oldBlockedApps)) {
+                if (oldBlockedApps.removeAll(blockedApps)) { // returns true of something is removed
+                    for (String app : oldBlockedApps) {
+                        // TODO: 10/14/17 get notifications from database!
+                        // TODO: 10/14/17 notify user
+                    }
+                }
+            }
+
         }
-        // read database
-        // get schedule objects from db
-        // get systemTime
-        // list appsToBlock
-        // list appsToUnblock
-        // loop through Schedules
-        //  for each Schedule:
-        //      get Map of ProfileInSchedule
-        //      for each ProfileInSchedule:
-        //          if ProfileInSchedule.getStartTime() == systemTime:
-        //              get profile object
-        //              get apps from profile
-        //              push all apps to block onto appsToBlock
-        //          else if ProfileInSchedule.getEndTime() == systemTime:
-        //              get profile object
-        //              get apps from profile
-        //              push all apps to unblock onto appsToUnblock
-        //      set Schedule to active/inactive, update database
-        // write to appBlock module: appsToBlock, appsToUnblock
-        // write to notificationBlock module: appsToBlock, appsToUnblock
+        /* Pseudo code:
+            read database
+            get schedule objects from db
+            get systemTime
+            list appsToBlock
+            list appsToUnblock
+            loop through Schedules
+            for each Schedule:
+              get Map of ProfileInSchedule
+              for each ProfileInSchedule:
+                  if ProfileInSchedule.getStartTime() == systemTime:
+                      get profile object
+                      get apps from profile
+                      push all apps to block onto appsToBlock
+                  else if ProfileInSchedule.getEndTime() == systemTime:
+                      get profile object
+                      get apps from profile
+                      push all apps to unblock onto appsToUnblock
+              set Schedule to active/inactive, update database
+            write to appBlock module: appsToBlock, appsToUnblock
+            write to notificationBlock module: appsToBlock, appsToUnblock
+         */
+
     }
 
     // TODO: function to check for instant profile activation -- how to know when to check
@@ -284,7 +307,7 @@ public class BackgroundService extends NotificationListenerService {
     public void blockApps() {
 
         String appInForeground = getForegroundTask();
-        if(appInForeground == null)
+        if (appInForeground == null)
             return;
 
 //        for (String app : blockedApps) {}
@@ -294,7 +317,7 @@ public class BackgroundService extends NotificationListenerService {
             if (appInForeground.equals(whitelistedApp)) return;
         }
 
-        if (appInForeground.equals("com.whatsapp")) {
+        if (appInForeground.equals("com.whatsapp")) { // TODO: 10/14/17 this is for debug purposes
             Log.i(TAG, "blockApps(" + appInForeground + ")");
             ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
@@ -312,6 +335,7 @@ public class BackgroundService extends NotificationListenerService {
             ).show();
         }
     }
+
 
     /**
      * src = https://stackoverflow.com/questions/2166961/determining-the-current-foreground-application-from-a-background-task-or-service
@@ -338,6 +362,7 @@ public class BackgroundService extends NotificationListenerService {
         }
         return currentApp;
     }
+
     /**
      * Checks local database version number against remote version number
      *
@@ -418,7 +443,6 @@ public class BackgroundService extends NotificationListenerService {
     /**
      * Notification Broadcast Receiver
      */
-
     class NLServiceReceiver extends BroadcastReceiver {
 
         @Override
@@ -445,11 +469,6 @@ public class BackgroundService extends NotificationListenerService {
     }
 }
 
-/**
- * TODO
- * - blockApps(String):
- * - unblockApp(String) : release notifications
- * - check SQLite version number
- * - handle thread deletions
- * -
- */
+// TODO: 10/14/17 Refactor and clean up code 
+// TODO: 10/14/17 tell database about state changes
+// TODO: 10/14/17 tell UI about shit 
