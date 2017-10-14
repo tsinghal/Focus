@@ -7,12 +7,15 @@
         android:layout_height="48dp"
         android:background="@color/background"
         android:textColor="@color/blue"
-        android:textSize="36dp"/>
+        android:textSize="24dp"
+        android:typeface="serif"
+        android:id="@+id/textViewProfileName"/>
     <ToggleButton
         android:layout_width="72dp"
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:textColor="@color/white"
-        android:background="@color/blue"/>
+        android:background="@color/blue"
+        android:id="@+id/toggleProfileStatus"/>
 
 </RelativeLayout>

@@ -38,86 +38,18 @@
         android:typeface="serif"
         android:textAlignment="center"/>
 
-    <ScrollView
+    <ListView
         android:layout_width="match_parent"
         android:layout_height="352dp"
         android:layout_below="@id/textViewName"
-        android:id="@+id/scrollView">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp"
-            android:id="@+id/relativeLayout1">
-            <TextView
-                android:layout_width="288dp"
-                android:layout_height="48dp"
-                android:id="@+id/textViewApp"
-                android:textSize="24dp"
-                android:text="SnapChat"
-                android:textAlignment="center"
-                android:typeface="serif"
-                android:textStyle="bold"
-                android:textColor="@color/blue"/>
-
-            <CheckBox
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_toEndOf="@id/textViewApp"
-                android:buttonTint="@color/blue"
-
-                />
-
-            <TextView
-                android:layout_width="288dp"
-                android:layout_height="48dp"
-                android:id="@+id/textViewApp2"
-                android:textSize="24dp"
-                android:text="Facebook"
-                android:layout_below="@id/textViewApp"
-                android:textAlignment="center"
-                android:typeface="serif"
-                android:textStyle="bold"
-                android:textColor="@color/blue"/>
-
-            <CheckBox
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_toEndOf="@id/textViewApp"
-                android:buttonTint="@color/blue"
-                android:layout_alignBaseline="@id/textViewApp2"
-
-                />
-
-            <TextView
-                android:layout_width="288dp"
-                android:layout_height="48dp"
-                android:id="@+id/textViewApp3"
-                android:textSize="24dp"
-                android:text="Whatsapp"
-                android:textAlignment="center"
-                android:typeface="serif"
-                android:layout_below="@id/textViewApp2"
-                android:textStyle="bold"
-                android:textColor="@color/blue"/>
-
-            <CheckBox
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_toEndOf="@id/textViewApp"
-                android:buttonTint="@color/blue"
-                android:layout_alignBaseline="@id/textViewApp3"
-
-                />
-
-        </RelativeLayout>
+        android:id="@+id/listViewApps"
+        android:divider="@color/background">
 
 
 
 
 
-    </ScrollView>
+    </ListView>
 
     <Button
         android:layout_width="192dp"

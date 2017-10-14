@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:layout_marginTop="12dp">
+
+    <TextView
+            android:layout_width="288dp"
+            android:layout_height="48dp"
+            android:id="@+id/textViewAppName"
+            android:textSize="24dp"
+            android:textAlignment="center"
+            android:typeface="serif"
+            android:textStyle="bold"
+            android:textColor="@color/blue"
+        />
+
+        <CheckBox
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_toEndOf="@id/textViewAppName"
+            android:buttonTint="@color/blue"
+            android:id="@+id/checkBoxAppStatus"
+
+            />
+</RelativeLayout>
