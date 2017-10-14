@@ -30,6 +30,22 @@
         <activity android:name=".client.Profiles">
 
         </activity>
+
+        <activity android:name=".client.Schedules">
+
+        </activity>
+
+        <activity android:name=".client.AddProfileToSchedule">
+
+
+        </activity>
+
+        <activity android:name=".client.CreateSchedule">
+
+        </activity>
+
+
+
     </application>
 
 </manifest>
