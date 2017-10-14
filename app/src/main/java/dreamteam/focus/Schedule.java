@@ -10,22 +10,23 @@ public class Schedule {
     private String name;
     private ArrayList<ProfileInSchedule> calendar;
     private boolean active;
-    private ArrayList<String> repeatWeekly;
 
-    public Schedule(String name, ArrayList<ProfileInSchedule> calendar, ArrayList<String> repeatWeekly) {
+    public Schedule(String name, ArrayList<ProfileInSchedule> calendar, boolean active) {
         this.name = name;
         this.calendar = calendar;
-        this.repeatWeekly = repeatWeekly;
+        this.active = active;
+    }
 
-        active = false;
+    public Schedule(String name, ArrayList<ProfileInSchedule> calendar) {
+        this.name = name;
+        this.calendar = calendar;
+        this.active = false;
     }
 
     public Schedule(String name) {
         this.name = name;
         this.calendar = new ArrayList<>();
-        this.repeatWeekly = new ArrayList<>();
-
-        active = false;
+        this.active = false;
     }
 
     public ArrayList<ProfileInSchedule> getCalendar() {
