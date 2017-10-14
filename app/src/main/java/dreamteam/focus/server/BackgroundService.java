@@ -54,7 +54,7 @@ public class BackgroundService extends NotificationListenerService {
 
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
-    private final DatabaseConnector databaseConnector;
+    //private final DatabaseConnector databaseConnector;
     private ArrayList<Schedule> schedules;
     private long databaseVersion;
     private HashSet<String> blockedApps;
@@ -66,9 +66,9 @@ public class BackgroundService extends NotificationListenerService {
     private int nRemoved = 0; // Number of notifications removed (since the service started)
 
     public BackgroundService() {
-        databaseConnector = new DatabaseConnector();
+        //databaseConnector = new DatabaseConnector();
         schedules = new ArrayList<>();
-        if (checkForUpdates()) updateFromServer();
+        //if (checkForUpdates()) updateFromServer();
         blockedApps = new HashSet<>();
     }
 
@@ -135,6 +135,11 @@ public class BackgroundService extends NotificationListenerService {
         //i.putExtra("notification_event", packageName);
         //sendBroadcast(i);
 
+        //go through blockApps set
+        // if package name lies in it
+        //  cancelnotification
+        //  tell database to add count next to this package name
+        //
         if (packageName.equals("com.whatsapp")) {
 
             // Sets an ID for the notification
@@ -144,9 +149,9 @@ public class BackgroundService extends NotificationListenerService {
             cancelNotification(sbn.getKey());
         }
 
-        if (packageName.equals("dreamteam.focus")) {
-            if (sbn.getId() == 1)                    //cancel only that nofication which is used to block notifications of other apps
-                cancelNotification(sbn.getKey());
+        //cancel only that nofication which is used to block notifications of other apps
+        if (packageName.equals("dreamteam.focus") && sbn.getId() == 1) {
+           cancelNotification(sbn.getKey());
         }
         nAdded++;
         broadcastStatus();
@@ -232,7 +237,7 @@ public class BackgroundService extends NotificationListenerService {
 
     public void tick() {
         final String TAG = "BackgroundService.update";
-        if (checkForUpdates()) updateFromServer();
+        //if (checkForUpdates()) updateFromServer();
         long millis = new Date().getTime();
         HashSet<String> oldBlockedApps = new HashSet<>();
         for (String app : blockedApps) {
@@ -368,17 +373,17 @@ public class BackgroundService extends NotificationListenerService {
      *
      * @return True if local data is up to date, false otherwise
      */
-    private boolean checkForUpdates() {
-        return databaseVersion >= databaseConnector.getDatabaseVersion();
-    }
+//    private boolean checkForUpdates() {
+//        return databaseVersion >= databaseConnector.getDatabaseVersion();
+//    }
 
     /**
      * Pulls data from server.
      */
     private void updateFromServer() {
         Log.i(TAG, "getting update from server");
-        schedules = databaseConnector.getSchedules();
-        databaseVersion = databaseConnector.getDatabaseVersion();
+        //schedules = databaseConnector.getSchedules();
+        //databaseVersion = databaseConnector.getDatabaseVersion();
         Log.i(TAG, "completed update");
     }
 
@@ -469,6 +474,6 @@ public class BackgroundService extends NotificationListenerService {
     }
 }
 
-// TODO: 10/14/17 Refactor and clean up code 
+// TODO: 10/14/17 Refactor and clean up code
 // TODO: 10/14/17 tell database about state changes
-// TODO: 10/14/17 tell UI about shit 
+// TODO: 10/14/17 tell UI about shit

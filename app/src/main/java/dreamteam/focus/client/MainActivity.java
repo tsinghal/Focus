@@ -25,6 +25,7 @@ import android.view.View;
 
 import dreamteam.focus.R;
 import dreamteam.focus.server.BackgroundService;
+import dreamteam.focus.server.DatabaseConnector;
 
 public class MainActivity extends AppCompatActivity {
     private AlertDialog enableNotificationListenerAlertDialog;
