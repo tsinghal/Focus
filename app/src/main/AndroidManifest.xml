@@ -25,10 +25,12 @@
 
         <activity
             android:name=".client.CreateProfile"
-            android:windowSoftInputMode="adjustPan"></activity>
-        <activity android:name=".client.Profiles"></activity>
-        <activity android:name=".client.EditProfile"
-            android:windowSoftInputMode="adjustPan"></activity>
+            android:windowSoftInputMode="adjustPan" />
+        <activity android:name=".client.Profiles" />
+        <activity
+            android:name=".client.EditProfile"
+            android:windowSoftInputMode="adjustPan" />
+        <activity android:name=".client.timePicker"></activity>
     </application>
 
 </manifest>

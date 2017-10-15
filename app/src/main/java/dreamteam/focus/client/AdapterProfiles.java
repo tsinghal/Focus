@@ -1,5 +1,7 @@
 package dreamteam.focus.client;
 
+import android.app.Activity;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -11,10 +13,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
@@ -23,10 +27,11 @@ import dreamteam.focus.R;
 
 public class AdapterProfiles extends ArrayAdapter<Profile> {
 
-
+    public Context context;
     public AdapterProfiles(Context context,ArrayList<Profile> profilesArray)
     {
         super(context,0, profilesArray);
+        this.context=context;
     }
 
     @Nullable
@@ -34,7 +39,7 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent)
     {
-        Profile p= getItem(position);
+        final Profile p= getItem(position);
 
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.profile_listitem , parent, false);
@@ -42,13 +47,8 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
         final TextView textAppName=(TextView)convertView.findViewById(R.id.textViewProfileName);
         final ToggleButton appStatus =(ToggleButton)convertView.findViewById(R.id.toggleProfileStatus);
 
-
         textAppName.setText(p.getName());
         appStatus.setChecked(p.isActive());
-
-        final Intent i =new Intent(convertView.getContext(),EditProfile.class);
-        //change it i.putExtra()
-        i.putExtra(EditProfile.IntentNameString,p.getName() );
 
         appStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -56,6 +56,8 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
             {
               if (appStatus.isChecked())
               {
+                   // Intent i=new Intent(context,timePicker.class);
+                  //((Activity)context).startActivityForResult(i,0);
 
               }
               else
@@ -69,6 +71,10 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
         textAppName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                final Intent i;
+                i = new Intent(v.getContext(),EditProfile.class);
+                i.putExtra(EditProfile.IntentNameString,p.getName() );
                 v.getContext().startActivity(i);
             }
         });

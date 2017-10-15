@@ -18,7 +18,6 @@ import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
-import dreamteam.focus.Profile;
 import dreamteam.focus.R;
 
 /**
@@ -36,6 +35,7 @@ public class AdapterAppsEdit extends ArrayAdapter<String> {
     public View getView(int position, View convertView, ViewGroup parent) {
         final String appName = getItem(position);
         int index=EditProfile.appsOnDevice.indexOf(appName);
+        Log.i("index : ", " " + index);
         final String packageName=EditProfile.packagesOnDevice.get(index);
 
         if (convertView == null) {
@@ -47,10 +47,11 @@ public class AdapterAppsEdit extends ArrayAdapter<String> {
 
 
         textAppName.setText(appName);
+
         if (EditProfile.blockedPackages.contains(packageName))
         {
           Log.e("BlockedPackage",packageName+" "+appName+" "+position);
-          appStatus.setChecked(true);
+           // appStatus.setChecked(true);
         }
 
 
@@ -71,6 +72,7 @@ public class AdapterAppsEdit extends ArrayAdapter<String> {
                     if (isChecked) {
                         //EditProfile.blockedApps.add(appName);
                         EditProfile.blockedPackages.add(packageName);
+
                     }
                 }
             }

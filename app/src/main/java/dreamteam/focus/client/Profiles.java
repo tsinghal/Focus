@@ -38,8 +38,7 @@ public class Profiles extends AppCompatActivity {
 
         DatabaseConnector db=new DatabaseConnector(getApplicationContext());
        // updateList(); //every time list opens up,update Profile list
-        profileArray= new ArrayList<Profile>();
-        profileArray=MainActivity.db.getProfiles();
+        updateList();
 
         profileArrayAdapter=new AdapterProfiles(getApplicationContext(), profileArray);
 
@@ -60,23 +59,23 @@ public class Profiles extends AppCompatActivity {
         });
     }
 
-  //  @Override
-//    protected void onResume() {
-//        super.onResume();
-//        Toast.makeText(getApplicationContext(),"OnResume()",Toast.LENGTH_SHORT) ;
-//      //  updateList();
-//    }
-//
-//
-//    @Override
-////    protected void onStart(){
-////        super.onStart();
-////        Toast.makeText(getApplicationContext(),"OnStart()",Toast.LENGTH_SHORT) ;
-////        updateList();
-////    }
-////
-////    public void updateList() {
-////        profileArray= new ArrayList<Profile>();
-////        profileArray=MainActivity.db.getProfiles();
-//    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Toast.makeText(getApplicationContext(),"OnResume()",Toast.LENGTH_SHORT) ;
+        updateList();
+    }
+
+
+    @Override
+    protected void onRestart(){
+        super.onRestart();
+        Toast.makeText(getApplicationContext(),"OnRestart()",Toast.LENGTH_SHORT) ;
+        updateList();
+    }
+
+    public void updateList() {
+        profileArray= new ArrayList<Profile>();
+        profileArray=MainActivity.db.getProfiles();
+    }
 }

@@ -41,11 +41,14 @@ android:background="@color/background">
     android:textColor="@color/blue"
     android:typeface="serif"
     android:textAlignment="center"/>
-
-<ListView
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="352dp"
-    android:layout_below="@id/textViewName"
+    android:layout_below="@id/textViewName">
+
+    <ListView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:id="@+id/listViewEditApps"
     android:divider="@color/background">
 
@@ -54,6 +57,7 @@ android:background="@color/background">
 
 
 </ListView>
+</LinearLayout>
 
 <Button
     android:layout_width="192dp"
