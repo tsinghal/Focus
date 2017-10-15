@@ -45,7 +45,7 @@ import dreamteam.focus.client.MainActivity;
 public class BackgroundService extends NotificationListenerService {
     public static final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
     private static final String TAG = "BackgroundService";
-    private static final int SCHEDULE_TIMEOUT_SEC = 60;
+    private static final int SCHEDULE_TIMEOUT_SEC = 20;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
     private static final String[] BLOCK_APP_WHITELIST = {
             "com.htc.launcher",
@@ -90,7 +90,8 @@ public class BackgroundService extends NotificationListenerService {
                 @Override
                 public void run() {
                     mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
-//                    Log.d(TAG, "scheduleThread");
+                    Log.d(TAG, "scheduleThread");
+                    //if (checkForUpdates()) updateFromServer();
                 }
             };
             mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
@@ -102,7 +103,7 @@ public class BackgroundService extends NotificationListenerService {
                 @Override
                 public void run() {
                     mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
-//                    Log.d(TAG, "blockingThread");
+                    Log.d(TAG, "blockingThread");
                     blockApps();
                 }
             };
@@ -217,8 +218,8 @@ public class BackgroundService extends NotificationListenerService {
 
         if(getApplicationContext() != null) {
             db = new DatabaseConnector(getApplicationContext());
+            databaseVersion = db.getDatabaseVersion();
         }
-        if (checkForUpdates()) updateFromServer();
 
     }
 
@@ -232,7 +233,6 @@ public class BackgroundService extends NotificationListenerService {
 
     public void tick() {
         final String TAG = "BackgroundService.update";
-        if (checkForUpdates()) updateFromServer();
 
         long millis = new Date().getTime();             //get system time
         String currentDay = (String) DateFormat.format("EEEE", new Date());  //get current day
@@ -256,7 +256,6 @@ public class BackgroundService extends NotificationListenerService {
                             ProfileInSchedule temp = pis;
                             pis.getProfile().setActive(true);       //set profile to active
                             if(db.updateProfileInSchedule(temp, pis, schedule.getName())){
-                                // TODO: need a db function to modify this profileInSchedule object
                                 // TODO: tell UI(do only after updating database), use broadcastStatus()
                             }
 
@@ -267,7 +266,6 @@ public class BackgroundService extends NotificationListenerService {
                             ProfileInSchedule temp = pis;
                             pis.getProfile().setActive(false);      //set profile to inactive
                             if(db.updateProfileInSchedule(temp, pis, schedule.getName())){
-                                // TODO: need a db function to modify this profileInSchedule object
                                 // TODO: tell UI(do only after updating database), use broadcastStatus()
                             }
                         }
@@ -280,12 +278,16 @@ public class BackgroundService extends NotificationListenerService {
                         }
                     }
                 }
-                // TODO: set Schedule to active/inactive, update database ---> don't need this as schedule is activated/deactivated only by user
-
             } else if (schedule.getName().equals(ANONYMOUS_SCHEDULE)) {          // separate case for AnonymousSchedule
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
 
-                   if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
+                    // TODO: 10/14/17 Notify user profile activated ---> UI sends intent-> avoids throwing notification again
+                    if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
+                            millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
+                        sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now instantly active");    //first param is notification ID
+
+                    }
+                    else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                             millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
 
                        sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now inactive");    //first param is notification ID
@@ -296,7 +298,6 @@ public class BackgroundService extends NotificationListenerService {
 
                        continue;        // do not add this profile's apps to blockedApps
                    }
-                   // TODO: 10/14/17 Notify user profile activated ---> (do it in UI directly as we do not need to check when it started - avoids throwing notification again)
 
                     // add instant Profile's apps to blockedApps
                     for (String app : pis.getProfile().getApps()) {
@@ -399,11 +400,12 @@ public class BackgroundService extends NotificationListenerService {
         Log.i(TAG, "getting update from server");
         try {
             schedules = db.getSchedules();
+            tick();
+            databaseVersion = db.getDatabaseVersion();      //sync version with db
         } catch (ParseException e) {
             e.printStackTrace();
             Log.e(TAG, "error getting schedules from database");
         }
-        databaseVersion = db.getDatabaseVersion();
         Log.i(TAG, "completed update");
     }
 
@@ -497,6 +499,4 @@ public class BackgroundService extends NotificationListenerService {
 // TODO: 10/14/17 Refactor and clean up code
 // TODO: 10/14/17 tell database about state changes
 // TODO: 10/14/17 tell UI about shit
-// TODO: intialize databaseVersion somewhere
-// TODO: call tick() at the right place
 // TODO: maybe lets do some kind of load screen if tick function is running and focus comes to foreground
