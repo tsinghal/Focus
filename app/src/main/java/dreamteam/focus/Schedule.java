@@ -1,18 +1,36 @@
 package dreamteam.focus;
 
+import java.util.ArrayList;
+
 /**
- * Created by aarav on 10/13/17.
+ * Created by bowie on 10/2/17.
  */
 
 public class Schedule {
-
     private String name;
+    private ArrayList<ProfileInSchedule> calendar;
     private boolean active;
 
+    public Schedule(String name, ArrayList<ProfileInSchedule> calendar, boolean active) {
+        this.name = name;
+        this.calendar = calendar;
+        this.active = active;
+    }
+
+    public Schedule(String name, ArrayList<ProfileInSchedule> calendar) {
+        this.name = name;
+        this.calendar = calendar;
+        this.active = false;
+    }
 
     public Schedule(String name) {
         this.name = name;
-        active = false;
+        this.calendar = new ArrayList<>();
+        this.active = false;
+    }
+
+    public ArrayList<ProfileInSchedule> getCalendar() {
+        return calendar;
     }
 
     public String getName() {
@@ -21,6 +39,10 @@ public class Schedule {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void addProfileToCalendar(ProfileInSchedule pis) {
+        calendar.add(pis);
     }
 
     public boolean isActive() {
