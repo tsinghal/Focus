@@ -27,11 +27,9 @@ import android.widget.Toast;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -39,8 +37,6 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
-
-import static android.R.id.message;
 
 /*
     src: https://stackoverflow.com/questions/41425986/call-a-notification-listener-inside-a-background-service-in-android-studio
@@ -57,6 +53,7 @@ public class BackgroundService extends NotificationListenerService {
             "com.google.android.apps.nexuslauncher",
             "com.android.systemui"
     };
+    private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
 
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
@@ -248,7 +245,7 @@ public class BackgroundService extends NotificationListenerService {
 
         for (Schedule schedule : schedules) {
             Log.i(TAG, schedule.getName());
-            if (schedule.isActive() && !schedule.getName().equals("AnonymousSchedule")) {
+            if (schedule.isActive() && !schedule.getName().equals(ANONYMOUS_SCHEDULE)) {
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
                     if(pis.repeatsOn().contains(currentDay)){           //profile has to be repeated on current day
 
@@ -285,15 +282,14 @@ public class BackgroundService extends NotificationListenerService {
                 }
                 // TODO: set Schedule to active/inactive, update database ---> don't need this as schedule is activated/deactivated only by user
 
-            }
-            else if(schedule.getName().equals("AnonymousSchedule")){          // separate case for AnonymousSchedule
+            } else if (schedule.getName().equals(ANONYMOUS_SCHEDULE)) {          // separate case for AnonymousSchedule
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
 
                    if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                             millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
 
                        sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now inactive");    //first param is notification ID
-                       if(db.removeProfileFromSchedule(pis, "AnonymousSchedule"))  // tell database to remove this profile from AnonymousSchedule
+                       if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE))  // tell database to remove this profile from AnonymousSchedule
                        {
                            // TODO: tell UI(do only after updating database)
                        }
