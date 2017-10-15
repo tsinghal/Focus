@@ -142,6 +142,7 @@ public class BackgroundService extends NotificationListenerService {
                 cancelNotification(sbn.getKey());
                 db.addBlockedNotification(app);     //tell database to add count next to this app
                 sendNotification(mNotificationId, "Notification blocked by Focus!");
+                //TODO: just retest this new order of lines once
             }
 
         }
@@ -255,17 +256,23 @@ public class BackgroundService extends NotificationListenerService {
                                 millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
 
                             sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now active");          //first param is notification ID
+                            ProfileInSchedule temp = pis;
                             pis.getProfile().setActive(true);       //set profile to active
-                            // TODO: need a db function to modify this profileInSchedule object
-                            // TODO: tell UI(do only after updating database), use broadcastStatus()
+                            if(db.updateProfileInSchedule(temp, pis, schedule.getName())){
+                                // TODO: need a db function to modify this profileInSchedule object
+                                // TODO: tell UI(do only after updating database), use broadcastStatus()
+                            }
 
                         } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                                 millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
 
                             sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now inactive");          //first param is notification ID
+                            ProfileInSchedule temp = pis;
                             pis.getProfile().setActive(false);      //set profile to inactive
-                            // TODO: need a db function to modify this profileInSchedule object
-                            // TODO: tell UI(do only after updating database)
+                            if(db.updateProfileInSchedule(temp, pis, schedule.getName())){
+                                // TODO: need a db function to modify this profileInSchedule object
+                                // TODO: tell UI(do only after updating database), use broadcastStatus()
+                            }
                         }
 
                         // reconstruct blockedApps
@@ -286,8 +293,10 @@ public class BackgroundService extends NotificationListenerService {
                             millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
 
                        sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now inactive");    //first param is notification ID
-                       db.removeProfileFromSchedule(pis, "AnonymousSchedule");  // tell database to remove this profile from AnonymousSchedule
-                       // TODO: tell UI(do only after updating database)
+                       if(db.removeProfileFromSchedule(pis, "AnonymousSchedule"))  // tell database to remove this profile from AnonymousSchedule
+                       {
+                           // TODO: tell UI(do only after updating database)
+                       }
 
                        continue;        // do not add this profile's apps to blockedApps
                    }
@@ -493,3 +502,5 @@ public class BackgroundService extends NotificationListenerService {
 // TODO: 10/14/17 tell database about state changes
 // TODO: 10/14/17 tell UI about shit
 // TODO: intialize databaseVersion somewhere
+// TODO: call tick() at the right place
+// TODO: maybe lets do some kind of load screen if tick function is running and focus comes to foreground
