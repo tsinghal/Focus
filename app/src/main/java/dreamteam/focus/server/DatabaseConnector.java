@@ -27,7 +27,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 21;
 
     // Database Name
     private static final String DATABASE_NAME = "database";
@@ -213,7 +213,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                     + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
 
             Cursor cursor = db.rawQuery(selectQuery, null);
-            
+
             // looping through all rows and adding to list
             if (cursor.moveToFirst()) {
                 return cursor.getInt(0);
@@ -221,7 +221,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             return -1;
         }
 
-    public boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
+    private boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         int oldProfileID = getProfileID(oldPis, scheduleName);
@@ -234,20 +234,39 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         ContentValues args = new ContentValues();
         args.put(KEY_PROFILE_IN_SCHEDULE_ID, newProfileID);
 
+        db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + oldProfileID, null);
+
         return db.update(TABLE_PROFILE_IN_SCHEDULE_REPEATS, args, KEY_PROFILE_IN_SCHEDULE_ID + "=" + oldProfileID, null) > 0;
     }
 
-    public boolean updateSchedule(String oldScheduleName, String newScheduleName) {
+    public boolean updateSchedule(Schedule oldSchedule, Schedule newSchedule) throws ParseException {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues args = new ContentValues();
-        args.put(KEY_SCHEDULE_NAME, newScheduleName);
+//        ArrayList<ProfileInSchedule> newCalendar = newSchedule.getCalendar();
+//        ArrayList<ProfileInSchedule> oldCalendar = oldSchedule.getCalendar();
+//
+//        for(int i=0; i<oldCalendar.size(); i++) {
+//            if(!newCalendar.contains(oldCalendar.get(i))) {
+//
+//                //Deleted
+//                if()
+//
+//                updateProfileInSchedule(oldCalendar.get(i), newCalendar.get(i), oldSchedule.getName());
+//            }
+//        }
 
-        db.update(TABLE_SCHEDULES, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName +"'", null);
-        db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName +"'", null);
+//        if(!oldSchedule.getName().equals(newSchedule.getName())) {
+//
+//            ContentValues args = new ContentValues();
+//            args.put(KEY_SCHEDULE_NAME, newSchedule.getName());
+//
+//            return db.update(TABLE_SCHEDULES, args, KEY_SCHEDULE_NAME + "='" + oldSchedule.getName() +"'", null) > 0 &&
+//                    db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_SCHEDULE_NAME + "='" + oldSchedule.getName() + "'", null) > 0;
+//        }
 
-        return true;
+        Log.d("blocked_debug", String.valueOf(removeSchedule(oldSchedule.getName())));
+        return addSchedule(newSchedule);
     }
 
 
@@ -274,6 +293,19 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         private boolean removeProfileFromAllSchedules(String profileName) {
             SQLiteDatabase db = this.getWritableDatabase();
 
+            String selectQuery = "SELECT * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE "
+                    + KEY_PROFILE_NAME + "='" + profileName + "'";
+
+            Cursor cursor = db.rawQuery(selectQuery, null);
+
+            if(cursor.moveToFirst()) {
+                do {
+
+                    db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + cursor.getInt(0), null);
+
+                } while (cursor.moveToNext());
+            }
+
             return db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_NAME + "='" + profileName + "'", null) > 0;
         }
 
@@ -283,7 +315,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
             ContentValues values = new ContentValues();
 
-            values.put(KEY_ACTIVE, true);
+            values.put(KEY_ACTIVE, "true");
 
             return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
                     addProfileInSchedule(pis, "AnonymousSchedule");
@@ -294,7 +326,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
             ContentValues values = new ContentValues();
 
-            values.put(KEY_ACTIVE, false);
+            values.put(KEY_ACTIVE, "false");
 
             return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
                     removeProfileFromSchedule(pis, "AnonymousSchedule");
@@ -313,7 +345,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             // looping through all rows and adding to list
             if (cursor.moveToFirst()) {
                 do {
-
                     Repeat_Enum repeatEnum = Repeat_Enum.valueOf(cursor.getString(1));
                     // Adding contact to list
                     repeats.add(repeatEnum);
@@ -325,12 +356,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             return repeats;
         }
 
-        private boolean addProfileInScheduleRepeats(ProfileInSchedule pis, Integer profileInScheduleID) {
+        public boolean addProfileInScheduleRepeats(ProfileInSchedule pis, Integer profileInScheduleID) {
             SQLiteDatabase db = this.getWritableDatabase();
             ArrayList<Repeat_Enum> repeats = pis.repeatsOn();
             for(int i=0; i<repeats.size(); i++) {
                 ContentValues values = new ContentValues();
-
                 values.put(KEY_PROFILE_IN_SCHEDULE_ID, profileInScheduleID);
                 values.put(KEY_REPEAT_ENUM, repeats.get(i).toString());
 
@@ -377,9 +407,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName) {
             SQLiteDatabase db = this.getWritableDatabase();
+
             return db.delete(TABLE_PROFILE_IN_SCHEDULE,
                     KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
-                            + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+                            + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
+                    && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName), null) > 0;
         }
 
         public ArrayList<String> getBlockedApps(String profileName) {
@@ -443,7 +475,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
 
-                    Schedule schedule = new Schedule(cursor.getString(0), getProfilesInSchedule(cursor.getString(0)), Boolean.parseBoolean(cursor.getString(2)));
+                    Schedule schedule = new Schedule(cursor.getString(0), getProfilesInSchedule(cursor.getString(0)), Boolean.parseBoolean(cursor.getString(1)));
                     schedule.setActive(Boolean.parseBoolean(cursor.getString(1)));
 
                     // Adding contact to list
@@ -456,6 +488,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             return schedules;
         }
 
+        //TESTED
         public ArrayList<ProfileInSchedule> getProfilesInSchedule(String scheduleName) throws ParseException {
             ArrayList<ProfileInSchedule> profilesInSchedule = new ArrayList<ProfileInSchedule>();
 
@@ -471,7 +504,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 do {
 
                     Profile profile = new Profile(cursor.getString(1), getBlockedApps(cursor.getString(1)));
-                    ProfileInSchedule profileInSchedule = new ProfileInSchedule(profile, getDate(cursor.getString(3)),
+
+                    ProfileInSchedule profileInSchedule = new ProfileInSchedule(profile, getDate(cursor.getString(2)),
                             getDate(cursor.getString(3)), getProfileInScheduleRepeats(cursor.getInt(0)));
 
                     // Adding contact to list
@@ -501,24 +535,24 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             return true;
         }
 
-        public boolean activateSchedule(Schedule schedule) {
+        public boolean activateSchedule(String scheduleName) {
             SQLiteDatabase db = this.getWritableDatabase();
 
             ContentValues values = new ContentValues();
 
-            values.put(KEY_ACTIVE, true);
+            values.put(KEY_ACTIVE, "true");
 
-            return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + schedule.getName() + "'", null) > 0;
+            return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
         }
 
-        public boolean deactivateSchedule(Schedule schedule) {
+        public boolean deactivateSchedule(String scheduleName) {
             SQLiteDatabase db = this.getWritableDatabase();
 
             ContentValues values = new ContentValues();
 
-            values.put(KEY_ACTIVE, false);
+            values.put(KEY_ACTIVE, "false");
 
-            return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + schedule.getName() + "'", null) > 0;
+            return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
         }
 
     public Integer getNotificationsCountForApp(String appName) {
@@ -532,6 +566,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return cursor.getCount();
     }
 
+    //SERVER WILL IMPLEMENT THIS INSTEAD BY ITERATING THROUGH EACH PROFILEINSCHEDULE IN SCHEDULE AND CALLING getNotificationsCountForApp
     public HashMap<String, Integer> getNotificationsForSchedule(Schedule schedule) {
         HashMap<String, Integer> notifications = new HashMap<String, Integer>();
 
@@ -560,7 +595,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
 
         values.put(KEY_SCHEDULE_NAME, schedule.getName());
-        values.put(KEY_ACTIVE, schedule.isActive());
+        values.put(KEY_ACTIVE, String.valueOf(schedule.isActive()));
 
         // Inserting Row
         try {
@@ -589,8 +624,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             removeProfileFromSchedule(profilesInSchedule.get(i), scheduleName);
         }
 
-        return db.delete(TABLE_SCHEDULES, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0 &&
-                db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        return db.delete(TABLE_SCHEDULES, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
     }
 
     public Integer getDatabaseVersion() {
@@ -640,9 +674,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 //
 //    public boolean updateProfile(Profile profile) {} DONE for remove Profile, blockedApps, and updated createProfile TESTED
 //
-//    public boolean activateProfile(ProfileInSchedule pis) {} DONE
+//    public boolean activateProfile(ProfileInSchedule pis) {} DONE TESTED
 //
-//    public boolean deactivateProfile(Profile profile) {} DONE
+//    public boolean deactivateProfile(Profile profile) {} DONE TESTED
 //
 //    public HashMap<String, Integer> getNotificationsCountForApp(String appName) {} DONE
 //
@@ -650,21 +684,21 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 //
 //    public boolean removeSchedule(Schedule schedule) {} DONE TESTED
 //
-//    public boolean updateSchedule(Schedule schedule) {}
+//    public boolean updateSchedule(Schedule schedule) {} DONE TESTED
 //
-//    public boolean addProfileInSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE
+//    public boolean addProfileInSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE TESTED
 //
-//    public boolean removeProfileFromSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE
+//    public boolean removeProfileFromSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE TESTED
 
-// updateProfileInSchedule DONE
+//    private boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPid, String scheduleName) {} DONE TESTED
 //
-//    public boolean activateSchedule(Schedule schedule) {} DONE
+//    public boolean activateSchedule(Schedule schedule) {} DONE TESTED
 //
-//    public boolean deactivateSchedule(Schedule schedule) {} DONE
+//    public boolean deactivateSchedule(Schedule schedule) {} DONE TESTED
 //
 //    public HashMap<String, Integer> getNotificationsForSchedule(Schedule schedule) {} DONE
 
-    //public Array(Profile) getProfiles() {} DONE
+    //public Array(Profile) getProfiles() {} DONE TESTED
 
-    //public Array(Profile) getSchedules() {} DONE
+    //public Array(Profile) getSchedules() {} DONE TESTED
 //}
