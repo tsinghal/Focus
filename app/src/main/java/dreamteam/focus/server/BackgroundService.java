@@ -21,13 +21,17 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -35,6 +39,8 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
+
+import static android.R.id.message;
 
 /*
     src: https://stackoverflow.com/questions/41425986/call-a-notification-listener-inside-a-background-service-in-android-studio
@@ -54,9 +60,9 @@ public class BackgroundService extends NotificationListenerService {
 
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
-    //private final DatabaseConnector databaseConnector;
+    private DatabaseConnector db = null;
     private ArrayList<Schedule> schedules;
-    private long databaseVersion;
+    private int databaseVersion;
     private HashSet<String> blockedApps;
     private NLServiceReceiver nlServiceReceiver;
     NotificationManager mNotifyMgr;
@@ -66,9 +72,7 @@ public class BackgroundService extends NotificationListenerService {
     private int nRemoved = 0; // Number of notifications removed (since the service started)
 
     public BackgroundService() {
-        //databaseConnector = new DatabaseConnector();
         schedules = new ArrayList<>();
-        //if (checkForUpdates()) updateFromServer();
         blockedApps = new HashSet<>();
     }
 
@@ -130,31 +134,21 @@ public class BackgroundService extends NotificationListenerService {
         Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
 
         String packageName = getNameFromSBN(sbn);
-        //Intent i = new  Intent("notification received");
-        //i.putExtra("notification_event","onNotificationPosted :" + sbn.getPackageName() + "\n");
-        //i.putExtra("notification_event", packageName);
-        //sendBroadcast(i);
 
-        //go through blockApps set
-        // if package name lies in it
-        //  cancelnotification
-        //  tell database to add count next to this package name
-        //
-        if (packageName.equals("com.whatsapp")) {
+        for (String app : blockedApps) {        // block each app in blockedApps 's notification
+            if (packageName.equals(app)) {
 
-            // Sets an ID for the notification
-            int mNotificationId = 1;
-            sendNotification(mNotificationId, "Notification blocked by Focus!");
+                int mNotificationId = 1; // Sets an ID for the notification
+                cancelNotification(sbn.getKey());
+                db.addBlockedNotification(app);     //tell database to add count next to this app
+                sendNotification(mNotificationId, "Notification blocked by Focus!");
+            }
 
+        }
+        //cancel only that nofication of Focus which is used to block notifications of other apps
+        if (packageName.equals("dreamteam.focus") && sbn.getId() == 1) {
             cancelNotification(sbn.getKey());
         }
-
-        //cancel only that nofication which is used to block notifications of other apps
-        if (packageName.equals("dreamteam.focus") && sbn.getId() == 1) {
-           cancelNotification(sbn.getKey());
-        }
-        nAdded++;
-        broadcastStatus();
     }
 
     //send out notification to user from Focus
@@ -167,7 +161,7 @@ public class BackgroundService extends NotificationListenerService {
 
         mBuilder = new Notification.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_stat_name_notify)
-                .setContentTitle("Focus")
+                .setContentTitle("User Alert")
                 .setContentText(message);
 
         mBuilder.setContentIntent(resultPendingIntent);     //defines where the user will be directed if notification is clicked
@@ -185,8 +179,6 @@ public class BackgroundService extends NotificationListenerService {
 //        i.putExtra("notification_event","onNotificationRemoved :" + sbn.getPackageName() + "\n");
 //        sendBroadcast(i);
 
-        nRemoved++;
-        broadcastStatus();
     }
 
     public void onListenerDisconnected() {
@@ -224,6 +216,12 @@ public class BackgroundService extends NotificationListenerService {
         filter.addAction("com.example.notifyservice.NOTIFICATION_LISTENER_SERVICE_EXAMPLE");
         registerReceiver(nlServiceReceiver, filter);
         Log.i("onCreate", "NotificationService created!");
+
+        if(getApplicationContext() != null) {
+            db = new DatabaseConnector(getApplicationContext());
+        }
+        if (checkForUpdates()) updateFromServer();
+
     }
 
     @Override
@@ -234,77 +232,87 @@ public class BackgroundService extends NotificationListenerService {
         Log.i("NotificationService", "NotificationService destroyed.");
     }
 
-
     public void tick() {
         final String TAG = "BackgroundService.update";
-        //if (checkForUpdates()) updateFromServer();
-        long millis = new Date().getTime();
+        if (checkForUpdates()) updateFromServer();
+
+        long millis = new Date().getTime();             //get system time
+        String currentDay = (String) DateFormat.format("EEEE", new Date());  //get current day
+
         HashSet<String> oldBlockedApps = new HashSet<>();
         for (String app : blockedApps) {
             oldBlockedApps.add(app);
         }
         blockedApps.clear();
+
         for (Schedule schedule : schedules) {
             Log.i(TAG, schedule.getName());
-            if (schedule.isActive()) {
+            if (schedule.isActive() && !schedule.getName().equals("AnonymousSchedule")) {
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
-                    if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
-                            millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-                        // TODO: 10/14/17 Notify user profile activated
+                    if(pis.repeatsOn().contains(currentDay)){           //profile has to be repeated on current day
 
-                    } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
-                            millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-                        // TODO: 10/14/17 Notify user profile deactivated
+                        if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
+                                millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
 
-                    }
+                            sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now active");          //first param is notification ID
+                            pis.getProfile().setActive(true);       //set profile to active
+                            // TODO: need a db function to modify this profileInSchedule object
+                            // TODO: tell UI(do only after updating database), use broadcastStatus()
 
-                    // reconstruct blockedApps
-                    if (pis.getProfile().isActive()) {
-                        for (String app : pis.getProfile().getApps()) {
-                            blockedApps.add(app);
+                        } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
+                                millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
+
+                            sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now inactive");          //first param is notification ID
+                            pis.getProfile().setActive(false);      //set profile to inactive
+                            // TODO: need a db function to modify this profileInSchedule object
+                            // TODO: tell UI(do only after updating database)
+                        }
+
+                        // reconstruct blockedApps
+                        if (pis.getProfile().isActive()) {
+                            for (String app : pis.getProfile().getApps()) {
+                                blockedApps.add(app);
+                            }
                         }
                     }
                 }
-            }
-            // TODO: set Schedule to active/inactive, update database
+                // TODO: set Schedule to active/inactive, update database ---> don't need this as schedule is activated/deactivated only by user
 
-            // compare old and new list, call appropriate function as necessary
-            if (!blockedApps.equals(oldBlockedApps)) {
-                if (oldBlockedApps.removeAll(blockedApps)) { // returns true of something is removed
-                    for (String app : oldBlockedApps) {
-                        // TODO: 10/14/17 get notifications from database!
-                        // TODO: 10/14/17 notify user
+            }
+            else if(schedule.getName().equals("AnonymousSchedule")){          // separate case for AnonymousSchedule
+                for (ProfileInSchedule pis : schedule.getCalendar()) {
+
+                   if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
+                            millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
+
+                       sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now inactive");    //first param is notification ID
+                       db.removeProfileFromSchedule(pis, "AnonymousSchedule");  // tell database to remove this profile from AnonymousSchedule
+                       // TODO: tell UI(do only after updating database)
+
+                       continue;        // do not add this profile's apps to blockedApps
+                   }
+                   // TODO: 10/14/17 Notify user profile activated ---> (do it in UI directly as we do not need to check when it started - avoids throwing notification again)
+
+                    // add instant Profile's apps to blockedApps
+                    for (String app : pis.getProfile().getApps()) {
+                            blockedApps.add(app);
                     }
                 }
             }
-
         }
-        /* Pseudo code:
-            read database
-            get schedule objects from db
-            get systemTime
-            list appsToBlock
-            list appsToUnblock
-            loop through Schedules
-            for each Schedule:
-              get Map of ProfileInSchedule
-              for each ProfileInSchedule:
-                  if ProfileInSchedule.getStartTime() == systemTime:
-                      get profile object
-                      get apps from profile
-                      push all apps to block onto appsToBlock
-                  else if ProfileInSchedule.getEndTime() == systemTime:
-                      get profile object
-                      get apps from profile
-                      push all apps to unblock onto appsToUnblock
-              set Schedule to active/inactive, update database
-            write to appBlock module: appsToBlock, appsToUnblock
-            write to notificationBlock module: appsToBlock, appsToUnblock
-         */
 
+        // compare old and new list, call appropriate function as necessary
+        if (!blockedApps.equals(oldBlockedApps)) {
+            if (oldBlockedApps.removeAll(blockedApps)) { // returns true of something is removed
+                for (String app : oldBlockedApps) {
+
+                    int count = db.getNotificationsCountForApp(app); // get notifications from database!
+                    // notify user about missed notifications
+                    sendNotification(3, "You have " + count + " unseen notifications from " + getAppNameFromPackage(app));
+                }
+            }
+        }
     }
-
-    // TODO: function to check for instant profile activation -- how to know when to check
 
     /**
      * src = https://stackoverflow.com/questions/19604097/killbackgroundprocesses-no-working
@@ -315,29 +323,31 @@ public class BackgroundService extends NotificationListenerService {
         if (appInForeground == null)
             return;
 
-//        for (String app : blockedApps) {}
+//        // some in-built exceptions to the kill app function
+//        for (String whitelistedApp : BLOCK_APP_WHITELIST) {
+//            if (appInForeground.equals(whitelistedApp)) return;
+//        }
+//
+        for (String app : blockedApps) {        // block each app in blockedApps
 
-        // some in-built exceptions to the kill app function
-        for (String whitelistedApp : BLOCK_APP_WHITELIST) {
-            if (appInForeground.equals(whitelistedApp)) return;
-        }
+            if (appInForeground.equals(app)) {
+                Log.i(TAG, "blockApps(" + appInForeground + ")");
+                ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
-        if (appInForeground.equals("com.whatsapp")) { // TODO: 10/14/17 this is for debug purposes
-            Log.i(TAG, "blockApps(" + appInForeground + ")");
-            ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+                // go back to main screen
+                Intent startMain = new Intent(Intent.ACTION_MAIN);
+                startMain.addCategory(Intent.CATEGORY_HOME);
+                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                this.startActivity(startMain);
 
-            // go back to main screen
-            Intent startMain = new Intent(Intent.ACTION_MAIN);
-            startMain.addCategory(Intent.CATEGORY_HOME);
-            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.startActivity(startMain);
+                // kill process
+                am.killBackgroundProcesses(appInForeground);
+                Toast.makeText(getBaseContext(),
+                        "Focus! has blocked " + getAppNameFromPackage(appInForeground),
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
 
-            // kill process
-            am.killBackgroundProcesses(appInForeground);
-            Toast.makeText(getBaseContext(),
-                    "Focus! has blocked " + getAppNameFromPackage(appInForeground),
-                    Toast.LENGTH_SHORT
-            ).show();
         }
     }
 
@@ -373,17 +383,22 @@ public class BackgroundService extends NotificationListenerService {
      *
      * @return True if local data is up to date, false otherwise
      */
-//    private boolean checkForUpdates() {
-//        return databaseVersion >= databaseConnector.getDatabaseVersion();
-//    }
+    private boolean checkForUpdates() {
+        return databaseVersion >= db.getDatabaseVersion();
+    }
 
     /**
      * Pulls data from server.
      */
     private void updateFromServer() {
         Log.i(TAG, "getting update from server");
-        //schedules = databaseConnector.getSchedules();
-        //databaseVersion = databaseConnector.getDatabaseVersion();
+        try {
+            schedules = db.getSchedules();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.e(TAG, "error getting schedules from database");
+        }
+        databaseVersion = db.getDatabaseVersion();
         Log.i(TAG, "completed update");
     }
 
@@ -477,3 +492,4 @@ public class BackgroundService extends NotificationListenerService {
 // TODO: 10/14/17 Refactor and clean up code
 // TODO: 10/14/17 tell database about state changes
 // TODO: 10/14/17 tell UI about shit
+// TODO: intialize databaseVersion somewhere
