@@ -8,12 +8,14 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.sql.Array;
 import java.util.ArrayList;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
+import dreamteam.focus.server.DatabaseConnector;
 
 /**
  * Created by shatrujeet lawa on 10/8/2017.
@@ -33,11 +35,11 @@ public class Profiles extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profiles);
         //add profileList from the database
+
+        DatabaseConnector db=new DatabaseConnector(getApplicationContext());
+       // updateList(); //every time list opens up,update Profile list
         profileArray= new ArrayList<Profile>();
-        Profile p=new Profile("Hello",null,null);
-        profileArray.add(p);
-        Profile q=new Profile("Hi Maete",null,null);
-        profileArray.add(q);
+        profileArray=MainActivity.db.getProfiles();
 
         profileArrayAdapter=new AdapterProfiles(getApplicationContext(), profileArray);
 
@@ -57,4 +59,24 @@ public class Profiles extends AppCompatActivity {
             }
         });
     }
+
+  //  @Override
+//    protected void onResume() {
+//        super.onResume();
+//        Toast.makeText(getApplicationContext(),"OnResume()",Toast.LENGTH_SHORT) ;
+//      //  updateList();
+//    }
+//
+//
+//    @Override
+////    protected void onStart(){
+////        super.onStart();
+////        Toast.makeText(getApplicationContext(),"OnStart()",Toast.LENGTH_SHORT) ;
+////        updateList();
+////    }
+////
+////    public void updateList() {
+////        profileArray= new ArrayList<Profile>();
+////        profileArray=MainActivity.db.getProfiles();
+//    }
 }

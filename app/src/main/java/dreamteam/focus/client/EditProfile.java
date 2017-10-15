@@ -2,17 +2,16 @@ package dreamteam.focus.client;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
+import android.support.v4.content.res.TypedArrayUtils;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SnapHelper;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,70 +19,57 @@ import dreamteam.focus.Profile;
 import dreamteam.focus.R;
 import dreamteam.focus.server.DatabaseConnector;
 
-/**
- * Created by shatrujeet lawa on 10/8/2017.
- */
-
-public class CreateProfile extends AppCompatActivity {
-
+public class EditProfile extends AppCompatActivity {
 
 
     static ArrayList<String> appsOnDevice;
     static ArrayList<String> packagesOnDevice;
 
-    AdapterApps appsList;
+    AdapterAppsEdit appsList;
     Button submit;
     Button discard;
     String profileName;
+    public static String IntentNameString="ProfileName";
 
+    public static ArrayList<String> blockedApps;
     public static ArrayList<String> blockedPackages;
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_createprofile);
-        blockedPackages=new ArrayList<String>();
+        setContentView(R.layout.activity_edit_profile);
+        profileName=getIntent().getStringExtra(IntentNameString);
 
-        profileName=((EditText)findViewById(R.id.editViewProfileName)).getText().toString();
+        ((EditText)findViewById(R.id.editViewEditProfileName)).setText(profileName);
 
+        //get blockedApps
+        blockedPackages=MainActivity.db.getBlockedApps(profileName);
+
+
+        Toast.makeText(getApplicationContext(),blockedPackages.size()+" ",Toast.LENGTH_LONG).show();
         //change this
+
         appsOnDevice=new ArrayList<String>();
         packagesOnDevice=new ArrayList<String>();
 
         getSystemApps();
 
+        appsList=new AdapterAppsEdit(getApplicationContext(),appsOnDevice);
 
-
-        appsList=new AdapterApps(getApplicationContext(),appsOnDevice);
-
-        ListView listViewApps=(ListView)findViewById(R.id.listViewApps);
+        ListView listViewApps=(ListView)findViewById(R.id.listViewEditApps);
         listViewApps.setAdapter(appsList);
 
-        submit=(Button)findViewById(R.id.buttonCreateProfile);
-        discard=(Button)findViewById(R.id.buttonDiscardProfile);
+        submit=(Button)findViewById(R.id.buttonSaveProfile);
+        discard=(Button)findViewById(R.id.buttonDiscardChanges);
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                profileName=((EditText)findViewById(R.id.editViewProfileName)).getText().toString();
-
-                if(!profileName.isEmpty())
-                {
-                    Profile p = new Profile(profileName, blockedPackages);
-
-                    try {
-                        MainActivity.db.createProfile(p);
-                    } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    Toast.makeText(getApplicationContext(), "Profile successfully created", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(),"Name is empty", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                profileName=((EditText)findViewById(R.id.editViewEditProfileName)).getText().toString();
+                Profile p=new Profile(profileName,blockedPackages); //change it from null
+                MainActivity.db.updateProfile(getIntent().getStringExtra(IntentNameString),p);
+                Toast.makeText(getApplicationContext(),"Profile updated successfully",Toast.LENGTH_SHORT);
+                finish();
             }
         });
 
@@ -94,6 +80,7 @@ public class CreateProfile extends AppCompatActivity {
             }
         });
 
+
     }
 
     public void getSystemApps()
@@ -103,11 +90,10 @@ public class CreateProfile extends AppCompatActivity {
         for (ApplicationInfo packageInfo : packages) {
             String appName=getAppNameFromPackage(packageInfo.packageName);
 
-           if(!appName.equals("this app") && !appName.contains("."))
+            if(!appName.equals("this app") && !appName.contains("."))
             {
                 appsOnDevice.add(appName);
                 packagesOnDevice.add(packageInfo.packageName);
-
             }
         }
 
@@ -124,3 +110,4 @@ public class CreateProfile extends AppCompatActivity {
         return (String) (info != null ? manager.getApplicationLabel(info) : "this app");
     }
 }
+

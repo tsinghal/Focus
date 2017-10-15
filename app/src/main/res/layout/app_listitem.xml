@@ -7,7 +7,7 @@
             android:layout_width="288dp"
             android:layout_height="48dp"
             android:id="@+id/textViewAppName"
-            android:textSize="24dp"
+            android:textSize="16dp"
             android:textAlignment="center"
             android:typeface="serif"
             android:textStyle="bold"

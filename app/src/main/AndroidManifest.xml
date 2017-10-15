@@ -21,15 +21,14 @@
 
         <service
             android:name=".server.BackgroundService"
-            android:exported="false"></service>
+            android:exported="false" />
 
-        <activity android:name=".client.CreateProfile"
-            android:windowSoftInputMode="adjustPan">
-        </activity>
-
-        <activity android:name=".client.Profiles">
-
-        </activity>
+        <activity
+            android:name=".client.CreateProfile"
+            android:windowSoftInputMode="adjustPan"></activity>
+        <activity android:name=".client.Profiles"></activity>
+        <activity android:name=".client.EditProfile"
+            android:windowSoftInputMode="adjustPan"></activity>
     </application>
 
 </manifest>

@@ -14,10 +14,10 @@ public class Profile {
     private boolean active;
     private ArrayList<String> blockedNotifications;
 
-    public Profile(String name, ArrayList<String> blockedApps, ArrayList<String> blockedNotifications) {
+    public Profile(String name, ArrayList<String> blockedApps) {
         this.name = name;
         this.blockedApps = blockedApps;
-        this.blockedNotifications = blockedNotifications;
+        blockedNotifications = new ArrayList<>();
         active = false;
     }
 
