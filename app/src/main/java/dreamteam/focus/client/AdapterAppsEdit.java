@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,32 +27,39 @@ import dreamteam.focus.R;
 
 public class AdapterAppsEdit extends ArrayAdapter<String> {
 
-    public AdapterAppsEdit(Context context, ArrayList<String> appArray) {
+    public ArrayList<Boolean> statusList;
+    public AdapterAppsEdit(Context context, ArrayList<String> appArray){//ArrayList<Boolean> statusApps) {
         super(context, 0, appArray);
+
+//        this.statusApps=statusApps;
     }
 
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         final String appName = getItem(position);
         int index=EditProfile.appsOnDevice.indexOf(appName);
-        Log.i("index : ", " " + index);
         final String packageName=EditProfile.packagesOnDevice.get(index);
-
-        if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.app_listitem, parent, false);
-        }
-
-        final TextView textAppName = (TextView) convertView.findViewById(R.id.textViewAppName);
-        CheckBox appStatus = (CheckBox) convertView.findViewById(R.id.checkBoxAppStatus);
+        final TextView textAppName;
+        CheckBox appStatus;
 
 
+
+        View    conView = LayoutInflater.from(getContext()).inflate(R.layout.app_listitem, parent, false);
+
+
+
+        textAppName = (TextView) conView.findViewById(R.id.textViewAppName);
         textAppName.setText(appName);
+
+        appStatus=(CheckBox)conView.findViewById(R.id.checkBoxAppStatus);
+
+
 
         if (EditProfile.blockedPackages.contains(packageName))
         {
           Log.e("BlockedPackage",packageName+" "+appName+" "+position);
-           // appStatus.setChecked(true);
+            appStatus.setChecked(true);
         }
 
 
@@ -63,21 +71,33 @@ public class AdapterAppsEdit extends ArrayAdapter<String> {
                 Log.d("Listener Reached","Yes");
                 if (EditProfile.blockedPackages.contains(packageName)) {
                     if (!isChecked){
-                        //EditProfile.blockedApps.remove(appName);
                         EditProfile.blockedPackages.remove(packageName);
 
                     }
 
                 } else {
                     if (isChecked) {
-                        //EditProfile.blockedApps.add(appName);
+
                         EditProfile.blockedPackages.add(packageName);
+
 
                     }
                 }
+
+
             }
         });
 
-        return convertView;
+        return conView;
+    }
+
+    public void setStatusList(ArrayList<Boolean> list)
+    {
+        this.statusList=list;
+        notifyDataSetChanged();
+    }
+
+    static class ViewHolder{
+        CheckBox appStatus;
     }
 }

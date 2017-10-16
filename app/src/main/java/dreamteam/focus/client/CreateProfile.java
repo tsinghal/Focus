@@ -73,7 +73,7 @@ public class CreateProfile extends AppCompatActivity {
                     try {
                         MainActivity.db.createProfile(p);
                     } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Choose unique name", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     Toast.makeText(getApplicationContext(), "Profile successfully created", Toast.LENGTH_SHORT).show();
@@ -103,7 +103,7 @@ public class CreateProfile extends AppCompatActivity {
         for (ApplicationInfo packageInfo : packages) {
             String appName=getAppNameFromPackage(packageInfo.packageName);
 
-           if(!appName.equals("this app") && !appName.contains("."))
+           if(!appName.equals("this app") && !appName.contains(".") && !packageInfo.packageName.equals("com.htc.launcher") && !packageInfo.packageName.equals("dreamteam.focus") && !packageInfo.packageName.equals("com.google.android.apps.nexuslauncher") && !packageInfo.packageName.equals("com.android.systemui")&& !packageInfo.packageName.equals("com.google.android.packageinstaller")  )
             {
                 appsOnDevice.add(appName);
                 packagesOnDevice.add(packageInfo.packageName);

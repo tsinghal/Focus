@@ -27,19 +27,19 @@ import dreamteam.focus.R;
 
 public class AdapterProfiles extends ArrayAdapter<Profile> {
 
-    public Context context;
+    public Context mcontext;
     public AdapterProfiles adapter;
     public AdapterProfiles(Context context,ArrayList<Profile> profilesArray)
     {
         super(context,0, profilesArray);
-        this.context=context;
+        this.mcontext=context;
         this.adapter=this;
     }
 
     @Nullable
     @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent)
+    public View getView(int position, View convertView, final ViewGroup parent)
     {
         final Profile p= getItem(position);
 
@@ -51,7 +51,6 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
 
         textAppName.setText(p.getName());
 
-        Log.e("status:",p.getName()+"->"+p.isActive());
 
         appStatus.setChecked(p.isActive());
 
@@ -61,7 +60,7 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
             {
               if (appStatus.isChecked() && !p.isActive())
               {
-                    Intent i=new Intent(context,timePicker.class);
+                    Intent i=new Intent(mcontext,timePicker.class);
                   i.putExtra(timePicker.IntentProfileName,p.getName());
                   buttonView.getContext().startActivity(i);
 
@@ -70,7 +69,11 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
               if(!appStatus.isChecked()&& p.isActive())
               {
                         MainActivity.db.deactivateProfile(p);
-
+//                  if(mcontext instanceof Profiles){
+//                      Log.d("TAG","IN");
+//                      ((Profiles)mcontext).updateList();
+//                  }
+                  ((Profiles)parent.getContext()).updateList();
               }
             }
         }

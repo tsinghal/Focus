@@ -37,16 +37,23 @@ public class AdapterApps extends ArrayAdapter<String> {
         final String appName = getItem(position);
         int index=CreateProfile.appsOnDevice.indexOf(appName);
         final String packageName=CreateProfile.packagesOnDevice.get(index);
+        final TextView textAppName;
+        CheckBox appStatus;
 
-        if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.app_listitem , parent, false);
+         View   conView = LayoutInflater.from(getContext()).inflate(R.layout.app_listitem , parent, false);
+
+
+         textAppName=(TextView)conView.findViewById(R.id.textViewAppName);
+        textAppName.setText(appName);
+
+         appStatus=(CheckBox) conView.findViewById(R.id.checkBoxAppStatus);
+
+        if (CreateProfile.blockedPackages.contains(packageName))
+        {
+            Log.e("BlockedPackage",packageName+" "+appName+" "+position);
+            appStatus.setChecked(true);
         }
 
-        final TextView textAppName=(TextView)convertView.findViewById(R.id.textViewAppName);
-        CheckBox appStatus =(CheckBox) convertView.findViewById(R.id.checkBoxAppStatus);
-
-
-        textAppName.setText(appName);
 
         appStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -69,6 +76,6 @@ public class AdapterApps extends ArrayAdapter<String> {
             }
         });
 
-        return convertView;
+        return conView;
     }
 }

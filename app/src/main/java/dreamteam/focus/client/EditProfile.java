@@ -33,6 +33,7 @@ public class EditProfile extends AppCompatActivity {
 
     public static ArrayList<String> blockedApps;
     public static ArrayList<String> blockedPackages;
+    public  ArrayList<Boolean> statusApps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,7 @@ public class EditProfile extends AppCompatActivity {
         profileName=getIntent().getStringExtra(IntentNameString);
 
         ((EditText)findViewById(R.id.editViewEditProfileName)).setText(profileName);
+
 
         //get blockedApps
         blockedPackages=MainActivity.db.getBlockedApps(profileName);
@@ -53,6 +55,23 @@ public class EditProfile extends AppCompatActivity {
         packagesOnDevice=new ArrayList<String>();
 
         getSystemApps();
+
+//       statusApps=new ArrayList<Boolean>();
+//        for (int i=0;i<packagesOnDevice.size();i++)
+//        {
+//            if(blockedPackages.contains(packagesOnDevice.get(i)))
+//            {
+//
+//                statusApps.add(true);
+//                Log.d("Rat",i+" "+appsOnDevice.get(i)+" "+statusApps.get(i));
+//            }
+//            else
+//            {
+//
+//                statusApps.add(false);
+//                Log.d("Rats",i+" "+appsOnDevice.get(i)+" "+statusApps.get(i));
+//            }
+//        }
 
         appsList=new AdapterAppsEdit(getApplicationContext(),appsOnDevice);
 
@@ -68,6 +87,7 @@ public class EditProfile extends AppCompatActivity {
                 profileName=((EditText)findViewById(R.id.editViewEditProfileName)).getText().toString();
                 Profile p=new Profile(profileName,blockedPackages); //change it from null
                 MainActivity.db.updateProfile(getIntent().getStringExtra(IntentNameString),p);
+
                 Toast.makeText(getApplicationContext(),"Profile updated successfully",Toast.LENGTH_SHORT);
                 finish();
             }
@@ -92,7 +112,7 @@ public class EditProfile extends AppCompatActivity {
         for (ApplicationInfo packageInfo : packages) {
             String appName=getAppNameFromPackage(packageInfo.packageName);
 
-            if(!appName.equals("this app") && !appName.contains("."))
+            if(!appName.equals("this app") && !appName.contains(".") && !packageInfo.packageName.equals("com.htc.launcher") && !packageInfo.packageName.equals("dreamteam.focus") && !packageInfo.packageName.equals("com.google.android.apps.nexuslauncher") && !packageInfo.packageName.equals("com.android.systemui")&& !packageInfo.packageName.equals("com.google.android.packageinstaller")  )
             {
                 appsOnDevice.add(appName);
                 packagesOnDevice.add(packageInfo.packageName);

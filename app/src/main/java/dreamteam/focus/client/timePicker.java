@@ -37,8 +37,7 @@ public class timePicker extends AppCompatActivity {
             public void onClick(View v) {
                 Profile p=MainActivity.db.getProfileByName(getIntent().getStringExtra(IntentProfileName));
 
-                Date startTime=new Date();
-                startTime=Calendar.getInstance().getTime();
+                Date startTime=Calendar.getInstance().getTime();
                 SimpleDateFormat d1=new SimpleDateFormat("HH:mm");
                 String s = d1.format(startTime);
                 try {
@@ -67,11 +66,15 @@ public class timePicker extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                if(endHour<startHour)
+                if(endHour<startHour) //if end of night
                 {
-                    Toast.makeText(getApplicationContext(),"Exceeding the ten hour limit",Toast.LENGTH_LONG).show();
-                    return;
-
+                    int num=(endHour+(24-startHour))*60;
+                    num+=endMin-startMin;
+                    if(num> 600 || num<10)
+                     {
+                        Toast.makeText(getApplicationContext(), "Exceeding the ten hour limit", Toast.LENGTH_LONG).show();
+                        return;
+                     }
                 }
                 if(endHour==startHour && endMin<startMin)
                 {
@@ -85,6 +88,13 @@ public class timePicker extends AppCompatActivity {
 
                 int timeLimit=(endHour-startHour)*60;
                 timeLimit+=(endMin-startMin);
+
+                if(endHour<startHour)
+                {
+                    timeLimit=(endHour+(24-startHour))*60;
+                    timeLimit+=endMin-startMin;
+                }
+
                 Log.d("Limit",timeLimit+"");
                 Toast.makeText(getApplicationContext(),timeLimit+"", Toast.LENGTH_SHORT).show();
                 if(timeLimit>600 || timeLimit<10)
@@ -99,10 +109,6 @@ public class timePicker extends AppCompatActivity {
             }
         });
 
-    }
-
-    @Override
-    public void onBackPressed() {
     }
 
 
