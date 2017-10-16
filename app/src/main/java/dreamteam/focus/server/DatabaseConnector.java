@@ -528,7 +528,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             ArrayList<Schedule> schedules = new ArrayList<Schedule>();
 
             // Select All Query
-            String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULES;
+            String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SCHEDULE_NAME + " NOT LIKE 'AnonymousSchedule'";
 
             SQLiteDatabase db = this.getWritableDatabase();
             Cursor cursor = db.rawQuery(selectQuery, null);
