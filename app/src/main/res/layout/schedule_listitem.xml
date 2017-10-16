@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/background"
+        android:textColor="@color/blue"
+        android:textSize="24dp"
+        android:typeface="serif"
+        android:id="@+id/textViewScheduleName"/>
+
+    <ToggleButton
+        android:id="@+id/toggleScheduleStatus"
+        android:layout_width="72dp"
+        android:layout_height="48dp"
+        android:background="@color/blue"
+        android:textColor="@color/white"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+</RelativeLayout>
