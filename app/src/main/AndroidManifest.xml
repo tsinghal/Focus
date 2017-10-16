@@ -23,6 +23,38 @@
             android:name=".server.BackgroundService"
             android:exported="false" />
 
+        <activity android:name=".client.CreateProfile"
+            android:windowSoftInputMode="adjustPan">
+        </activity>
+
+        <activity android:name=".client.Profiles">
+
+        </activity>
+
+        <activity android:name=".client.Schedules">
+
+        </activity>
+
+        <activity android:name=".client.AddProfileToSchedule">
+
+
+        </activity>
+
+        <activity android:name=".client.AddProfileToNewSchedule">
+
+
+        </activity>
+
+        <activity android:name=".client.CreateSchedule">
+
+        </activity>
+
+        <activity android:name=".client.EditSchedule">
+
+        </activity>
+
+
+
         <activity
             android:name=".client.CreateProfile"
             android:windowSoftInputMode="adjustPan" />

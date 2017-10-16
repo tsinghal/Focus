@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="dreamteam.focus.client.Schedules">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/blue"
+        android:textColor="@color/white"
+        android:text="Schedules"
+        android:typeface="serif"
+        android:textSize="36dp"
+        android:textAlignment="center"
+        android:id="@+id/textViewSchedules"/>
+
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/blue"
+        android:text="+"
+        android:id="@+id/buttonAddSchedule"
+        android:textColor="@color/white"
+        android:layout_alignParentEnd="true"
+        android:textSize="36dp" />
+
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/ScheduleNames"
+            android:layout_below="@+id/textViewSchedules" />
+
+
+</RelativeLayout>

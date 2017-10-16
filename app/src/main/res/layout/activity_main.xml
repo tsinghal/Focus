@@ -45,16 +45,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@id/buttonSchedules"
-            android:maxWidth="200dp"
-            android:textSize="24dp"
-            android:typeface="serif"
-            android:textColor="@color/white"
             android:layout_marginLeft="2dp"
+            android:layout_toEndOf="@id/buttonSchedules"
+            android:background="@color/background"
+            android:maxWidth="200dp"
             android:minWidth="200dp"
             android:text="Profiles"
-            android:background="@color/background"
-            />
+            android:textColor="@color/white"
+            android:textSize="24dp"
+            android:typeface="serif" />
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

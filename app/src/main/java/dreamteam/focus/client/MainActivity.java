@@ -33,6 +33,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        schedulesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent s=new Intent(getApplicationContext(),Schedules.class);
+                startActivity(s);
+
+            }
+        });
+
     }
 
 
