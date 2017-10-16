@@ -1,9 +1,14 @@
 package dreamteam.focus.client;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ListViewCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -28,6 +33,18 @@ public class Profiles extends AppCompatActivity {
     AdapterProfiles profileArrayAdapter;
     ListView profileListView;
     int profileLimit=20;
+
+
+    private BroadcastReceiver MyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i("Profiles", "Broadcast Recieved: "+intent.getStringExtra("profileMessage"));
+            String message = intent.getStringExtra("serviceMessage");
+            //Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+           updateList();
+        }
+    };
+
 
 
     @Override
@@ -74,6 +91,18 @@ public class Profiles extends AppCompatActivity {
         super.onRestart();
         //Toast.makeText(getApplicationContext(),"OnRestart()",Toast.LENGTH_SHORT).show(); ;
         updateList();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(this).registerReceiver(MyReceiver, new IntentFilter("com.example.notifyservice.NotificationService_Status"));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(MyReceiver);
     }
 
     public void updateList() {

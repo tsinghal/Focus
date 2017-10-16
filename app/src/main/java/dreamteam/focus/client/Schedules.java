@@ -1,9 +1,13 @@
 package dreamteam.focus.client;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -34,6 +38,17 @@ public class Schedules extends AppCompatActivity {
     public static DatabaseConnector db;
     private TextView name;
     public ListView lvNames;
+
+//    private BroadcastReceiver MyReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            Log.i("Schedules", "Broadcast Recieved: "+intent.getStringExtra("scheduleMessage"));
+//            String message = intent.getStringExtra("serviceMessage");
+//            //Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+//            updateList();
+//        }
+//    };
+
 
     ArrayList<Schedule> scheduleArray;
     AdapterSchedules scheduleArrayAdapter;
@@ -88,7 +103,6 @@ public class Schedules extends AppCompatActivity {
     @Override
     protected void onRestart(){
         super.onRestart();
-        Toast.makeText(getApplicationContext(),"OnRestart()", Toast.LENGTH_SHORT).show();
         updateList();
 
     }
@@ -113,6 +127,19 @@ public class Schedules extends AppCompatActivity {
 
         lvNames.setAdapter(scheduleArrayAdapter);
     }
+
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//        LocalBroadcastManager.getInstance(this).registerReceiver(MyReceiver, new IntentFilter("com.example.notifyservice.NotificationService_Status"));
+//    }
+//
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(MyReceiver);
+//    }
+
 
 
 }

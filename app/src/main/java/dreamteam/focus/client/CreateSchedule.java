@@ -333,4 +333,23 @@ public class CreateSchedule extends AppCompatActivity {
         sun = new AdapterCalendarNewRemove(getApplicationContext(), sundaySchedules);
         sunday.setAdapter(sun);
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if(check)
+        {
+            if(db.hasSchedule(s.getName()) && check){
+                try {
+                    db.removeSchedule(s.getName());
+                    finish();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                finish();
+            }
+        }
+
+    }
 }
