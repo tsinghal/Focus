@@ -232,7 +232,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             return -1;
         }
 
-    private boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
+    public boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         int oldProfileID = getProfileID(oldPis, scheduleName);
