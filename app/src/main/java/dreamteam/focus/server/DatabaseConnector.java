@@ -261,11 +261,21 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             args.put(KEY_SCHEDULE_NAME, newScheduleName);
 
             incrementDatabaseVersion();
-            return db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName + "'", null) > 0
-                    && db.update(TABLE_SCHEDULES, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName + "'", null) > 0;
+            db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName + "'", null);
+            return db.update(TABLE_SCHEDULES, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName + "'", null) > 0;
         }
 
         return true;
+    }
+
+    public boolean hasSchedule(String scheduleName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        return cursor.getCount() > 0;
     }
 
     public boolean updateSchedule(String oldScheduleName, Schedule newSchedule) throws ParseException {
@@ -517,7 +527,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         ArrayList<Schedule> schedules = new ArrayList<Schedule>();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULES;
+        String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SCHEDULE_NAME + " NOT LIKE 'AnonymousSchedule'";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
