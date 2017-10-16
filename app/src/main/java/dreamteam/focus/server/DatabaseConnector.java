@@ -377,11 +377,15 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             }
 
             String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE " + KEY_PROFILE_NAME
-                    + "='" + pis.getProfile().getName() + "'";
+                    + "='" + pis.getProfile().getName() + "' AND " + KEY_START_TIME + "='" + getDateString(pis.getStartTime()) + "' AND "
+                    + KEY_END_TIME + "='" + getDateString(pis.getEndTime()) + "' AND " + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
 
             Cursor cursor = db.rawQuery(selectQuery, null);
 
             if(cursor.moveToFirst()) {
+                for(int i=0; i!=cursor.getCount()-1; i++) {
+                    cursor.moveToNext();
+                }
                 addProfileInScheduleRepeats(pis, cursor.getInt(0));
             }
 
@@ -421,10 +425,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             SQLiteDatabase db = this.getWritableDatabase();
 
             incrementDatabaseVersion();
-            return db.delete(TABLE_PROFILE_IN_SCHEDULE,
-                    KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
-                            + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
-                    && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName)
+            return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName)
                                 + " AND " + KEY_REPEAT_ENUM + "='" + re.toString() + "'", null) > 0;
         }
 
