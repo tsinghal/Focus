@@ -126,6 +126,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // Create tables again
         onCreate(db);
 
+        this.addSchedule(new Schedule("AnonymousSchedule"));
         database_version = 0;
     }
 
@@ -241,7 +242,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         int oldProfileID = getProfileID(oldPis, scheduleName, oldPis.repeatsOn().get(0));
 
-        removeProfileFromSchedule(oldPis, scheduleName);
+        removeProfileFromSchedule(oldPis, scheduleName, oldPis.repeatsOn().get(0));
         addProfileInSchedule(newPis, scheduleName);
 
         int newProfileID = getProfileID(newPis, scheduleName, newPis.repeatsOn().get(0));
@@ -433,13 +434,14 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if(cursor.moveToFirst()) {
+
+            incrementDatabaseVersion();
             return db.delete(TABLE_PROFILE_IN_SCHEDULE,
                     KEY_PROFILE_NAME + "='" + profile.getName() + "' AND "
                             + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
                     && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + cursor.getInt(0), null) > 0;
         }
 
-        incrementDatabaseVersion();
         return false;
     }
 
@@ -447,10 +449,10 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         incrementDatabaseVersion();
-        return db.delete(TABLE_PROFILE_IN_SCHEDULE,
+        return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0
+            && db.delete(TABLE_PROFILE_IN_SCHEDULE,
                 KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
-                        + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
-                && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0;
+                        + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
     }
 
     public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName, Repeat_Enum re) {
@@ -686,6 +688,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
+    //CHANGED SO IF ERROR, LOOK HERE FIRST
     public boolean removeSchedule(String scheduleName) throws ParseException {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -693,7 +696,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         ArrayList<ProfileInSchedule> profilesInSchedule = getProfilesInSchedule(scheduleName);
 
         for(int i=0; i<profilesInSchedule.size(); i++) {
-            removeProfileFromSchedule(profilesInSchedule.get(i), scheduleName);
+            removeProfileFromSchedule(profilesInSchedule.get(i), scheduleName, profilesInSchedule.get(i).repeatsOn().get(0));
         }
 
         incrementDatabaseVersion();
