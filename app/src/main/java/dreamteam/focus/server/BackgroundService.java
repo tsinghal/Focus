@@ -46,7 +46,7 @@ import dreamteam.focus.client.MainActivity;
 public class BackgroundService extends NotificationListenerService {
     public static final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
     private static final String TAG = "BackgroundService";
-    private static final int SCHEDULE_TIMEOUT_SEC = 20;
+    private static final int SCHEDULE_TIMEOUT_SEC = 5;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
     //    private static final String[] BLOCK_APP_WHITELIST = {
 //            "com.htc.launcher",
@@ -60,7 +60,7 @@ public class BackgroundService extends NotificationListenerService {
     private Runnable blockingThread = null;
     private DatabaseConnector db = null;
     private ArrayList<Schedule> schedules;
-    private int databaseVersion;
+    private int databaseVersion = -1;
     private HashSet<String> blockedApps;
     private NLServiceReceiver nlServiceReceiver;
     NotificationManager mNotifyMgr;
@@ -91,8 +91,8 @@ public class BackgroundService extends NotificationListenerService {
                 @Override
                 public void run() {
                     mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
-                    Log.d(TAG, "scheduleThread");
-                    //if (needUpdate()) updateFromServer();
+//                    Log.d(TAG, "scheduleThread");
+                    if (needUpdate()) updateFromServer();
                 }
             };
             mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
@@ -104,7 +104,7 @@ public class BackgroundService extends NotificationListenerService {
                 @Override
                 public void run() {
                     mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
-                    Log.d(TAG, "blockingThread");
+//                    Log.d(TAG, "blockingThread");
                     blockApps();
                 }
             };
@@ -219,7 +219,6 @@ public class BackgroundService extends NotificationListenerService {
 
         if (getApplicationContext() != null) {
             db = new DatabaseConnector(getApplicationContext());
-            databaseVersion = db.getDatabaseVersion();
         }
 
     }
@@ -255,7 +254,7 @@ public class BackgroundService extends NotificationListenerService {
     }
 
     public void tick() {
-        final String TAG = "BackgroundService.update";
+        final String TAG = "tick()";
 
         long millis = new Date().getTime();             //get system time
 
@@ -298,7 +297,11 @@ public class BackgroundService extends NotificationListenerService {
                     }
                 }
             } else if (schedule.getName().equals(ANONYMOUS_SCHEDULE)) { // separate case for AnonymousSchedule
+
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
+                    Log.d(TAG, pis.getProfile().getName());
+                    Log.d(TAG, pis.getStartTime().toString());
+                    Log.d(TAG, pis.getEndTime().toString());
 
                     // TODO: 10/14/17 Notify user profile activated ---> UI sends intent-> avoids throwing notification again
                     if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
@@ -319,6 +322,7 @@ public class BackgroundService extends NotificationListenerService {
                     // add instant Profile's apps to blockedApps
                     for (String app : pis.getProfile().getApps()) {
                         blockedApps.add(app);
+                        Log.d(TAG,app);
                     }
                 }
             }
@@ -353,6 +357,7 @@ public class BackgroundService extends NotificationListenerService {
 //
         for (String app : blockedApps) {        // block each app in blockedApps
 
+            Log.d("Blocked App: ", app);
             if (appInForeground.equals(app)) {
                 Log.i(TAG, "blockApps(" + appInForeground + ")");
                 ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
@@ -396,7 +401,7 @@ public class BackgroundService extends NotificationListenerService {
                     currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
                 }
             }
-            Log.i(TAG, "printForegroundTask: " + currentApp);
+            //Log.i(TAG, "printForegroundTask: " + currentApp);
         }
         return currentApp;
     }
@@ -514,6 +519,5 @@ public class BackgroundService extends NotificationListenerService {
 }
 
 // TODO: 10/14/17 Refactor and clean up code
-// TODO: 10/14/17 tell database about state changes
 // TODO: 10/14/17 tell UI about shit
 // TODO: maybe lets do some kind of load screen if tick function is running and focus comes to foreground
