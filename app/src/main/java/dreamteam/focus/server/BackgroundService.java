@@ -35,6 +35,7 @@ import java.util.TreeMap;
 
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
+import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
 
@@ -47,12 +48,12 @@ public class BackgroundService extends NotificationListenerService {
     private static final String TAG = "BackgroundService";
     private static final int SCHEDULE_TIMEOUT_SEC = 20;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
-    private static final String[] BLOCK_APP_WHITELIST = {
-            "com.htc.launcher",
-            "dreamteam.focus",
-            "com.google.android.apps.nexuslauncher",
-            "com.android.systemui"
-    };
+    //    private static final String[] BLOCK_APP_WHITELIST = {
+//            "com.htc.launcher",
+//            "dreamteam.focus",
+//            "com.google.android.apps.nexuslauncher",
+//            "com.android.systemui"
+//    };
     private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
 
     private Runnable scheduleThread = null;
@@ -65,8 +66,8 @@ public class BackgroundService extends NotificationListenerService {
     NotificationManager mNotifyMgr;
     Notification.Builder mBuilder;
 
-    private int nAdded = 0; // Number of notifications added (since the service started)
-    private int nRemoved = 0; // Number of notifications removed (since the service started)
+//    private int nAdded = 0; // Number of notifications added (since the service started)
+//    private int nRemoved = 0; // Number of notifications removed (since the service started)
 
     public BackgroundService() {
         schedules = new ArrayList<>();
@@ -91,7 +92,7 @@ public class BackgroundService extends NotificationListenerService {
                 public void run() {
                     mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
                     Log.d(TAG, "scheduleThread");
-                    //if (checkForUpdates()) updateFromServer();
+                    //if (needUpdate()) updateFromServer();
                 }
             };
             mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
@@ -199,9 +200,9 @@ public class BackgroundService extends NotificationListenerService {
     }
 
     private void broadcastStatus() {
-        Log.i(TAG, "Broadcasting status added(" + nAdded + ")/removed(" + nRemoved + ")");
+//        Log.i(TAG, "Broadcasting status added(" + nAdded + ")/removed(" + nRemoved + ")");
         Intent i1 = new Intent(ACTION_STATUS_BROADCAST);
-        i1.putExtra("serviceMessage", "Added: " + nAdded + " | Removed: " + nRemoved);
+//        i1.putExtra("serviceMessage", "Added: " + nAdded + " | Removed: " + nRemoved);
         LocalBroadcastManager.getInstance(this).sendBroadcast(i1);
 
     }
@@ -216,7 +217,7 @@ public class BackgroundService extends NotificationListenerService {
         registerReceiver(nlServiceReceiver, filter);
         Log.i("onCreate", "NotificationService created!");
 
-        if(getApplicationContext() != null) {
+        if (getApplicationContext() != null) {
             db = new DatabaseConnector(getApplicationContext());
             databaseVersion = db.getDatabaseVersion();
         }
@@ -231,11 +232,32 @@ public class BackgroundService extends NotificationListenerService {
         Log.i("NotificationService", "NotificationService destroyed.");
     }
 
+    private Repeat_Enum today() {
+        String today = (String) DateFormat.format("EEEE", new Date());
+        switch (today) {
+            case "Monday":
+                return Repeat_Enum.MONDAY;
+            case "Tuesday":
+                return Repeat_Enum.TUESDAY;
+            case "Wednesday":
+                return Repeat_Enum.WEDNESDAY;
+            case "Thursday":
+                return Repeat_Enum.THURSDAY;
+            case "Friday":
+                return Repeat_Enum.FRIDAY;
+            case "Saturday":
+                return Repeat_Enum.SATURDAY;
+            case "Sunday":
+                return Repeat_Enum.SUNDAY;
+            default:
+                return Repeat_Enum.NEVER;
+        }
+    }
+
     public void tick() {
         final String TAG = "BackgroundService.update";
 
         long millis = new Date().getTime();             //get system time
-        String currentDay = (String) DateFormat.format("EEEE", new Date());  //get current day
 
         HashSet<String> oldBlockedApps = new HashSet<>();
         for (String app : blockedApps) {
@@ -247,25 +269,22 @@ public class BackgroundService extends NotificationListenerService {
             Log.i(TAG, schedule.getName());
             if (schedule.isActive() && !schedule.getName().equals(ANONYMOUS_SCHEDULE)) {
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
-                    if(pis.repeatsOn().contains(currentDay)){           //profile has to be repeated on current day
-
+                    if (pis.repeatsOn().contains(today())) { // profile has to be repeated on current day
                         if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                                 millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-
-                            sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now active");          //first param is notification ID
+                            sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now active");          //first param is notification ID
                             ProfileInSchedule temp = pis;
-                            pis.getProfile().setActive(true);       //set profile to active
-                            if(db.updateProfileInSchedule(temp, pis, schedule.getName())){
+                            pis.getProfile().setActive(true); // set profile to active
+                            if (db.updateProfileInSchedule(temp, pis, schedule.getName())) {
                                 // TODO: tell UI(do only after updating database), use broadcastStatus()
                             }
 
                         } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                                 millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-
-                            sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now inactive");          //first param is notification ID
+                            sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now inactive");          //first param is notification ID
                             ProfileInSchedule temp = pis;
-                            pis.getProfile().setActive(false);      //set profile to inactive
-                            if(db.updateProfileInSchedule(temp, pis, schedule.getName())){
+                            pis.getProfile().setActive(false); // set profile to inactive
+                            if (db.updateProfileInSchedule(temp, pis, schedule.getName())) {
                                 // TODO: tell UI(do only after updating database), use broadcastStatus()
                             }
                         }
@@ -278,30 +297,28 @@ public class BackgroundService extends NotificationListenerService {
                         }
                     }
                 }
-            } else if (schedule.getName().equals(ANONYMOUS_SCHEDULE)) {          // separate case for AnonymousSchedule
+            } else if (schedule.getName().equals(ANONYMOUS_SCHEDULE)) { // separate case for AnonymousSchedule
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
 
                     // TODO: 10/14/17 Notify user profile activated ---> UI sends intent-> avoids throwing notification again
                     if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                             millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-                        sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now instantly active");    //first param is notification ID
+                        sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now instantly active");    //first param is notification ID
 
-                    }
-                    else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
+                    } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                             millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
 
-                       sendNotification(2, "Profile : "+ pis.getProfile().getName()+" is now inactive");    //first param is notification ID
-                       if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE))  // tell database to remove this profile from AnonymousSchedule
-                       {
-                           // TODO: tell UI(do only after updating database)
-                       }
+                        sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now inactive");    //first param is notification ID
+                        if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {  // tell database to remove this profile from AnonymousSchedule
+                            // TODO: tell UI(do only after updating database)
+                        }
 
-                       continue;        // do not add this profile's apps to blockedApps
-                   }
+                        continue;        // do not add this profile's apps to blockedApps
+                    }
 
                     // add instant Profile's apps to blockedApps
                     for (String app : pis.getProfile().getApps()) {
-                            blockedApps.add(app);
+                        blockedApps.add(app);
                     }
                 }
             }
@@ -387,10 +404,10 @@ public class BackgroundService extends NotificationListenerService {
     /**
      * Checks local database version number against remote version number
      *
-     * @return True if local data is up to date, false otherwise
+     * @return True if local data is needs update, false otherwise
      */
-    private boolean checkForUpdates() {
-        return databaseVersion >= db.getDatabaseVersion();
+    private boolean needUpdate() {
+        return databaseVersion < db.getDatabaseVersion();
     }
 
     /**
