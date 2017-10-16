@@ -213,11 +213,12 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 createProfile(updatedProfile);
     }
 
-    private int getProfileID(ProfileInSchedule pis, String scheduleName) {
+    private int getProfileID(ProfileInSchedule pis, String scheduleName, Repeat_Enum re) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE "
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE
+                + " WHERE "
                 + KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
                 + KEY_START_TIME + "='" + getDateString(pis.getStartTime()) + "' AND "
                 + KEY_END_TIME + "='" + getDateString(pis.getEndTime()) + "' AND "
@@ -225,8 +226,34 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
+        int index = 0;
+        if(re == Repeat_Enum.MONDAY) {
+            index = 1;
+        }
+        else if(re == Repeat_Enum.TUESDAY) {
+            index = 2;
+        }
+        else if(re == Repeat_Enum.WEDNESDAY) {
+            index = 3;
+        }
+        else if(re == Repeat_Enum.THURSDAY) {
+            index = 4;
+        }
+        else if(re == Repeat_Enum.FRIDAY) {
+            index = 5;
+        }
+        else if(re == Repeat_Enum.SATURDAY) {
+            index = 6;
+        }
+        else {
+            index = 7;
+        }
+
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
+            for(int i=0; i!=index-1; i++) {
+                cursor.moveToNext();
+            }
             return cursor.getInt(0);
         }
         return -1;
@@ -235,12 +262,12 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     public boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        int oldProfileID = getProfileID(oldPis, scheduleName);
+        int oldProfileID = getProfileID(oldPis, scheduleName, oldPis.repeatsOn().get(0));
 
         removeProfileFromSchedule(oldPis, scheduleName);
         addProfileInSchedule(newPis, scheduleName);
 
-        int newProfileID = getProfileID(newPis, scheduleName);
+        int newProfileID = getProfileID(newPis, scheduleName, newPis.repeatsOn().get(0));
 
         ContentValues args = new ContentValues();
         args.put(KEY_PROFILE_IN_SCHEDULE_ID, newProfileID);
@@ -408,11 +435,13 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
+        int index = -1;
         if(cursor.moveToFirst()) {
-            for(int i=0; i!=cursor.getCount()-1; i++) {
-                cursor.moveToNext();
-            }
-            addProfileInScheduleRepeats(pis, cursor.getInt(0));
+            do {
+                index = cursor.getInt(0);
+            }while(cursor.moveToNext());
+
+            addProfileInScheduleRepeats(pis, index);
         }
 
         incrementDatabaseVersion();
@@ -444,15 +473,15 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return db.delete(TABLE_PROFILE_IN_SCHEDULE,
                 KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
                         + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
-                && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName), null) > 0;
+                && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0;
     }
 
     public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName, Repeat_Enum re) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         incrementDatabaseVersion();
-        return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName)
-                + " AND " + KEY_REPEAT_ENUM + "='" + re.toString() + "'", null) > 0;
+        return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0
+                && db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0;
     }
 
     public ArrayList<String> getBlockedApps(String profileName) {
