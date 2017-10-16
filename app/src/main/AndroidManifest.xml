@@ -40,6 +40,11 @@
 
         </activity>
 
+        <activity android:name=".client.AddProfileToNewSchedule">
+
+
+        </activity>
+
         <activity android:name=".client.CreateSchedule">
 
         </activity>
