@@ -257,6 +257,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         removeSchedule(oldSchedule.getName());
+        incrementDatabaseVersion();
         return addSchedule(newSchedule);
     }
 
@@ -626,7 +627,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return notifications;
     }
 
-    public boolean addSchedule(Schedule schedule) {
+    public boolean addSchedule(Schedule schedule) throws SQLException {
         SQLiteDatabase db = this.getWritableDatabase();
 
         //Throws on profile duplicacy
