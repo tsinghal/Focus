@@ -1,12 +1,14 @@
 package dreamteam.focus.client;
 
 import android.content.Intent;
+import android.database.SQLException;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
 import dreamteam.focus.R;
+import dreamteam.focus.Schedule;
 import dreamteam.focus.server.DatabaseConnector;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,6 +43,12 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        try {
+            db.addSchedule(new Schedule("AnonymousSchedule"));
+        } catch (SQLException e) {
+
+        }
 
     }
 

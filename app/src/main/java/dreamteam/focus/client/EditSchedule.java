@@ -43,6 +43,7 @@ public class EditSchedule extends AppCompatActivity {
     private ArrayList<ProfileInSchedule> mondaySchedules, tuesdaySchedules, wednesdaySchedules, thursdaySchedules,
             fridaySchedules, saturdaySchedules, sundaySchedules;
     private ListView monday,tuesday, wednesday, thursday, friday, saturday, sunday;
+    public Schedule CurrentSchedule;
 
 
 
@@ -59,6 +60,19 @@ public class EditSchedule extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         if(bundle != null){
             scheduleName = bundle.getString("Schedule Name");
+        }
+
+
+        try {
+            for(int i=0;i<MainActivity.db.getSchedules().size();i++)
+            {
+                if(MainActivity.db.getSchedules().get(i).getName().equals(scheduleName))
+                {
+                    CurrentSchedule=MainActivity.db.getSchedules().get(i);
+                }
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
 
@@ -308,5 +322,10 @@ public class EditSchedule extends AppCompatActivity {
         sunday = (ListView) findViewById(R.id.listViewSunday);
         sun = new AdapterCalendarRemove(getApplicationContext(), sundaySchedules);
         sunday.setAdapter(sun);
+    }
+
+    public boolean getState()
+    {
+        return CurrentSchedule.isActive();
     }
 }

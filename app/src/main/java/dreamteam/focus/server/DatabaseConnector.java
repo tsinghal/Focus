@@ -27,7 +27,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 28;
+    private static final int DATABASE_VERSION = 29;
 
     private int database_version = 0;
 
@@ -126,7 +126,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // Create tables again
         onCreate(db);
 
-        this.addSchedule(new Schedule("AnonymousSchedule"));
         database_version = 0;
     }
 
