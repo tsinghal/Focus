@@ -252,11 +252,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return db.update(TABLE_PROFILE_IN_SCHEDULE_REPEATS, args, KEY_PROFILE_IN_SCHEDULE_ID + "=" + oldProfileID, null) > 0;
     }
 
-    public boolean updateSchedule(Schedule oldSchedule, Schedule newSchedule) throws ParseException {
+    public boolean updateSchedule(String oldScheduleName, Schedule newSchedule) throws ParseException {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        removeSchedule(oldSchedule.getName());
+        removeSchedule(oldScheduleName);
         incrementDatabaseVersion();
         return addSchedule(newSchedule);
     }
