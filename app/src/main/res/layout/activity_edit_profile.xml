@@ -76,7 +76,7 @@ android:background="@color/background">
     android:background="@color/blue"
     android:textColor="@color/white"
     android:layout_alignParentBottom="true"
-    android:text="Discard Changes"
+    android:text="Delete Profile"
     android:layout_marginLeft="4dp"
     android:id="@+id/buttonDiscardChanges"/>
 

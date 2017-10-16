@@ -76,6 +76,8 @@ public class EditProfile extends AppCompatActivity {
         discard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                MainActivity.db.removeProfile(getIntent().getStringExtra(IntentNameString));
                 finish();
             }
         });

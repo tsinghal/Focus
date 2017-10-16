@@ -27,6 +27,7 @@ public class Profiles extends AppCompatActivity {
     ArrayList<Profile> profileArray;
     AdapterProfiles profileArrayAdapter;
     ListView profileListView;
+    int profileLimit=20;
 
 
     @Override
@@ -38,12 +39,13 @@ public class Profiles extends AppCompatActivity {
 
         DatabaseConnector db=new DatabaseConnector(getApplicationContext());
        // updateList(); //every time list opens up,update Profile list
-        updateList();
-
+        profileArray= new ArrayList<Profile>();
+        profileArray=MainActivity.db.getProfiles();
         profileArrayAdapter=new AdapterProfiles(getApplicationContext(), profileArray);
-
         profileListView=(ListView)findViewById(R.id.listViewProfiles);
         profileListView.setAdapter(profileArrayAdapter);
+
+
 
 
 
@@ -53,29 +55,32 @@ public class Profiles extends AppCompatActivity {
         addNewProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i=new Intent(getApplicationContext(),CreateProfile.class);
-                startActivity(i);
+                if(MainActivity.db.getProfiles().size()<=profileLimit)
+                {
+                    Intent i = new Intent(getApplicationContext(), CreateProfile.class);
+                    startActivity(i);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"You cant have more than 20 profiles",Toast.LENGTH_LONG);
+                }
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Toast.makeText(getApplicationContext(),"OnResume()",Toast.LENGTH_SHORT) ;
-        updateList();
     }
 
 
     @Override
     protected void onRestart(){
         super.onRestart();
-        Toast.makeText(getApplicationContext(),"OnRestart()",Toast.LENGTH_SHORT) ;
+        //Toast.makeText(getApplicationContext(),"OnRestart()",Toast.LENGTH_SHORT).show(); ;
         updateList();
     }
 
     public void updateList() {
         profileArray= new ArrayList<Profile>();
         profileArray=MainActivity.db.getProfiles();
+        profileArrayAdapter=new AdapterProfiles(getApplicationContext(), profileArray);
+        profileListView=(ListView)findViewById(R.id.listViewProfiles);
+        profileListView.setAdapter(profileArrayAdapter);
     }
 }

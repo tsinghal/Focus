@@ -28,10 +28,12 @@ import dreamteam.focus.R;
 public class AdapterProfiles extends ArrayAdapter<Profile> {
 
     public Context context;
+    public AdapterProfiles adapter;
     public AdapterProfiles(Context context,ArrayList<Profile> profilesArray)
     {
         super(context,0, profilesArray);
         this.context=context;
+        this.adapter=this;
     }
 
     @Nullable
@@ -48,20 +50,26 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
         final ToggleButton appStatus =(ToggleButton)convertView.findViewById(R.id.toggleProfileStatus);
 
         textAppName.setText(p.getName());
+
+        Log.e("status:",p.getName()+"->"+p.isActive());
+
         appStatus.setChecked(p.isActive());
 
         appStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
-              if (appStatus.isChecked())
+              if (appStatus.isChecked() && !p.isActive())
               {
-                   // Intent i=new Intent(context,timePicker.class);
-                  //((Activity)context).startActivityForResult(i,0);
+                    Intent i=new Intent(context,timePicker.class);
+                  i.putExtra(timePicker.IntentProfileName,p.getName());
+                  buttonView.getContext().startActivity(i);
 
               }
-              else
+
+              if(!appStatus.isChecked()&& p.isActive())
               {
+                        MainActivity.db.deactivateProfile(p);
 
               }
             }
