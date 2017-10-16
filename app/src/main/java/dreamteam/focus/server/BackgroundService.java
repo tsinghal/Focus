@@ -8,7 +8,6 @@ import android.app.PendingIntent;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -16,20 +15,20 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -39,17 +38,21 @@ import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
 
-/*
-    src: https://stackoverflow.com/questions/41425986/call-a-notification-listener-inside-a-background-service-in-android-studio
+/**
+ * src: https://stackoverflow.com/questions/41425986
  */
-
 public class BackgroundService extends NotificationListenerService {
-    public static final String ACTION_STATUS_BROADCAST = "com.example.notifyservice.NotificationService_Status";
+    public static final String ACTION_STATUS_BROADCAST =
+            "com.example.notifyservice.NotificationService_Status";
     private static final String TAG = "BackgroundService";
     private static final int SCHEDULE_TIMEOUT_SEC = 5;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
 
     private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
+
+    private static final int NOTIFICATION_ID_MESSAGE = 1;
+    private static final int NOTIFICATION_ID_PROFILE_CHANGE = 2;
+    private static final int NOTIFICATION_ID_SHOW_NOTIFICATIONS = 3;
 
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
@@ -60,9 +63,6 @@ public class BackgroundService extends NotificationListenerService {
     private NLServiceReceiver nlServiceReceiver;
     NotificationManager mNotifyMgr;
     Notification.Builder mBuilder;
-
-//    private int nAdded = 0; // Number of notifications added (since the service started)
-//    private int nRemoved = 0; // Number of notifications removed (since the service started)
 
     public BackgroundService() {
         schedules = new ArrayList<>();
@@ -75,7 +75,7 @@ public class BackgroundService extends NotificationListenerService {
     }
 
     /**
-     * src= https://stackoverflow.com/questions/28292682/using-an-sqlite-database-from-a-service-in-android
+     * @link https://stackoverflow.com/questions/28292682
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -125,28 +125,34 @@ public class BackgroundService extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         Log.i(TAG, "********** onNotificationPosted");
-        Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
+        Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText +
+                "\t" + sbn.getPackageName());
 
         String packageName = getNameFromSBN(sbn);
 
-        for (String app : blockedApps) {        // block each app in blockedApps 's notification
+        // block each app's notifications in `blockedApps`
+        for (String app : blockedApps) {
             if (packageName.equals(app)) {
 
-                int mNotificationId = 1; // Sets an ID for the notification
                 cancelNotification(sbn.getKey());
-                db.addBlockedNotification(app);     //tell database to add count next to this app
-                sendNotification(mNotificationId, "Notification blocked by Focus!");
-                //TODO: just retest this new order of lines once
+                db.addBlockedNotification(app); // tell database to add count to this app
+                sendNotification(NOTIFICATION_ID_MESSAGE, "Notification blocked by Focus!");
+                // TODO: just retest this new order of lines once
             }
 
         }
-        //cancel only that nofication of Focus which is used to block notifications of other apps
-        if (packageName.equals("dreamteam.focus") && sbn.getId() == 1) {
+        // cancel only that notification of Focus (used to dismiss heads-up notifications from other apps
+        if (packageName.equals("dreamteam.focus") && sbn.getId() == NOTIFICATION_ID_MESSAGE) {
             cancelNotification(sbn.getKey());
         }
     }
 
-    //send out notification to user from Focus
+    /**
+     * Sends a notification from this application package to the Android System
+     *
+     * @param id      the id of this notification
+     * @param message the message of this notification
+     */
     public void sendNotification(int id, String message) {
 
         // Gets an instance of the NotificationManager service
@@ -226,7 +232,12 @@ public class BackgroundService extends NotificationListenerService {
         Log.i("NotificationService", "NotificationService destroyed.");
     }
 
-    private Repeat_Enum today() {
+    /**
+     * Get the value of today in terms of Repeat_Enum
+     *
+     * @return today, in Repeat_Enum
+     */
+    private Repeat_Enum todayInRepeatEnum() {
         String today = (String) DateFormat.format("EEEE", new Date());
         switch (today) {
             case "Monday":
@@ -248,72 +259,68 @@ public class BackgroundService extends NotificationListenerService {
         }
     }
 
+    /**
+     * This function is executed every SCHEDULE_TIMEOUT_SEC seconds.
+     */
     public void tick() {
         final String TAG = "tick()";
 
-        long millis = new Date().getTime();             //get system time
-        //TODO: TIME ZONE
+        int now = getTimeInInt(new Date()); // get system time
 
-        Log.e(TAG, new Date().toString());
-
+        // Make a deep copy of `blockedApps`
         HashSet<String> oldBlockedApps = new HashSet<>();
         for (String app : blockedApps) {
             oldBlockedApps.add(app);
         }
         blockedApps.clear();
 
+        // Reconstruct
         for (Schedule schedule : schedules) {
             if (schedule.isActive() && !schedule.getName().equals(ANONYMOUS_SCHEDULE)) {
                 Log.i(TAG + "1", schedule.getName());
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
-                    if (pis.repeatsOn().contains(today())) { // profile has to be repeated on current day
-                        Log.d(TAG, pis.getProfile().getName());
-                        if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
-                                millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-                            sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now active");          //first param is notification ID
+                    if (pis.repeatsOn().contains(todayInRepeatEnum())) { // profile has to be repeated on current day
+                        if ((getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC) / 2 <= now &&
+                                now <= (getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC) / 2) {
+                            sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
+                                    "Profile : " + pis.getProfile().getName() + " is now active");
                             // TODO: tell UI(do only after updating database), use broadcastStatus()
-
                             for (String app : pis.getProfile().getApps()) {     // reconstruct blockedApps
                                 blockedApps.add(app);
                                 Log.i(TAG, app);
                             }
-                        } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
-                                millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-                            sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now inactive");          //first param is notification ID
-//                           // TODO: tell UI(do only after updating database), use broadcastStatus()
-//
+                        } else if ((getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC) / 2 <= now &&
+                                now <= (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC) / 2) {
+                            sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
+                                    "Profile : " + pis.getProfile().getName() + " is now inactive");
+                            // TODO: tell UI(do only after updating database), use broadcastStatus()
+
+                        } else if ((getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC) / 2 <= now &&
+                                now <= (getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC) / 2) {
+                            addAppsToBlockedApps(pis.getProfile());
                         }
-//                        else if() {
-//                            for (String app : pis.getProfile().getApps()) {     // reconstruct blockedApps
-//                                blockedApps.add(app);
-//                                Log.i(TAG, app);
-//                            }
-//                        }
                     }
                 }
-            } else if (schedule.getName().equals(ANONYMOUS_SCHEDULE)) { // separate case for AnonymousSchedule
-                Log.i(TAG + "2", schedule.getName());
+            } else if (schedule.getName().equals(ANONYMOUS_SCHEDULE)) { // separate case for ANONYMOUS_SCHEDULE
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
-
                     // TODO: 10/14/17 Notify user profile activated ---> UI sends intent-> avoids throwing notification again
-                    if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
-                            millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-                        sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now instantly active");    //first param is notification ID
+                    if ((getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC) / 2 <= now &&
+                            now <= (getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC) / 2) {
+                        sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
+                                "Profile : " + pis.getProfile().getName() + " is now active");
+                    } else if ((getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC) / 2 <= now &&
+                            now <= (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC) / 2) {
+                        sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
+                                "Profile : " + pis.getProfile().getName() + " is now inactive");
 
-                    } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
-                            millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
-
-                        sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now inactive");    //first param is notification ID
-                        if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {  // tell database to remove this profile from AnonymousSchedule
+                        if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {
                             // TODO: tell UI(do only after updating database)
                         }
-                        continue;        // do not add this profile's apps to blockedApps
+                        continue; // do not add this profile's apps to blockedApps
                     }
 
-                    // add instant Profile's apps to blockedApps
-                    for (String app : pis.getProfile().getApps()) {
-                        blockedApps.add(app);
-                    }
+                    // add this Profile's apps to blockedApps
+                    addAppsToBlockedApps(pis.getProfile());
                 }
             }
         }
@@ -322,17 +329,42 @@ public class BackgroundService extends NotificationListenerService {
         if (!blockedApps.equals(oldBlockedApps)) {
             if (oldBlockedApps.removeAll(blockedApps)) { // returns true of something is removed
                 for (String app : oldBlockedApps) {
-
-                    int count = db.getNotificationsCountForApp(app); // get notifications from database!
                     // notify user about missed notifications
-                    sendNotification(3, "You have " + count + " unseen notifications from " + getAppNameFromPackage(app));
+                    sendNotification(NOTIFICATION_ID_SHOW_NOTIFICATIONS,
+                            "You have " + db.getNotificationsCountForApp(app)
+                                    + " unseen notifications from " + getAppNameFromPackage(app));
                 }
             }
         }
     }
 
     /**
-     * src = https://stackoverflow.com/questions/19604097/killbackgroundprocesses-no-working
+     * Adds apps specified in Profile into `blockedApps`.
+     * This should only be called with an active profile.
+     *
+     * @param activeProfile an active profile by time or user override
+     */
+    private void addAppsToBlockedApps(dreamteam.focus.Profile activeProfile) {
+        for (String app : activeProfile.getApps()) {
+            blockedApps.add(app);
+        }
+    }
+
+    /**
+     * Helper function for tick()
+     *
+     * @param time Date
+     * @return int, in the format signifying time in format: HHmmss
+     * @link BackgroundService#tick tick()
+     */
+    private int getTimeInInt(Date time) {
+        return Integer.parseInt(new SimpleDateFormat("HH", Locale.US).format(time)) * 10000
+                + Integer.parseInt(new SimpleDateFormat("mm", Locale.US).format(time)) * 100
+                + Integer.parseInt(new SimpleDateFormat("ss", Locale.US).format(time));
+    }
+
+    /**
+     * @link https://stackoverflow.com/questions/19604097
      */
     public void blockApps() {
 
@@ -340,12 +372,7 @@ public class BackgroundService extends NotificationListenerService {
         if (appInForeground == null)
             return;
 
-//        // some in-built exceptions to the kill app function
-//        for (String whitelistedApp : BLOCK_APP_WHITELIST) {
-//            if (appInForeground.equals(whitelistedApp)) return;
-//        }
-//
-        for (String app : blockedApps) {        // block each app in blockedApps
+        for (String app : blockedApps) { // block each app in blockedApps
             if (appInForeground.equals(app)) {
                 ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
@@ -368,8 +395,8 @@ public class BackgroundService extends NotificationListenerService {
 
 
     /**
-     * src = https://stackoverflow.com/questions/2166961/determining-the-current-foreground-application-from-a-background-task-or-service
-     * check which app comes to foreground,
+     * @return package name of foreground app
+     * @link https://stackoverflow.com/questions/2166961
      */
     public String getForegroundTask() {
         String currentApp = null;
@@ -377,7 +404,8 @@ public class BackgroundService extends NotificationListenerService {
             currentApp = "NULL";
             UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
             long time = System.currentTimeMillis();
-            List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
+            List<UsageStats> appList =
+                    usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
 
             if (appList != null && appList.size() > 0) {
                 SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
@@ -419,32 +447,8 @@ public class BackgroundService extends NotificationListenerService {
     }
 
     /**
-     * src = https://github.com/kpbird/NotificationListenerService-Example/blob/master/NLSExample/src/main/java/com/kpbird/nlsexample/NLService.java
-     *
-     * @return True if enabled, false otherwise.
-     */
-    private boolean isNotificationServiceGranted() {
-        String pkgName = getPackageName();
-        final String flat = Settings.Secure.getString(getContentResolver(),
-                "enabled_notification_listeners");
-        if (!TextUtils.isEmpty(flat)) {
-            final String[] names = flat.split(":");
-            for (String name : names) {
-                final ComponentName cn = ComponentName.unflattenFromString(name);
-                if (cn != null) {
-                    if (TextUtils.equals(pkgName, cn.getPackageName())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * src = https://stackoverflow.com/questions/41054355/how-to-get-app-name-by-package-name-in-android
-     *
      * @param packageName: string of package name from which app name is derived
+     * @link https://stackoverflow.com/questions/41054355
      */
     public String getAppNameFromPackage(String packageName) {
         PackageManager manager = getApplicationContext().getPackageManager();
@@ -458,9 +462,8 @@ public class BackgroundService extends NotificationListenerService {
     }
 
     /**
-     * src = https://stackoverflow.com/questions/38686632/how-to-get-usage-access-permission-programatically
-     *
      * @return True if enabled, false otherwise.
+     * @link https://stackoverflow.com/questions/38686632
      */
     private boolean isUsageAccessGranted() {
         try {
@@ -507,4 +510,3 @@ public class BackgroundService extends NotificationListenerService {
 
 // TODO: 10/14/17 Refactor and clean up code
 // TODO: 10/14/17 tell UI about shit
-// TODO: maybe lets do some kind of load screen if tick function is running and focus comes to foreground
