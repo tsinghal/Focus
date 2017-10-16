@@ -298,8 +298,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             values.put(KEY_ACTIVE, "true");
 
             incrementDatabaseVersion();
-            return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0; //&&
-//                    addProfileInSchedule(pis, "AnonymousSchedule");
+            return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
+                    addProfileInSchedule(pis, "AnonymousSchedule");
         }
 
         public boolean deactivateProfile(Profile profile) {
@@ -349,7 +349,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 try {
                     db.insertOrThrow(TABLE_PROFILE_IN_SCHEDULE_REPEATS, null, values);
                 } catch (SQLException e) {
-                    Log.d("error", e.getMessage());
                     db.close();
                     throw e;
                 }
