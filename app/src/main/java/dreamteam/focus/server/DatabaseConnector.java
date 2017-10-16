@@ -126,6 +126,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // Create tables again
         onCreate(db);
 
+        this.addSchedule(new Schedule("AnonymousSchedule"));
+
         database_version = 0;
     }
 
