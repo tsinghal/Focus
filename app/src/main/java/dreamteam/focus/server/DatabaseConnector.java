@@ -252,11 +252,27 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return db.update(TABLE_PROFILE_IN_SCHEDULE_REPEATS, args, KEY_PROFILE_IN_SCHEDULE_ID + "=" + oldProfileID, null) > 0;
     }
 
-    public boolean updateSchedule(Schedule oldSchedule, Schedule newSchedule) throws ParseException {
+    public boolean updateScheduleName(String oldScheduleName, String newScheduleName) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        removeSchedule(oldSchedule.getName());
+        if(!newScheduleName.equals(oldScheduleName)) {
+            ContentValues args = new ContentValues();
+            args.put(KEY_SCHEDULE_NAME, newScheduleName);
+
+            incrementDatabaseVersion();
+            return db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName + "'", null) > 0
+                    && db.update(TABLE_SCHEDULES, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName + "'", null) > 0;
+        }
+
+        return true;
+    }
+
+    public boolean updateSchedule(String oldScheduleName, Schedule newSchedule) throws ParseException {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        removeSchedule(oldScheduleName);
         incrementDatabaseVersion();
         return addSchedule(newSchedule);
     }
@@ -686,7 +702,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 //
 //    public boolean deactivateProfile(Profile profile) {} DONE TESTED
 //
-//    public HashMap<String, Integer> getNotificationsCountForApp(String appName) {} DONE
+//    public HashMap<String, Integer> getNotificationsCountForApp(String appName) {} DONE TESTED
 //
 //    public boolean addSchedule(Schedule schedule) {} DONE TESTED
 //
@@ -698,7 +714,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 //
 //    public boolean removeProfileFromSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE TESTED
 
-//    public boolean removeProfileFromSchedule(Profile profile, Schedule schedule) {} DONE
+//    public boolean removeProfileFromSchedule(Profile profile, Schedule schedule) {} DONE TESTED
 
 //    private boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPid, String scheduleName) {} DONE TESTED
 //
