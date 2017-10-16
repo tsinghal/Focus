@@ -48,12 +48,7 @@ public class BackgroundService extends NotificationListenerService {
     private static final String TAG = "BackgroundService";
     private static final int SCHEDULE_TIMEOUT_SEC = 5;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
-    //    private static final String[] BLOCK_APP_WHITELIST = {
-//            "com.htc.launcher",
-//            "dreamteam.focus",
-//            "com.google.android.apps.nexuslauncher",
-//            "com.android.systemui"
-//    };
+
     private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
 
     private Runnable scheduleThread = null;
@@ -257,6 +252,9 @@ public class BackgroundService extends NotificationListenerService {
         final String TAG = "tick()";
 
         long millis = new Date().getTime();             //get system time
+        //TODO: TIME ZONE
+
+        Log.e(TAG, new Date().toString());
 
         HashSet<String> oldBlockedApps = new HashSet<>();
         for (String app : blockedApps) {
@@ -265,43 +263,37 @@ public class BackgroundService extends NotificationListenerService {
         blockedApps.clear();
 
         for (Schedule schedule : schedules) {
-            Log.i(TAG, schedule.getName());
             if (schedule.isActive() && !schedule.getName().equals(ANONYMOUS_SCHEDULE)) {
+                Log.i(TAG + "1", schedule.getName());
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
                     if (pis.repeatsOn().contains(today())) { // profile has to be repeated on current day
+                        Log.d(TAG, pis.getProfile().getName());
                         if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                                 millis <= pis.getStartTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
                             sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now active");          //first param is notification ID
-                            ProfileInSchedule temp = pis;
-                            pis.getProfile().setActive(true); // set profile to active
-                            if (db.updateProfileInSchedule(temp, pis, schedule.getName())) {
-                                // TODO: tell UI(do only after updating database), use broadcastStatus()
-                            }
+                            // TODO: tell UI(do only after updating database), use broadcastStatus()
 
+                            for (String app : pis.getProfile().getApps()) {     // reconstruct blockedApps
+                                blockedApps.add(app);
+                                Log.i(TAG, app);
+                            }
                         } else if (pis.getEndTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
                                 millis <= pis.getEndTime().getTime() + SCHEDULE_TIMEOUT_SEC * 1000) {
                             sendNotification(2, "Profile : " + pis.getProfile().getName() + " is now inactive");          //first param is notification ID
-                            ProfileInSchedule temp = pis;
-                            pis.getProfile().setActive(false); // set profile to inactive
-                            if (db.updateProfileInSchedule(temp, pis, schedule.getName())) {
-                                // TODO: tell UI(do only after updating database), use broadcastStatus()
-                            }
+//                           // TODO: tell UI(do only after updating database), use broadcastStatus()
+//
                         }
-
-                        // reconstruct blockedApps
-                        if (pis.getProfile().isActive()) {
-                            for (String app : pis.getProfile().getApps()) {
-                                blockedApps.add(app);
-                            }
-                        }
+//                        else if() {
+//                            for (String app : pis.getProfile().getApps()) {     // reconstruct blockedApps
+//                                blockedApps.add(app);
+//                                Log.i(TAG, app);
+//                            }
+//                        }
                     }
                 }
             } else if (schedule.getName().equals(ANONYMOUS_SCHEDULE)) { // separate case for AnonymousSchedule
-
+                Log.i(TAG + "2", schedule.getName());
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
-                    Log.d(TAG, pis.getProfile().getName());
-                    Log.d(TAG, pis.getStartTime().toString());
-                    Log.d(TAG, pis.getEndTime().toString());
 
                     // TODO: 10/14/17 Notify user profile activated ---> UI sends intent-> avoids throwing notification again
                     if (pis.getStartTime().getTime() - SCHEDULE_TIMEOUT_SEC * 1000 <= millis &&
@@ -315,14 +307,12 @@ public class BackgroundService extends NotificationListenerService {
                         if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {  // tell database to remove this profile from AnonymousSchedule
                             // TODO: tell UI(do only after updating database)
                         }
-
                         continue;        // do not add this profile's apps to blockedApps
                     }
 
                     // add instant Profile's apps to blockedApps
                     for (String app : pis.getProfile().getApps()) {
                         blockedApps.add(app);
-                        Log.d(TAG,app);
                     }
                 }
             }
@@ -356,10 +346,7 @@ public class BackgroundService extends NotificationListenerService {
 //        }
 //
         for (String app : blockedApps) {        // block each app in blockedApps
-
-            Log.d("Blocked App: ", app);
             if (appInForeground.equals(app)) {
-                Log.i(TAG, "blockApps(" + appInForeground + ")");
                 ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
                 // go back to main screen

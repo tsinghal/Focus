@@ -23,7 +23,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.Date;
+
+import dreamteam.focus.Profile;
+import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
+import dreamteam.focus.Repeat_Enum;
+import dreamteam.focus.Schedule;
 import dreamteam.focus.server.BackgroundService;
 import dreamteam.focus.server.DatabaseConnector;
 
@@ -63,7 +70,90 @@ public class MainActivity extends AppCompatActivity {
             enableUsageAccessAlertDialog = buildUsageAccessAlertDialog();
             enableUsageAccessAlertDialog.show();
         }
+
+        try {
+            ArrayList<String> appBlacklist1 = new ArrayList<>();
+            appBlacklist1.add("com.whatsapp");
+            appBlacklist1.add("appBlacklist1.2");
+            appBlacklist1.add("appBlacklist1.3");
+
+            ArrayList<String> appBlacklist2 = new ArrayList<>();
+            appBlacklist2.add("appBlacklist2.1");
+            appBlacklist2.add("appBlacklist2.2");
+            appBlacklist2.add("appBlacklist2.3");
+            appBlacklist2.add("appBlacklist2.4");
+
+            ArrayList<String> appBlacklist3 = new ArrayList<>();
+            appBlacklist3.add("appBlacklist3.1");
+            appBlacklist3.add("appBlacklist3.2");
+            appBlacklist3.add("appBlacklist3.3");
+            appBlacklist3.add("appBlacklist3.4");
+            appBlacklist3.add("appBlacklist3.5");
+
+            long TIME_0800 = 946713600000L;
+            long TIME_1000 = 946720800000L;
+            long TIME_1200 = 946728000000L;
+            long TIME_1400 = 946735200000L;
+            long TIME_1600 = 946742400000L;
+            long TIME_1800 = 946749600000L;
+            long TIME_2000 = 946756800000L;
+
+            ArrayList<Repeat_Enum> enum1 = new ArrayList<>();
+            enum1.add(Repeat_Enum.MONDAY);
+            enum1.add(Repeat_Enum.WEDNESDAY);
+            enum1.add(Repeat_Enum.FRIDAY);
+            enum1.add(Repeat_Enum.SUNDAY);
+
+            ArrayList<Repeat_Enum>enum2 = new ArrayList<>();
+            enum2.add(Repeat_Enum.TUESDAY);
+            enum2.add(Repeat_Enum.WEDNESDAY);
+            enum2.add(Repeat_Enum.THURSDAY);
+
+            ArrayList<Repeat_Enum>enum3 = new ArrayList<>();
+            enum3.add(Repeat_Enum.MONDAY);
+            enum3.add(Repeat_Enum.SATURDAY);
+            enum3.add(Repeat_Enum.SUNDAY);
+
+
+            Profile profile1 = new Profile("profile1", appBlacklist1);
+            Profile profile2 = new Profile("profile2", appBlacklist2);
+            Profile profile3 = new Profile("profile3", appBlacklist3);
+
+            ProfileInSchedule pis1 = new ProfileInSchedule(profile1,
+                    new Date(TIME_1800), new Date(TIME_2000), enum1);
+            ProfileInSchedule pis2 = new ProfileInSchedule(profile2,
+                    new Date(TIME_0800), new Date(TIME_1200), enum2);
+            ProfileInSchedule pis3 = new ProfileInSchedule(profile3,
+                    new Date(TIME_1600), new Date(TIME_2000), enum3);
+
+
+            DatabaseConnector db = new DatabaseConnector(this);
+
+            db.createProfile(profile1);
+            db.createProfile(profile2);
+            db.createProfile(profile3);
+
+            ArrayList<ProfileInSchedule> cal3 = new ArrayList<>();
+            cal3.add(pis1);
+            cal3.add(pis2);
+            cal3.add(pis3);
+
+            Schedule s = new Schedule("schedule1", cal3, true);
+            db.addSchedule(s);
+
+            Schedule sa = new Schedule("AnonymousSchedule", cal3);
+
+            db.addSchedule(sa);
+
+            for (int i = 0; i < db.getSchedules().size(); i++) {
+                    Log.d("blocked", db.getSchedules().get(i).getName());
+            }
+        } catch (java.text.ParseException e) {
+
+        }
+
     }
+
 
     @Override
     protected void onStart() {
