@@ -126,6 +126,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // Create tables again
         onCreate(db);
 
+        this.addSchedule(new Schedule("AnonymousSchedule"));
         database_version = 0;
     }
 
@@ -217,43 +218,20 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE
+        String selectQuery = "SELECT  *, repeat_enum FROM " + TABLE_PROFILE_IN_SCHEDULE
+                + " JOIN " + TABLE_PROFILE_IN_SCHEDULE_REPEATS + " ON "
+                + TABLE_PROFILE_IN_SCHEDULE_REPEATS + "." + KEY_PROFILE_IN_SCHEDULE_ID + "=" + TABLE_PROFILE_IN_SCHEDULE + "." + KEY_PROFILE_IN_SCHEDULE_ID
                 + " WHERE "
                 + KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
                 + KEY_START_TIME + "='" + getDateString(pis.getStartTime()) + "' AND "
                 + KEY_END_TIME + "='" + getDateString(pis.getEndTime()) + "' AND "
-                + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
+                + KEY_SCHEDULE_NAME + "='" + scheduleName + "' AND "
+                + KEY_REPEAT_ENUM + "='" + re.toString() + "'";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        int index = 0;
-        if(re == Repeat_Enum.MONDAY) {
-            index = 1;
-        }
-        else if(re == Repeat_Enum.TUESDAY) {
-            index = 2;
-        }
-        else if(re == Repeat_Enum.WEDNESDAY) {
-            index = 3;
-        }
-        else if(re == Repeat_Enum.THURSDAY) {
-            index = 4;
-        }
-        else if(re == Repeat_Enum.FRIDAY) {
-            index = 5;
-        }
-        else if(re == Repeat_Enum.SATURDAY) {
-            index = 6;
-        }
-        else {
-            index = 7;
-        }
-
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
-            for(int i=0; i!=index-1; i++) {
-                cursor.moveToNext();
-            }
             return cursor.getInt(0);
         }
         return -1;
@@ -264,7 +242,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         int oldProfileID = getProfileID(oldPis, scheduleName, oldPis.repeatsOn().get(0));
 
-        removeProfileFromSchedule(oldPis, scheduleName);
+        removeProfileFromSchedule(oldPis, scheduleName, oldPis.repeatsOn().get(0));
         addProfileInSchedule(newPis, scheduleName);
 
         int newProfileID = getProfileID(newPis, scheduleName, newPis.repeatsOn().get(0));
@@ -456,13 +434,14 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if(cursor.moveToFirst()) {
+
+            incrementDatabaseVersion();
             return db.delete(TABLE_PROFILE_IN_SCHEDULE,
                     KEY_PROFILE_NAME + "='" + profile.getName() + "' AND "
                             + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
                     && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + cursor.getInt(0), null) > 0;
         }
 
-        incrementDatabaseVersion();
         return false;
     }
 
@@ -470,10 +449,10 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         incrementDatabaseVersion();
-        return db.delete(TABLE_PROFILE_IN_SCHEDULE,
+        return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0
+                && db.delete(TABLE_PROFILE_IN_SCHEDULE,
                 KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
-                        + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
-                && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0;
+                        + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
     }
 
     public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName, Repeat_Enum re) {
@@ -709,6 +688,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
+    //CHANGED SO IF ERROR, LOOK HERE FIRST
     public boolean removeSchedule(String scheduleName) throws ParseException {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -716,7 +696,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         ArrayList<ProfileInSchedule> profilesInSchedule = getProfilesInSchedule(scheduleName);
 
         for(int i=0; i<profilesInSchedule.size(); i++) {
-            removeProfileFromSchedule(profilesInSchedule.get(i), scheduleName);
+            removeProfileFromSchedule(profilesInSchedule.get(i), scheduleName, profilesInSchedule.get(i).repeatsOn().get(0));
         }
 
         incrementDatabaseVersion();
