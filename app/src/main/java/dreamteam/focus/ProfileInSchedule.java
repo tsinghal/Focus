@@ -1,12 +1,7 @@
 package dreamteam.focus;
 
-<<<<<<< HEAD
-        import java.util.ArrayList;
-        import java.util.Date;
-=======
 import java.util.ArrayList;
 import java.util.Date;
->>>>>>> backgroundThread
 
 /**
  * Created by bowie on 10/2/17.
@@ -76,8 +71,4 @@ public class ProfileInSchedule {
         }
         return false;
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> backgroundThread

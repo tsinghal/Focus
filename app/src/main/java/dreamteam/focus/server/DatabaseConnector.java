@@ -5,17 +5,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import java.lang.reflect.Array;
-import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 
 import dreamteam.focus.Profile;
@@ -29,7 +25,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     // Database Version
     private static final int DATABASE_VERSION = 29;
 
-    private int database_version = 0;
+    private static int database_version = 0;
 
     // Database Name
     private static final String DATABASE_NAME = "database";
