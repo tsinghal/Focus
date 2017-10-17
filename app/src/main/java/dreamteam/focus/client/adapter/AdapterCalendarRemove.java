@@ -185,11 +185,11 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
     public boolean getDay(Repeat_Enum re) //check if today,s day is equal to PIS day
     {
-        Calendar calendar = Calendar.getInstance();
-        int day = calendar.get(Calendar.DAY_OF_WEEK);
-        String daysArray[] = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"};
-        Log.d("DayActivation",daysArray[day]+" "+re.toString());
-        if(daysArray[day].equals(re.toString()))
+        String today = (String) DateFormat.format("EEEE", new Date() );
+        today = today.toUpperCase();
+        Log.d("DayActivation",today+" "+re.toString());
+
+        if(today.equals(re.toString()))
         {
             Log.d("ReturnValue","True");
             return true;
