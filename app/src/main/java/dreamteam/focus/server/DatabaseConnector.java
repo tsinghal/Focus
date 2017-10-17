@@ -27,7 +27,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 28;
+    private static final int DATABASE_VERSION = 29;
 
     private int database_version = 0;
 
@@ -126,7 +126,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // Create tables again
         onCreate(db);
 
-        this.addSchedule(new Schedule("AnonymousSchedule"));
         database_version = 0;
     }
 
@@ -450,7 +449,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         incrementDatabaseVersion();
         return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0
-            && db.delete(TABLE_PROFILE_IN_SCHEDULE,
+                && db.delete(TABLE_PROFILE_IN_SCHEDULE,
                 KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
                         + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
     }
