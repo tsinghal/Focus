@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent" android:layout_height="match_parent"
+tools:context="dreamteam.focus.client.EditProfile"
+android:background="@color/background">
+
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="@color/blue"
+    android:textColor="@color/white"
+    android:text="Edit Profile"
+    android:textSize="36dp"
+    android:textAlignment="center"
+    android:typeface="serif"
+    android:id="@+id/textViewCreate"/>
+
+<TextView
+    android:layout_width="96dp"
+    android:layout_height="48dp"
+    android:layout_below="@id/textViewCreate"
+    android:layout_marginTop="24dp"
+    android:text="@string/name"
+    android:textColor="@color/blue"
+    android:typeface="serif"
+    android:textSize="30dp"
+    android:id="@+id/textViewName"/>
+
+<EditText
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:layout_alignBaseline="@id/textViewName"
+    android:layout_toEndOf="@id/textViewName"
+    android:id="@+id/editViewEditProfileName"
+    android:hint="Enter Profile Name"
+    android:textColorHint="@color/blue"
+    android:textStyle="italic"
+    android:backgroundTint="@color/blue"
+    android:textColor="@color/blue"
+    android:typeface="serif"
+    android:textAlignment="center"/>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="352dp"
+    android:layout_below="@id/textViewName">
+
+    <ListView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/listViewEditApps"
+    android:divider="@color/background">
+
+
+
+
+
+</ListView>
+</LinearLayout>
+
+<Button
+    android:layout_width="192dp"
+    android:layout_height="40dp"
+    android:layout_alignParentBottom="true"
+    android:layout_marginTop="12dp"
+    android:background="@color/blue"
+    android:textColor="@color/white"
+    android:text="Save Profile"
+    android:id="@+id/buttonSaveProfile"/>
+
+<Button
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:layout_toEndOf="@id/buttonSaveProfile"
+    android:background="@color/blue"
+    android:textColor="@color/white"
+    android:layout_alignParentBottom="true"
+    android:text="Delete Profile"
+    android:layout_marginLeft="4dp"
+    android:id="@+id/buttonDiscardChanges"/>
+
+
+</RelativeLayout>
