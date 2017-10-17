@@ -357,11 +357,11 @@ public class BackgroundService extends NotificationListenerService {
             if (oldBlockedApps.removeAll(blockedApps) || (blockedApps.size() == 0)) { // returns true of something is removed
                 for (String app : oldBlockedApps) {
                     // notify user about missed notifications
-                    int tmp = db.getNotificationsCountForApp(app);
-                    Log.d("db.getNotifCount = ", "" + tmp);
-                    // TODO: 10/16/17 getNotificationCount needs verification
-                    sendNotification(NOTIFICATION_ID_UNSEEN_NOTIFICATIONS + (int) (Math.random() * 1000),
-                            "You have unseen notifications from " + getAppNameFromPackage(app));
+                    if (db.getNotificationsCountForApp(app) != 0) {
+                        // TODO: 10/16/17 getNotificationCount needs verification
+                        sendNotification(NOTIFICATION_ID_UNSEEN_NOTIFICATIONS + (int) (Math.random() * 1000),
+                                "You have unseen notifications from " + getAppNameFromPackage(app));
+                    }
                 }
             }
         }
