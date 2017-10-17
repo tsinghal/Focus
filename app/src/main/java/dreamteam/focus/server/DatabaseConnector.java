@@ -27,7 +27,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 29;
+
+    private int database_version = 0;
 
     // Database Name
     private static final String DATABASE_NAME = "database";
@@ -123,11 +125,17 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILE_IN_SCHEDULE_REPEATS);
         // Create tables again
         onCreate(db);
+
+        database_version = 0;
     }
 
     /**
      * All CRUD(Create, Read, Update, Delete) Operations
      */
+
+    private void incrementDatabaseVersion() {
+        ++database_version;
+    }
 
     public boolean createProfile(Profile profile) throws SQLException {
 
@@ -153,6 +161,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
 
         db.close();
+        incrementDatabaseVersion();
         return true;
     }
 
@@ -175,6 +184,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 throw e;
             }
         }
+        incrementDatabaseVersion();
         return true;
     }
 
@@ -186,340 +196,435 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).parse(d);
     }
 
-        public boolean updateProfile(String originalProfileName, Profile updatedProfile) {
+    public boolean updateProfile(String originalProfileName, Profile updatedProfile) {
 
-            SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase();
 
-            if(!updatedProfile.getName().equals(originalProfileName)) {
-                ContentValues args = new ContentValues();
-                args.put(KEY_PROFILE_NAME, updatedProfile.getName());
+        if(!updatedProfile.getName().equals(originalProfileName)) {
+            ContentValues args = new ContentValues();
+            args.put(KEY_PROFILE_NAME, updatedProfile.getName());
 
-                db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_PROFILE_NAME + "='" + updatedProfile.getName() + "'", null);
-            }
-
-            return db.delete(TABLE_PROFILES, KEY_NAME + "='" + originalProfileName + "'", null) > 0 &&
-                    db.delete(TABLE_BLOCKED_APPS, KEY_PROFILE_NAME + "='" + originalProfileName + "'", null) > 0 &&
-                    createProfile(updatedProfile);
+            db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_PROFILE_NAME + "='" + updatedProfile.getName() + "'", null);
         }
 
-        private int getProfileID(ProfileInSchedule pis, String scheduleName) {
-            SQLiteDatabase db = this.getWritableDatabase();
+        incrementDatabaseVersion();
+        return db.delete(TABLE_PROFILES, KEY_NAME + "='" + originalProfileName + "'", null) > 0 &&
+                db.delete(TABLE_BLOCKED_APPS, KEY_PROFILE_NAME + "='" + originalProfileName + "'", null) > 0 &&
+                createProfile(updatedProfile);
+    }
 
-            // Select All Query
-            String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE "
-                    + KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
-                    + KEY_START_TIME + "='" + getDateString(pis.getStartTime()) + "' AND "
-                    + KEY_END_TIME + "='" + getDateString(pis.getEndTime()) + "' AND "
-                    + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
+    private int getProfileID(ProfileInSchedule pis, String scheduleName, Repeat_Enum re) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
-            Cursor cursor = db.rawQuery(selectQuery, null);
-            
-            // looping through all rows and adding to list
-            if (cursor.moveToFirst()) {
-                return cursor.getInt(0);
-            }
-            return -1;
+        // Select All Query
+        String selectQuery = "SELECT  *, repeat_enum FROM " + TABLE_PROFILE_IN_SCHEDULE
+                + " JOIN " + TABLE_PROFILE_IN_SCHEDULE_REPEATS + " ON "
+                + TABLE_PROFILE_IN_SCHEDULE_REPEATS + "." + KEY_PROFILE_IN_SCHEDULE_ID + "=" + TABLE_PROFILE_IN_SCHEDULE + "." + KEY_PROFILE_IN_SCHEDULE_ID
+                + " WHERE "
+                + KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
+                + KEY_START_TIME + "='" + getDateString(pis.getStartTime()) + "' AND "
+                + KEY_END_TIME + "='" + getDateString(pis.getEndTime()) + "' AND "
+                + KEY_SCHEDULE_NAME + "='" + scheduleName + "' AND "
+                + KEY_REPEAT_ENUM + "='" + re.toString() + "'";
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            return cursor.getInt(0);
         }
+        return -1;
+    }
 
     public boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        int oldProfileID = getProfileID(oldPis, scheduleName);
+        int oldProfileID = getProfileID(oldPis, scheduleName, oldPis.repeatsOn().get(0));
 
-        removeProfileFromSchedule(oldPis, scheduleName);
+        removeProfileFromSchedule(oldPis, scheduleName, oldPis.repeatsOn().get(0));
         addProfileInSchedule(newPis, scheduleName);
 
-        int newProfileID = getProfileID(newPis, scheduleName);
+        int newProfileID = getProfileID(newPis, scheduleName, newPis.repeatsOn().get(0));
 
         ContentValues args = new ContentValues();
         args.put(KEY_PROFILE_IN_SCHEDULE_ID, newProfileID);
 
+        db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + oldProfileID, null);
+
+        incrementDatabaseVersion();
+
         return db.update(TABLE_PROFILE_IN_SCHEDULE_REPEATS, args, KEY_PROFILE_IN_SCHEDULE_ID + "=" + oldProfileID, null) > 0;
     }
 
-    public boolean updateSchedule(String oldScheduleName, String newScheduleName) {
+    public boolean updateScheduleName(String oldScheduleName, String newScheduleName) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues args = new ContentValues();
-        args.put(KEY_SCHEDULE_NAME, newScheduleName);
+        if(!newScheduleName.equals(oldScheduleName)) {
+            ContentValues args = new ContentValues();
+            args.put(KEY_SCHEDULE_NAME, newScheduleName);
 
-        db.update(TABLE_SCHEDULES, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName +"'", null);
-        db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName +"'", null);
-
+            incrementDatabaseVersion();
+            db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName + "'", null);
+            return db.update(TABLE_SCHEDULES, args, KEY_SCHEDULE_NAME + "='" + oldScheduleName + "'", null) > 0;
+        }
         return true;
     }
 
+    public boolean hasSchedule(String scheduleName) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
-//    public boolean updateStudentInfo(int updId, int updEnrolNo, String updName, String updPhoneNo) {
-//
-//        SQLiteDatabase db = this.getWritableDatabase();
-//
-//        ContentValues args = new ContentValues();
-//
-//        args.put(KEY_ENROLL_NO, updEnrolNo);
-//        args.put(KEY_NAME, updName);
-//        args.put(KEY_PHONE_NO, updPhoneNo);
-//
-//        return db.update(TABLE_STUDENT_DETAIL, args, KEY_ID + "=" + updId, null) > 0;
-//    }
+        String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
 
-        public boolean removeProfile(String profileName) {
-            SQLiteDatabase db = this.getWritableDatabase();
-            return db.delete(TABLE_PROFILES, KEY_NAME + "='" + profileName + "'", null) > 0 &&
-                    db.delete(TABLE_BLOCKED_APPS, KEY_PROFILE_NAME + "='" + profileName + "'", null) > 0 &&
-                    removeProfileFromAllSchedules(profileName);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        return cursor.getCount() > 0;
+    }
+
+    public boolean updateSchedule(String oldScheduleName, Schedule newSchedule) throws ParseException {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        removeSchedule(oldScheduleName);
+        incrementDatabaseVersion();
+        return addSchedule(newSchedule);
+    }
+
+    public boolean removeProfile(String profileName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        incrementDatabaseVersion();
+        return db.delete(TABLE_PROFILES, KEY_NAME + "='" + profileName + "'", null) > 0 &&
+                db.delete(TABLE_BLOCKED_APPS, KEY_PROFILE_NAME + "='" + profileName + "'", null) > 0 &&
+                removeProfileFromAllSchedules(profileName);
+    }
+
+    private boolean removeProfileFromAllSchedules(String profileName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String selectQuery = "SELECT * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE "
+                + KEY_PROFILE_NAME + "='" + profileName + "'";
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if(cursor.moveToFirst()) {
+            do {
+
+                db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + cursor.getInt(0), null);
+
+            } while (cursor.moveToNext());
         }
 
-        private boolean removeProfileFromAllSchedules(String profileName) {
-            SQLiteDatabase db = this.getWritableDatabase();
+        incrementDatabaseVersion();
+        return db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_NAME + "='" + profileName + "'", null) > 0;
+    }
 
-            return db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_NAME + "='" + profileName + "'", null) > 0;
+    //ACTIVATE PROFILE IS ONLY CALLED FOR INSTANT ACTIVATION
+    public boolean activateProfile(ProfileInSchedule pis) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_ACTIVE, "true");
+
+        incrementDatabaseVersion();
+        return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
+                addProfileInSchedule(pis, "AnonymousSchedule");
+    }
+
+    public boolean deactivateProfile(Profile profile) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_ACTIVE, "false");
+
+        incrementDatabaseVersion();
+        return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + profile.getName() + "'", null) > 0 &&
+                removeProfileFromSchedule(profile, "AnonymousSchedule");
+    }
+
+    private ArrayList<Repeat_Enum> getProfileInScheduleRepeats(Integer profileInScheduleID) {
+        ArrayList<Repeat_Enum> repeats = new ArrayList<Repeat_Enum>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE_REPEATS + " WHERE "
+                + KEY_PROFILE_IN_SCHEDULE_ID + "=" + profileInScheduleID;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Repeat_Enum repeatEnum = Repeat_Enum.valueOf(cursor.getString(1));
+                // Adding contact to list
+                repeats.add(repeatEnum);
+
+            } while (cursor.moveToNext());
         }
 
-        //ACTIVATE PROFILE IS ONLY CALLED FOR INSTANT ACTIVATION
-        public boolean activateProfile(ProfileInSchedule pis) {
-            SQLiteDatabase db = this.getWritableDatabase();
+        // return contact list
+        return repeats;
+    }
 
+    public boolean addProfileInScheduleRepeats(ProfileInSchedule pis, Integer profileInScheduleID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ArrayList<Repeat_Enum> repeats = pis.repeatsOn();
+        for(int i=0; i<repeats.size(); i++) {
             ContentValues values = new ContentValues();
-
-            values.put(KEY_ACTIVE, true);
-
-            return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
-                    addProfileInSchedule(pis, "AnonymousSchedule");
-        }
-
-        public boolean deactivateProfile(ProfileInSchedule pis) {
-            SQLiteDatabase db = this.getWritableDatabase();
-
-            ContentValues values = new ContentValues();
-
-            values.put(KEY_ACTIVE, false);
-
-            return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
-                    removeProfileFromSchedule(pis, "AnonymousSchedule");
-        }
-
-        private ArrayList<Repeat_Enum> getProfileInScheduleRepeats(Integer profileInScheduleID) {
-            ArrayList<Repeat_Enum> repeats = new ArrayList<Repeat_Enum>();
-
-            // Select All Query
-            String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE_REPEATS + " WHERE "
-                    + KEY_PROFILE_IN_SCHEDULE_ID + "=" + profileInScheduleID;
-
-            SQLiteDatabase db = this.getWritableDatabase();
-            Cursor cursor = db.rawQuery(selectQuery, null);
-
-            // looping through all rows and adding to list
-            if (cursor.moveToFirst()) {
-                do {
-
-                    Repeat_Enum repeatEnum = Repeat_Enum.valueOf(cursor.getString(1));
-                    // Adding contact to list
-                    repeats.add(repeatEnum);
-
-                } while (cursor.moveToNext());
-            }
-
-            // return contact list
-            return repeats;
-        }
-
-        private boolean addProfileInScheduleRepeats(ProfileInSchedule pis, Integer profileInScheduleID) {
-            SQLiteDatabase db = this.getWritableDatabase();
-            ArrayList<Repeat_Enum> repeats = pis.repeatsOn();
-            for(int i=0; i<repeats.size(); i++) {
-                ContentValues values = new ContentValues();
-
-                values.put(KEY_PROFILE_IN_SCHEDULE_ID, profileInScheduleID);
-                values.put(KEY_REPEAT_ENUM, repeats.get(i).toString());
-
-                try {
-                    db.insertOrThrow(TABLE_PROFILE_IN_SCHEDULE_REPEATS, null, values);
-                } catch (SQLException e) {
-                    Log.d("error", e.getMessage());
-                    db.close();
-                    throw e;
-                }
-            }
-
-            return true;
-        }
-
-        public boolean addProfileInSchedule(ProfileInSchedule pis, String scheduleName) throws SQLException {
-            SQLiteDatabase db = this.getWritableDatabase();
-
-            ContentValues values = new ContentValues();
-
-            values.put(KEY_PROFILE_NAME, pis.getProfile().getName());
-            values.put(KEY_START_TIME, getDateString(pis.getStartTime()));
-            values.put(KEY_END_TIME, getDateString(pis.getEndTime()));
-            values.put(KEY_SCHEDULE_NAME, scheduleName);
+            values.put(KEY_PROFILE_IN_SCHEDULE_ID, profileInScheduleID);
+            values.put(KEY_REPEAT_ENUM, repeats.get(i).toString());
 
             try {
-                db.insertOrThrow(TABLE_PROFILE_IN_SCHEDULE, null, values);
+                db.insertOrThrow(TABLE_PROFILE_IN_SCHEDULE_REPEATS, null, values);
             } catch (SQLException e) {
-                Log.d("error", e.getMessage());
                 db.close();
                 throw e;
             }
-
-            String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE " + KEY_PROFILE_NAME
-                    + "='" + pis.getProfile().getName() + "'";
-
-            Cursor cursor = db.rawQuery(selectQuery, null);
-
-            if(cursor.moveToFirst()) {
-                addProfileInScheduleRepeats(pis, cursor.getInt(0));
-            }
-            return true;
         }
 
-        public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName) {
-            SQLiteDatabase db = this.getWritableDatabase();
+        incrementDatabaseVersion();
+        return true;
+    }
+
+    public boolean addProfileInSchedule(ProfileInSchedule pis, String scheduleName) throws SQLException {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_PROFILE_NAME, pis.getProfile().getName());
+        values.put(KEY_START_TIME, getDateString(pis.getStartTime()));
+        values.put(KEY_END_TIME, getDateString(pis.getEndTime()));
+        values.put(KEY_SCHEDULE_NAME, scheduleName);
+
+        try {
+            db.insertOrThrow(TABLE_PROFILE_IN_SCHEDULE, null, values);
+        } catch (SQLException e) {
+            Log.d("error", e.getMessage());
+            db.close();
+            throw e;
+        }
+
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE " + KEY_PROFILE_NAME
+                + "='" + pis.getProfile().getName() + "' AND " + KEY_START_TIME + "='" + getDateString(pis.getStartTime()) + "' AND "
+                + KEY_END_TIME + "='" + getDateString(pis.getEndTime()) + "' AND " + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        int index = -1;
+        if(cursor.moveToFirst()) {
+            do {
+                index = cursor.getInt(0);
+            }while(cursor.moveToNext());
+
+            addProfileInScheduleRepeats(pis, index);
+        }
+
+        incrementDatabaseVersion();
+        return true;
+    }
+
+    public boolean removeProfileFromSchedule(Profile profile, String scheduleName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String selectQuery = "SELECT * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE " + KEY_PROFILE_NAME + "='" + profile.getName()
+                + "' AND " + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if(cursor.moveToFirst()) {
+
+            incrementDatabaseVersion();
             return db.delete(TABLE_PROFILE_IN_SCHEDULE,
-                    KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
-                            + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+                    KEY_PROFILE_NAME + "='" + profile.getName() + "' AND "
+                            + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
+                    && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + cursor.getInt(0), null) > 0;
         }
 
-        public ArrayList<String> getBlockedApps(String profileName) {
-            ArrayList<String> blockedApps = new ArrayList<String>();
+        return false;
+    }
 
-            String selectQuery = "SELECT * FROM " + TABLE_BLOCKED_APPS + " WHERE "
-                    + KEY_PROFILE_NAME + "='" + profileName + "'";
+    public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
-            SQLiteDatabase db = this.getWritableDatabase();
-            Cursor cursor = db.rawQuery(selectQuery, null);
+        incrementDatabaseVersion();
+        return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0
+                && db.delete(TABLE_PROFILE_IN_SCHEDULE,
+                KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
+                        + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+    }
 
-            if(cursor.moveToFirst()) {
-                do {
+    public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName, Repeat_Enum re) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
-                    String appName = cursor.getString(1);
-                    // Adding contact to list
-                    blockedApps.add(appName);
+        incrementDatabaseVersion();
+        return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0
+                && db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0;
+    }
 
-                } while (cursor.moveToNext());
-            }
+    public ArrayList<String> getBlockedApps(String profileName) {
+        ArrayList<String> blockedApps = new ArrayList<String>();
 
-            return blockedApps;
+        String selectQuery = "SELECT * FROM " + TABLE_BLOCKED_APPS + " WHERE "
+                + KEY_PROFILE_NAME + "='" + profileName + "'";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if(cursor.moveToFirst()) {
+            do {
+
+                String appName = cursor.getString(1);
+                // Adding contact to list
+                blockedApps.add(appName);
+
+            } while (cursor.moveToNext());
         }
 
-        public ArrayList<Profile> getProfiles() {
-            ArrayList<Profile> profiles = new ArrayList<Profile>();
+        return blockedApps;
+    }
 
-            // Select All Query
-            String selectQuery = "SELECT  * FROM " + TABLE_PROFILES;
+    //NOTE: This function returns null when no profile is found
+    public Profile getProfileByName(String profileName) {
 
-            SQLiteDatabase db = this.getWritableDatabase();
-            Cursor cursor = db.rawQuery(selectQuery, null);
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILES + " WHERE " + KEY_NAME + "='" + profileName + "'";
 
-            // looping through all rows and adding to list
-            if (cursor.moveToFirst()) {
-                do {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
 
-                    Profile profile = new Profile(cursor.getString(0), getBlockedApps(cursor.getString(0)));
-                    profile.setActive(Boolean.parseBoolean(cursor.getString(1)));
-
-                    // Adding contact to list
-                    profiles.add(profile);
-
-                } while (cursor.moveToNext());
-            }
-
-            // return contact list
-            return profiles;
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            Profile profile = new Profile(cursor.getString(0), getBlockedApps(cursor.getString(0)));
+            profile.setActive(Boolean.parseBoolean(cursor.getString(1)));
+            return profile;
         }
 
-        public ArrayList<Schedule> getSchedules() throws ParseException {
-            ArrayList<Schedule> schedules = new ArrayList<Schedule>();
+        // return contact list
+        return null;
+    }
 
-            // Select All Query
-            String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULES;
+    public ArrayList<Profile> getProfiles() {
+        ArrayList<Profile> profiles = new ArrayList<Profile>();
 
-            SQLiteDatabase db = this.getWritableDatabase();
-            Cursor cursor = db.rawQuery(selectQuery, null);
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILES;
 
-            // looping through all rows and adding to list
-            if (cursor.moveToFirst()) {
-                do {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
 
-                    Schedule schedule = new Schedule(cursor.getString(0), getProfilesInSchedule(cursor.getString(0)), Boolean.parseBoolean(cursor.getString(2)));
-                    schedule.setActive(Boolean.parseBoolean(cursor.getString(1)));
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
 
-                    // Adding contact to list
-                    schedules.add(schedule);
+                Profile profile = new Profile(cursor.getString(0), getBlockedApps(cursor.getString(0)));
+                profile.setActive(Boolean.parseBoolean(cursor.getString(1)));
 
-                } while (cursor.moveToNext());
-            }
+                // Adding contact to list
+                profiles.add(profile);
 
-            // return contact list
-            return schedules;
+            } while (cursor.moveToNext());
         }
 
-        public ArrayList<ProfileInSchedule> getProfilesInSchedule(String scheduleName) throws ParseException {
-            ArrayList<ProfileInSchedule> profilesInSchedule = new ArrayList<ProfileInSchedule>();
+        // return contact list
+        return profiles;
+    }
 
-            // Select All Query
-            String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE "
-                    + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
+    public ArrayList<Schedule> getSchedules() throws ParseException {
+        ArrayList<Schedule> schedules = new ArrayList<Schedule>();
 
-            SQLiteDatabase db = this.getWritableDatabase();
-            Cursor cursor = db.rawQuery(selectQuery, null);
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SCHEDULE_NAME + " NOT LIKE 'AnonymousSchedule'";
 
-            // looping through all rows and adding to list
-            if (cursor.moveToFirst()) {
-                do {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
 
-                    Profile profile = new Profile(cursor.getString(1), getBlockedApps(cursor.getString(1)));
-                    ProfileInSchedule profileInSchedule = new ProfileInSchedule(profile, getDate(cursor.getString(3)),
-                            getDate(cursor.getString(3)), getProfileInScheduleRepeats(cursor.getInt(0)));
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
 
-                    // Adding contact to list
-                    profilesInSchedule.add(profileInSchedule);
+                Schedule schedule = new Schedule(cursor.getString(0), getProfilesInSchedule(cursor.getString(0)), Boolean.parseBoolean(cursor.getString(1)));
+                schedule.setActive(Boolean.parseBoolean(cursor.getString(1)));
 
-                } while (cursor.moveToNext());
-            }
+                // Adding contact to list
+                schedules.add(schedule);
 
-            // return contact list
-            return profilesInSchedule;
+            } while (cursor.moveToNext());
         }
 
-        public boolean addBlockedNotification(String notificationAppName) {
-            SQLiteDatabase db = this.getWritableDatabase();
+        // return contact list
+        return schedules;
+    }
 
-            ContentValues values = new ContentValues();
+    //TESTED
+    public ArrayList<ProfileInSchedule> getProfilesInSchedule(String scheduleName) throws ParseException {
+        ArrayList<ProfileInSchedule> profilesInSchedule = new ArrayList<ProfileInSchedule>();
 
-            values.put(KEY_APP_NAME, notificationAppName);
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE "
+                + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
 
-            try {
-                db.insertOrThrow(TABLE_BLOCKED_NOTIFICATIONS, null, values);
-            } catch (SQLException e) {
-                Log.d("error", e.getMessage());
-                db.close();
-                throw e;
-            }
-            return true;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+
+                Profile profile = new Profile(cursor.getString(1), getBlockedApps(cursor.getString(1)));
+
+                ProfileInSchedule profileInSchedule = new ProfileInSchedule(profile, getDate(cursor.getString(2)),
+                        getDate(cursor.getString(3)), getProfileInScheduleRepeats(cursor.getInt(0)));
+
+                // Adding contact to list
+                profilesInSchedule.add(profileInSchedule);
+
+            } while (cursor.moveToNext());
         }
 
-        public boolean activateSchedule(Schedule schedule) {
-            SQLiteDatabase db = this.getWritableDatabase();
+        // return contact list
+        return profilesInSchedule;
+    }
 
-            ContentValues values = new ContentValues();
+    public boolean addBlockedNotification(String notificationAppName) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
-            values.put(KEY_ACTIVE, true);
+        ContentValues values = new ContentValues();
 
-            return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + schedule.getName() + "'", null) > 0;
+        values.put(KEY_APP_NAME, notificationAppName);
+
+        try {
+            db.insertOrThrow(TABLE_BLOCKED_NOTIFICATIONS, null, values);
+        } catch (SQLException e) {
+            Log.d("error", e.getMessage());
+            db.close();
+            throw e;
         }
 
-        public boolean deactivateSchedule(Schedule schedule) {
-            SQLiteDatabase db = this.getWritableDatabase();
+        incrementDatabaseVersion();
+        return true;
+    }
 
-            ContentValues values = new ContentValues();
+    public boolean activateSchedule(String scheduleName) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
-            values.put(KEY_ACTIVE, false);
+        ContentValues values = new ContentValues();
 
-            return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + schedule.getName() + "'", null) > 0;
-        }
+        values.put(KEY_ACTIVE, "true");
+
+        incrementDatabaseVersion();
+        return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+    }
+
+    public boolean deactivateSchedule(String scheduleName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_ACTIVE, "false");
+
+        incrementDatabaseVersion();
+        return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+    }
 
     public Integer getNotificationsCountForApp(String appName) {
 
@@ -532,6 +637,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return cursor.getCount();
     }
 
+    //SERVER WILL IMPLEMENT THIS INSTEAD BY ITERATING THROUGH EACH PROFILEINSCHEDULE IN SCHEDULE AND CALLING getNotificationsCountForApp
     public HashMap<String, Integer> getNotificationsForSchedule(Schedule schedule) {
         HashMap<String, Integer> notifications = new HashMap<String, Integer>();
 
@@ -553,14 +659,14 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return notifications;
     }
 
-    public boolean addSchedule(Schedule schedule) {
+    public boolean addSchedule(Schedule schedule) throws SQLException {
         SQLiteDatabase db = this.getWritableDatabase();
 
         //Throws on profile duplicacy
         ContentValues values = new ContentValues();
 
         values.put(KEY_SCHEDULE_NAME, schedule.getName());
-        values.put(KEY_ACTIVE, schedule.isActive());
+        values.put(KEY_ACTIVE, String.valueOf(schedule.isActive()));
 
         // Inserting Row
         try {
@@ -576,9 +682,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             addProfileInSchedule(calendar.get(i), schedule.getName());
         }
 
+        incrementDatabaseVersion();
         return true;
     }
 
+    //CHANGED SO IF ERROR, LOOK HERE FIRST
     public boolean removeSchedule(String scheduleName) throws ParseException {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -586,51 +694,16 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         ArrayList<ProfileInSchedule> profilesInSchedule = getProfilesInSchedule(scheduleName);
 
         for(int i=0; i<profilesInSchedule.size(); i++) {
-            removeProfileFromSchedule(profilesInSchedule.get(i), scheduleName);
+            removeProfileFromSchedule(profilesInSchedule.get(i), scheduleName, profilesInSchedule.get(i).repeatsOn().get(0));
         }
 
-        return db.delete(TABLE_SCHEDULES, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0 &&
-                db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        incrementDatabaseVersion();
+        return db.delete(TABLE_SCHEDULES, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
     }
 
     public Integer getDatabaseVersion() {
-        return DATABASE_VERSION;
+        return database_version;
     }
-
-//    // Getting All Students
-//    public List<Student> getAllStudentList() {
-//
-//
-//        List<Student> studentList = new ArrayList<Student>();
-//
-//        // Select All Query
-//        String selectQuery = "SELECT  * FROM " + TABLE_STUDENT_DETAIL;
-//
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        Cursor cursor = db.rawQuery(selectQuery, null);
-//
-//        // looping through all rows and adding to list
-//        if (cursor.moveToFirst()) {
-//            do {
-//
-//                Student stdnt = new Student();
-//                stdnt.set_id(Integer.parseInt(cursor.getString(0)));
-//                stdnt.set_enroll_no(Integer.parseInt(cursor.getString(1)));
-//                stdnt.set_name(cursor.getString(2));
-//                stdnt.set_phone_number(cursor.getString(3));
-//
-//                // Adding contact to list
-//                studentList.add(stdnt);
-//
-//            } while (cursor.moveToNext());
-//        }
-//
-//        // return contact list
-//        return studentList;
-//    }
-
-
-
 }
 
 //public class DatabaseConnector {
@@ -640,31 +713,37 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 //
 //    public boolean updateProfile(Profile profile) {} DONE for remove Profile, blockedApps, and updated createProfile TESTED
 //
-//    public boolean activateProfile(ProfileInSchedule pis) {} DONE
+//    public boolean activateProfile(ProfileInSchedule pis) {} DONE TESTED
 //
-//    public boolean deactivateProfile(Profile profile) {} DONE
+//    public boolean deactivateProfile(Profile profile) {} DONE TESTED
 //
-//    public HashMap<String, Integer> getNotificationsCountForApp(String appName) {} DONE
+//    public HashMap<String, Integer> getNotificationsCountForApp(String appName) {} DONE TESTED
 //
 //    public boolean addSchedule(Schedule schedule) {} DONE TESTED
 //
 //    public boolean removeSchedule(Schedule schedule) {} DONE TESTED
 //
-//    public boolean updateSchedule(Schedule schedule) {}
+//    public boolean updateSchedule(Schedule schedule) {} DONE TESTED
 //
-//    public boolean addProfileInSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE
+//    public boolean addProfileInSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE TESTED
 //
-//    public boolean removeProfileFromSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE
+//    public boolean removeProfileFromSchedule(ProfileInSchedule pis, Schedule schedule) {} DONE TESTED
 
-// updateProfileInSchedule DONE
-//
-//    public boolean activateSchedule(Schedule schedule) {} DONE
-//
-//    public boolean deactivateSchedule(Schedule schedule) {} DONE
-//
-//    public HashMap<String, Integer> getNotificationsForSchedule(Schedule schedule) {} DONE
+//    public boolean removeProfileFromSchedule(Profile profile, Schedule schedule) {} DONE TESTED
 
-    //public Array(Profile) getProfiles() {} DONE
+//    private boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPid, String scheduleName) {} DONE TESTED
+//
+//    public boolean activateSchedule(Schedule schedule) {} DONE TESTED
+//
+//    public boolean deactivateSchedule(Schedule schedule) {} DONE TESTED
+//
+//    public HashMap<String, Integer> getNotificationsForSchedule(Schedule schedule) {} DONE SERVER WOULD IMPLEMENT N TEST THIS
 
-    //public Array(Profile) getSchedules() {} DONE
-//}
+//    public Array(Profile) getProfiles() {} DONE TESTED
+//
+//    public Array(Profile) getSchedules() {} DONE TESTED
+
+//    public Profile getProfileByName(String profileName) {} DONE TESTED
+//
+// }
+    
