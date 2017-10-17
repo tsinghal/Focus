@@ -29,7 +29,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     // Database Version
     private static final int DATABASE_VERSION = 29;
 
-    private int database_version = 0;
+    private static int database_version = 0;
 
     // Database Name
     private static final String DATABASE_NAME = "database";
@@ -629,13 +629,14 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     public Integer getNotificationsCountForApp(String appName) {
 
-        String selectQuery = "SELECT COUNT(*) FROM " + TABLE_BLOCKED_NOTIFICATIONS + " WHERE " + KEY_APP_NAME + "='" + appName + "'";
+        String selectQuery = "SELECT * FROM " + TABLE_BLOCKED_NOTIFICATIONS + " WHERE " + KEY_APP_NAME + "='" + appName + "'";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-
+        int count = cursor.getCount();
+        
         db.delete(TABLE_BLOCKED_NOTIFICATIONS, KEY_APP_NAME + "='" + appName + "'", null);
-        return cursor.getCount();
+        return count;
     }
 
     //SERVER WILL IMPLEMENT THIS INSTEAD BY ITERATING THROUGH EACH PROFILEINSCHEDULE IN SCHEDULE AND CALLING getNotificationsCountForApp
