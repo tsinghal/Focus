@@ -54,4 +54,8 @@ public class Schedule {
     }
 
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> backgroundThread

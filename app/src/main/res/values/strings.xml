@@ -5,6 +5,9 @@
     <string name="newProfile">New Profile</string>
     <string name="name">Name:</string>
 
+    <string name="service_notification_name">NotificationService</string>
+    <string name="service_background_name">BackgroundService</string>
+
     <string name="notification_service">"Notification Listener Service"</string>
     <string name="notification_service_explanation">"For notification blocking to work, you must enable grant this app notification access. Enable it now?"</string>
     <string name="usage_access">"Usage access"</string>

@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dreamteam.focus">
 
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -21,11 +25,15 @@
 
         <service
             android:name=".server.BackgroundService"
-            android:exported="false" />
+            android:enabled="true"
+            android:exported="true"
+            android:stopWithTask="false"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
 
-        <activity android:name=".client.CreateProfile"
-            android:windowSoftInputMode="adjustPan">
-        </activity>
+        </service>
 
         <activity android:name=".client.Profiles">
 

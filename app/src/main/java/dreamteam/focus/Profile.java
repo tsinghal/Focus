@@ -52,4 +52,8 @@ public class Profile {
     public void addBlockedNotifications(String notification) {
         this.blockedNotifications.add(notification);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> backgroundThread

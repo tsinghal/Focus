@@ -7,4 +7,8 @@ package dreamteam.focus;
 public enum Repeat_Enum {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY,
     NEVER
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> backgroundThread

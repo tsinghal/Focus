@@ -1,91 +1,539 @@
 package dreamteam.focus.server;
 
-import android.app.IntentService;
-import android.content.Intent;
+import android.app.ActivityManager;
+import android.app.AppOpsManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.IBinder;
+import android.service.notification.NotificationListenerService;
+import android.service.notification.StatusBarNotification;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.format.DateFormat;
+import android.util.Log;
+import android.widget.Toast;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import dreamteam.focus.ProfileInSchedule;
+import dreamteam.focus.R;
+import dreamteam.focus.Repeat_Enum;
+import dreamteam.focus.Schedule;
+import dreamteam.focus.client.MainActivity;
 
 /**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p>
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
+ * src: https://stackoverflow.com/questions/41425986
  */
-public class BackgroundService extends IntentService {
-    // TODO: Rename actions, choose action names that describe tasks that this
-    // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-    private static final String ACTION_FOO = "dreamteam.focus.server.action.FOO";
-    private static final String ACTION_BAZ = "dreamteam.focus.server.action.BAZ";
+public class BackgroundService extends NotificationListenerService {
+    public static final String ACTION_STATUS_BROADCAST =
+            "com.example.notifyservice.NotificationService_Status";
+    private static final String TAG = "BackgroundService";
+    private static final int SCHEDULE_TIMEOUT_SEC = 5;
+    private static final int BLOCKING_TIMEOUT_SEC = 1;
 
-    // TODO: Rename parameters
-    private static final String EXTRA_PARAM1 = "dreamteam.focus.server.extra.PARAM1";
-    private static final String EXTRA_PARAM2 = "dreamteam.focus.server.extra.PARAM2";
+    private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
+
+    private static final int NOTIFICATION_ID_GENERIC = 0;
+    private static final int NOTIFICATION_ID_MESSAGE = 1;
+    private static final int NOTIFICATION_ID_UNSEEN_NOTIFICATIONS = 3;
+    private static final int NOTIFICATION_ID_PROFILE_CHANGE = 2;
+    private static final int NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE = 11;
+    private static final int NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE = 12;
+
+    private Runnable scheduleThread = null;
+    private Runnable blockingThread = null;
+    private DatabaseConnector db = null;
+    private ArrayList<Schedule> schedules;
+    private ArrayList<ProfileInSchedule> anonymousPIS;
+    private int anonymousPISOldSize;
+    private int databaseVersion = -1;
+    private HashSet<String> blockedApps;
+    private NLServiceReceiver nlServiceReceiver;
+    NotificationManager mNotifyMgr;
+    Notification.Builder mBuilder;
 
     public BackgroundService() {
-        super("BackgroundService");
-    }
-
-    /**
-     * Starts this service to perform action Foo with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
-     */
-    // TODO: Customize helper method
-    public static void startActionFoo(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, BackgroundService.class);
-        intent.setAction(ACTION_FOO);
-        intent.putExtra(EXTRA_PARAM1, param1);
-        intent.putExtra(EXTRA_PARAM2, param2);
-        context.startService(intent);
-    }
-
-    /**
-     * Starts this service to perform action Baz with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
-     */
-    // TODO: Customize helper method
-    public static void startActionBaz(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, BackgroundService.class);
-        intent.setAction(ACTION_BAZ);
-        intent.putExtra(EXTRA_PARAM1, param1);
-        intent.putExtra(EXTRA_PARAM2, param2);
-        context.startService(intent);
+        schedules = new ArrayList<>();
+        blockedApps = new HashSet<>();
+        anonymousPIS = new ArrayList<>();
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public IBinder onBind(Intent intent) {
+        return super.onBind(intent);
+    }
+
+    /**
+     * @link https://stackoverflow.com/questions/28292682
+     */
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        final Handler mHandler = new Handler();
+        if (scheduleThread == null) {
+            Log.d(TAG, "scheduleThread created");
+            scheduleThread = new Runnable() {
+                @Override
+                public void run() {
+                    mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
+//                    Log.d(TAG, "scheduleThread");
+                    if (needUpdate()) updateFromServer();
+                    tick();
+                }
+            };
+            mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
+        }
+
+        if (blockingThread == null) {
+            Log.d(TAG, "blockingThread created");
+            blockingThread = new Runnable() {
+                @Override
+                public void run() {
+                    mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
+//                    Log.d(TAG, "blockingThread");
+                    blockApps();
+                }
+            };
+
+            mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
+        }
         if (intent != null) {
-            final String action = intent.getAction();
-            if (ACTION_FOO.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-                handleActionFoo(param1, param2);
-            } else if (ACTION_BAZ.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-                handleActionBaz(param1, param2);
+            if (intent.hasExtra("command")) {
+                Log.i("NotificationService", "Started for command '" + intent.getStringExtra("command"));
+                broadcastStatus();
+            } else if (intent.hasExtra("id")) {
+                int id = intent.getIntExtra("id", 0);
+                String message = intent.getStringExtra("msg");
+                Log.i("NotificationService", "Requested to start explicitly - id : " + id + " message : " + message);
+            }
+        }
+        super.onStartCommand(intent, flags, startId);
+
+        // NOTE: We return STICKY to prevent the automatic service termination
+        return START_STICKY;
+    }
+
+    @Override
+    public void onNotificationPosted(StatusBarNotification sbn) {
+        Log.i("onNotificationPosted", "ID: " + sbn.getId() + " " + sbn.getNotification().tickerText +
+                "\t" + sbn.getPackageName());
+
+        String packageName = getNameFromSBN(sbn);
+
+        // block each app's notifications in `blockedApps`
+        for (String app : blockedApps) {
+            if (packageName.equals(app)) {
+
+                cancelNotification(sbn.getKey());
+                db.addBlockedNotification(app); // tell database to add count to this app
+                sendNotification(NOTIFICATION_ID_MESSAGE, "Notification blocked by Focus!");
+                // TODO: just retest this new order of lines once
+            }
+
+        }
+        // cancel only that notification of Focus (used to dismiss heads-up notifications from other apps
+        if (packageName.equals("dreamteam.focus") && sbn.getId() == NOTIFICATION_ID_MESSAGE) {
+            cancelNotification(sbn.getKey());
+        }
+    }
+
+    /**
+     * Sends a notification from this application package to the Android System
+     *
+     * @param id      the id of this notification
+     * @param message the message of this notification
+     */
+    public void sendNotification(int id, String message) {
+
+        // Gets an instance of the NotificationManager service
+        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder = new Notification.Builder(getApplicationContext())
+                .setSmallIcon(R.drawable.ic_stat_name_notify)
+                .setContentTitle("User Alert")
+                .setContentText(message);
+
+        mBuilder.setContentIntent(resultPendingIntent);     //defines where the user will be directed if notification is clicked
+
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(id, mBuilder.build());
+        Log.d("sendNotification", "notification thrown!");
+    }
+
+    @Override
+    public void onNotificationRemoved(StatusBarNotification sbn) {
+        Log.i(TAG, "********** onNotificationRemoved");
+        Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
+//        Intent i = new  Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
+//        i.putExtra("notification_event","onNotificationRemoved :" + sbn.getPackageName() + "\n");
+//        sendBroadcast(i);
+
+    }
+
+    public void onListenerDisconnected() {
+        super.onListenerDisconnected();
+        Log.w("NotificationService", "Notification listener DISCONNECTED from the notification service! " +
+                "\nScheduling a reconnect...");
+    }
+
+    @Override
+    public void onListenerConnected() {
+        super.onListenerConnected();
+        Log.w("NotificationService", "Notification listener connected with the notification service!");
+    }
+
+    private String getNameFromSBN(StatusBarNotification sbn) {
+        String packageName = sbn.getPackageName();
+        Log.d(TAG, "getNameFromSBN" + packageName);
+        return packageName;
+    }
+
+    private void broadcastStatus() {
+//        Log.i(TAG, "Broadcasting status added(" + nAdded + ")/removed(" + nRemoved + ")");
+        Intent i1 = new Intent(ACTION_STATUS_BROADCAST);
+//        i1.putExtra("serviceMessage", "Added: " + nAdded + " | Removed: " + nRemoved);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i1);
+        //TODO: profileMessage, scheduleMessage
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.i(TAG, "onCreate");
+        nlServiceReceiver = new NLServiceReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.example.notifyservice.NOTIFICATION_LISTENER_SERVICE_EXAMPLE");
+        registerReceiver(nlServiceReceiver, filter);
+        Log.i("onCreate", "NotificationService created!");
+
+        if (getApplicationContext() != null) {
+            db = new DatabaseConnector(getApplicationContext());
+        }
+
+    }
+
+
+    @Override
+    public void onDestroy() {
+        // TODO check handle thread deletions?
+        super.onDestroy();
+        unregisterReceiver(nlServiceReceiver);
+        Log.i("NotificationService", "NotificationService destroyed.");
+    }
+
+    /**
+     * Get the value of today in terms of Repeat_Enum
+     *
+     * @return today, in Repeat_Enum
+     */
+    private Repeat_Enum todayInRepeatEnum() {
+        String today = (String) DateFormat.format("EEEE", new Date());
+        switch (today) {
+            case "Monday":
+                return Repeat_Enum.MONDAY;
+            case "Tuesday":
+                return Repeat_Enum.TUESDAY;
+            case "Wednesday":
+                return Repeat_Enum.WEDNESDAY;
+            case "Thursday":
+                return Repeat_Enum.THURSDAY;
+            case "Friday":
+                return Repeat_Enum.FRIDAY;
+            case "Saturday":
+                return Repeat_Enum.SATURDAY;
+            case "Sunday":
+                return Repeat_Enum.SUNDAY;
+            default:
+                return Repeat_Enum.NEVER;
+        }
+    }
+
+    /**
+     * This function is executed every SCHEDULE_TIMEOUT_SEC seconds.
+     */
+    public void tick() {
+        final String TAG = "tick()";
+
+        int now = getTimeInInt(new Date()); // get system time
+
+        // Make a deep copy of `blockedApps`
+        HashSet<String> oldBlockedApps = new HashSet<>();
+        for (String app : blockedApps) {
+            oldBlockedApps.add(app);
+        }
+        blockedApps.clear();
+
+        // Reconstruct
+        for (Schedule schedule : schedules) {
+            if (schedule.isActive()) {
+                Log.i(TAG + " normal schedule", schedule.getName());
+                for (ProfileInSchedule pis : schedule.getCalendar()) {
+                    if (pis.repeatsOn().contains(todayInRepeatEnum())) { // profile has to be repeated on current day
+                        if ((getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
+                                now <= (getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC / 2)) {
+                            sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
+                                    "Profile : " + pis.getProfile().getName() + " is now active");
+                            // tell UI(do only after updating database), use broadcastStatus()
+                            addAppsToBlockedApps(pis.getProfile());
+                        } else if ((getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
+                                now <= (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC / 2)) {
+                            sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
+                                    "Profile : " + pis.getProfile().getName() + " is now inactive");
+                            // tell UI(do only after updating database), use broadcastStatus()
+
+                        } else if ((getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC / 2) <= now &&
+                                now <= (getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC / 2)) {
+                            addAppsToBlockedApps(pis.getProfile());
+                        }
+                    }
+                }
+            }
+        }
+
+        for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
+            Log.d(TAG + " anonymousPIS - start",
+                    (getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC / 2) + " <= " + now +
+                            " && " +
+                            now + " <= " + (getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC / 2)
+            );
+            Log.d(TAG + " anonymousPIS - end",
+                    (getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC / 2) + " <= " + now +
+                            " && " +
+                            now + " <= " + (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC / 2)
+            );
+
+            if ((getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
+                    now <= (getTimeInInt(pis.getStartTime()) + 60)) {
+                if (anonymousPISOldSize < anonymousPIS.size()) {
+//                    sendNotification(NOTIFICATION_ID_PROFILE_CHANGE, "Your profile is now instantly active.");
+                    sendNotification(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE,
+                            "Profile : " + pis.getProfile().getName() + " is now active");
+                    anonymousPISOldSize = anonymousPIS.size();
+                }
+
+            } else if ((getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
+                    now <= (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC / 2)) {
+                sendNotification(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE,
+                        "Profile : " + pis.getProfile().getName() + " is now inactive");
+
+
+                if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {
+                    // TODO: tell UI(do only after updating database)
+                }
+                continue; // do not add this profile's apps to blockedApps
+            }
+
+
+            // add this Profile's apps to blockedApps
+            addAppsToBlockedApps(pis.getProfile());
+        }
+
+
+        if (anonymousPISOldSize > anonymousPIS.size()) {
+            sendNotification(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE, "Your profile is now inactive.");
+            anonymousPISOldSize = anonymousPIS.size();
+        }
+
+        // compare old and new list, call appropriate function as necessary
+        if (!blockedApps.equals(oldBlockedApps)) {
+            if (oldBlockedApps.removeAll(blockedApps) || (blockedApps.size() == 0)) { // returns true of something is removed
+                for (String app : oldBlockedApps) {
+                    // notify user about missed notifications
+                    int tmp = db.getNotificationsCountForApp(app);
+                    Log.d("db.getNotifCount = ", "" + tmp);
+                    // TODO: 10/16/17 getNotificationCount needs verification
+                    sendNotification(NOTIFICATION_ID_UNSEEN_NOTIFICATIONS + (int) (Math.random() * 1000),
+                            "You have unseen notifications from " + getAppNameFromPackage(app));
+                }
             }
         }
     }
 
     /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
+     * Adds apps specified in Profile into `blockedApps`.
+     * This should only be called with an active profile.
+     *
+     * @param activeProfile an active profile by time or user override
      */
-    private void handleActionFoo(String param1, String param2) {
-        // TODO: Handle action Foo
-        throw new UnsupportedOperationException("Not yet implemented");
+    private void addAppsToBlockedApps(dreamteam.focus.Profile activeProfile) {
+        for (String app : activeProfile.getApps()) {
+            blockedApps.add(app);
+        }
     }
 
     /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
+     * Helper function for tick()
+     *
+     * @param time Date
+     * @return int, in the format signifying time in format: HHmmss
+     * @link BackgroundService#tick tick()
      */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
+    private int getTimeInInt(Date time) {
+        return Integer.parseInt(new SimpleDateFormat("HH", Locale.US).format(time)) * 10000
+                + Integer.parseInt(new SimpleDateFormat("mm", Locale.US).format(time)) * 100
+                + Integer.parseInt(new SimpleDateFormat("ss", Locale.US).format(time));
+    }
+
+    /**
+     * @link https://stackoverflow.com/questions/19604097
+     */
+    public void blockApps() {
+        String appInForeground = getForegroundTask();
+        if (appInForeground == null)
+            return;
+
+        for (String app : blockedApps) { // block each app in blockedApps
+            if (appInForeground.equals(app)) {
+                ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+
+                // go back to main screen
+                Intent startMain = new Intent(Intent.ACTION_MAIN);
+                startMain.addCategory(Intent.CATEGORY_HOME);
+                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                this.startActivity(startMain);
+
+                // kill process
+                am.killBackgroundProcesses(appInForeground);
+                Toast.makeText(getBaseContext(),
+                        "Focus! has blocked " + getAppNameFromPackage(appInForeground),
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        }
+    }
+
+
+    /**
+     * @return package name of foreground app
+     * @link https://stackoverflow.com/questions/2166961
+     */
+    public String getForegroundTask() {
+        String currentApp = null;
+        if (isUsageAccessGranted()) {
+            currentApp = "NULL";
+            UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            List<UsageStats> appList =
+                    usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time);
+
+            if (appList != null && appList.size() > 0) {
+                SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
+                for (UsageStats usageStats : appList) {
+                    mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
+                }
+                if (!mySortedMap.isEmpty()) {
+                    currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+                }
+            }
+            //Log.i(TAG, "printForegroundTask: " + currentApp);
+        }
+        return currentApp;
+    }
+
+    /**
+     * Checks local database version number against remote version number
+     *
+     * @return True if local data is needs update, false otherwise
+     */
+    private boolean needUpdate() {
+//        Log.i("BS.needUpdate()", databaseVersion + " < " + db.getDatabaseVersion());
+        return databaseVersion < db.getDatabaseVersion();
+    }
+
+    /**
+     * Pulls data from server.
+     */
+    private void updateFromServer() {
+        final String TAG = "updateFromServer()";
+        Log.i(TAG, "getting update from server");
+        try {
+            schedules = db.getSchedules();
+            anonymousPIS = db.getProfilesInSchedule(ANONYMOUS_SCHEDULE);
+            databaseVersion = db.getDatabaseVersion(); // sync version with db
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.e(TAG, "error getting schedules from database");
+        }
+        Log.i(TAG, "completed update");
+    }
+
+    /**
+     * @param packageName: string of package name from which app name is derived
+     * @link https://stackoverflow.com/questions/41054355
+     */
+    public String getAppNameFromPackage(String packageName) {
+        PackageManager manager = getApplicationContext().getPackageManager();
+        ApplicationInfo info;
+        try {
+            info = manager.getApplicationInfo(packageName, 0);
+        } catch (final Exception e) {
+            info = null;
+        }
+        return (String) (info != null ? manager.getApplicationLabel(info) : "this app");
+    }
+
+    /**
+     * @return True if enabled, false otherwise.
+     * @link https://stackoverflow.com/questions/38686632
+     */
+    private boolean isUsageAccessGranted() {
+        try {
+            PackageManager packageManager = getPackageManager();
+            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(getPackageName(), 0);
+            AppOpsManager appOpsManager = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+            int mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    applicationInfo.uid, applicationInfo.packageName);
+            return (mode == AppOpsManager.MODE_ALLOWED);
+
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Notification Broadcast Receiver
+     */
+    class NLServiceReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if (intent.getStringExtra("command").equals("list")) {
+                Intent i1 = new Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
+                i1.putExtra("notification_event", "=====================");
+                sendBroadcast(i1);
+                int i = 1;
+                for (StatusBarNotification sbn : BackgroundService.this.getActiveNotifications()) {
+                    Intent i2 = new Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
+                    i2.putExtra("notification_event", i + " " + sbn.getPackageName() + "\n");
+                    sendBroadcast(i2);
+                    i++;
+                }
+                Intent i3 = new Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
+                i3.putExtra("notification_event", "===== Notification List ====");
+                sendBroadcast(i3);
+
+            }
+
+        }
     }
 }
+// TODO: 10/14/17 tell UI about shit
