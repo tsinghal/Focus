@@ -226,6 +226,8 @@ public class BackgroundService extends NotificationListenerService {
 
     }
 
+
+
     @Override
     public void onDestroy() {
         // TODO check handle thread deletions?
@@ -286,7 +288,7 @@ public class BackgroundService extends NotificationListenerService {
                                 now <= (getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC) / 2) {
                             sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
                                     "Profile : " + pis.getProfile().getName() + " is now active");
-                            // TODO: tell UI(do only after updating database), use broadcastStatus()
+                            // tell UI(do only after updating database), use broadcastStatus()
                             for (String app : pis.getProfile().getApps()) {     // reconstruct blockedApps
                                 blockedApps.add(app);
                                 Log.i(TAG, app);
@@ -295,7 +297,7 @@ public class BackgroundService extends NotificationListenerService {
                                 now <= (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC) / 2) {
                             sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
                                     "Profile : " + pis.getProfile().getName() + " is now inactive");
-                            // TODO: tell UI(do only after updating database), use broadcastStatus()
+                            // tell UI(do only after updating database), use broadcastStatus()
 
                         } else if ((getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC) / 2 <= now &&
                                 now <= (getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC) / 2) {
@@ -306,7 +308,7 @@ public class BackgroundService extends NotificationListenerService {
             }
         }
         for (ProfileInSchedule pis : anonymousPis) { // separate case for ANONYMOUS_SCHEDULE
-            // TODO: 10/14/17 Notify user profile activated ---> UI sends intent-> avoids throwing notification again
+
             if ((getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC) / 2 <= now &&
                     now <= (getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC) / 2) {
                 sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
@@ -510,5 +512,5 @@ public class BackgroundService extends NotificationListenerService {
     }
 }
 
-// TODO: 10/14/17 Refactor and clean up code
 // TODO: 10/14/17 tell UI about shit
+// TODO: check if notification posted & blockApps work
