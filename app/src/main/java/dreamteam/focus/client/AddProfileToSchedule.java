@@ -1,6 +1,5 @@
 package dreamteam.focus.client;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,20 +9,18 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TimePicker;
-
-import android.widget.EditText;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
-import dreamteam.focus.Profile;
 import dreamteam.focus.Repeat_Enum;
+import dreamteam.focus.client.adapter.AdapterAddProfileToSchedule;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**

@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -11,14 +11,11 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
-import dreamteam.focus.Profile;
 import dreamteam.focus.R;
-
+import dreamteam.focus.client.CreateProfile;
 
 
 public class AdapterApps extends ArrayAdapter<String> {
@@ -35,7 +32,7 @@ public class AdapterApps extends ArrayAdapter<String> {
     public View getView(final int position, View convertView, final ViewGroup parent)
     {
         final String appName = getItem(position);
-        int index=CreateProfile.appsOnDevice.indexOf(appName);
+        int index = CreateProfile.appsOnDevice.indexOf(appName);
         final String packageName=CreateProfile.packagesOnDevice.get(index);
         final TextView textAppName;
         CheckBox appStatus;

@@ -1,7 +1,6 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.adapter;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -14,10 +13,10 @@ import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
+import dreamteam.focus.client.CreateSchedule;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**

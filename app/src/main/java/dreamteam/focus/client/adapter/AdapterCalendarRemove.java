@@ -1,9 +1,7 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.os.Bundle;
-import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -19,11 +17,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
+import dreamteam.focus.client.EditSchedule;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**

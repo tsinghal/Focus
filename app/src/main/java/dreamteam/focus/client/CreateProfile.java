@@ -4,32 +4,26 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SnapHelper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
-import dreamteam.focus.server.DatabaseConnector;
+import dreamteam.focus.client.adapter.AdapterApps;
 
 /**
  * Created by shatrujeet lawa on 10/8/2017.
  */
 
 public class CreateProfile extends AppCompatActivity {
-
-
-
-    static ArrayList<String> appsOnDevice;
-    static ArrayList<String> packagesOnDevice;
+    public static ArrayList<String> appsOnDevice;
+    public static ArrayList<String> packagesOnDevice;
 
     AdapterApps appsList;
     Button submit;

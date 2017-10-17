@@ -1,25 +1,19 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.adapter;
 
 import android.content.Context;
-import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
 import dreamteam.focus.R;
+import dreamteam.focus.client.EditProfile;
 
 /**
  * Created by shatrujeet lawa on 10/13/2017.
@@ -38,7 +32,7 @@ public class AdapterAppsEdit extends ArrayAdapter<String> {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         final String appName = getItem(position);
-        int index=EditProfile.appsOnDevice.indexOf(appName);
+        int index = EditProfile.appsOnDevice.indexOf(appName);
         final String packageName=EditProfile.packagesOnDevice.get(index);
         final TextView textAppName;
         CheckBox appStatus;

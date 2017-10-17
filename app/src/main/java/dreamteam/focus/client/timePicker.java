@@ -1,16 +1,13 @@
 package dreamteam.focus.client;
 
-import android.support.annotation.IntegerRes;
-import android.support.annotation.MainThread;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -24,7 +21,7 @@ public class timePicker extends AppCompatActivity {
 
     TimePicker timePicker;
     Button buttonSetTime;
-    static String IntentProfileName="profile Name";
+    public static String IntentProfileName = "profile Name";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

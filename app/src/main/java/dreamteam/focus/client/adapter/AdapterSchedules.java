@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.adapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,13 +11,14 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
-import dreamteam.focus.Schedule;
 import dreamteam.focus.R;
+import dreamteam.focus.Schedule;
+import dreamteam.focus.client.EditSchedule;
+import dreamteam.focus.client.Schedules;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**

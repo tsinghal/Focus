@@ -1,32 +1,22 @@
 package dreamteam.focus.client;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import dreamteam.focus.Profile;
-import dreamteam.focus.R;
-import dreamteam.focus.Schedule;
-import dreamteam.focus.server.DatabaseConnector;
-
-import java.sql.Array;
 import java.text.ParseException;
 import java.util.ArrayList;
+
+import dreamteam.focus.R;
+import dreamteam.focus.Schedule;
+import dreamteam.focus.client.adapter.AdapterSchedules;
+import dreamteam.focus.server.DatabaseConnector;
 
 /**
  * Created by aarav on 10/13/17.
