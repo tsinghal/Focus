@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -118,7 +119,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         SimpleDateFormat d1=new SimpleDateFormat("HH:mm");
         String s = d1.format(CurrentTime);
         try {
-            startTime=d1.parse(s);
+            CurrentTime = d1.parse(s);
         } catch (ParseException e) {
             e.printStackTrace();
         }

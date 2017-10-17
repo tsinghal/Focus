@@ -46,7 +46,7 @@ public class EditProfile extends AppCompatActivity {
         blockedPackages=MainActivity.db.getBlockedApps(profileName);
 
 
-        Toast.makeText(getApplicationContext(),blockedPackages.size()+" ",Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(),blockedPackages.size()+" ",Toast.LENGTH_LONG).show();
         //change this
 
         appsOnDevice=new ArrayList<String>();

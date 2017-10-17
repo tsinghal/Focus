@@ -45,7 +45,7 @@ public class AdapterSchedules extends ArrayAdapter<Schedule> {
     @Override
 
 
-    public View getView(int position, View convertView, ViewGroup parent)
+    public View getView(int position, View convertView, final ViewGroup parent)
     {
         final Schedule s = getItem(position);
 
@@ -69,12 +69,14 @@ public class AdapterSchedules extends ArrayAdapter<Schedule> {
                 {
                     s.setActive(true);
                     Schedules.db.activateSchedule(s.getName());
+                    ((Schedules) parent.getContext()).updateList();
                 }
                 else
                 {
                     //Off
                     s.setActive(false);
                     Schedules.db.deactivateSchedule(s.getName());
+                    ((Schedules) parent.getContext()).updateList();
                 }
             }
         });
