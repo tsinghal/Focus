@@ -4,9 +4,15 @@
     <string name="createProfile">Create Profile</string>
     <string name="newProfile">New Profile</string>
     <string name="name">Name:</string>
-
-    <string name="service_notification_name">NotificationService</string>
-    <string name="service_background_name">BackgroundService</string>
+    <string-array name="entries">
+        <item>MONDAY</item>
+        <item>TUESDAY</item>
+        <item>WEDNESDAY</item>
+        <item>THURSDAY</item>
+        <item>FRIDAY</item>
+        <item>SATURDAY</item>
+        <item>SUNDAY</item>
+    </string-array>
 
     <string name="notification_service">"Notification Listener Service"</string>
     <string name="notification_service_explanation">"For notification blocking to work, you must enable grant this app notification access. Enable it now?"</string>

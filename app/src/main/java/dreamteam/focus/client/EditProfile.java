@@ -11,6 +11,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import dreamteam.focus.Profile;
@@ -22,6 +24,7 @@ public class EditProfile extends AppCompatActivity {
 
     public static ArrayList<String> appsOnDevice;
     public static ArrayList<String> packagesOnDevice;
+
 
     AdapterAppsEdit appsList;
     Button submit;
@@ -53,6 +56,9 @@ public class EditProfile extends AppCompatActivity {
         packagesOnDevice=new ArrayList<String>();
 
         getSystemApps();
+
+        Collections.sort(appsOnDevice); //sorting the apps by name
+//        Collections.sort(packagesOnDevice);
 
 //       statusApps=new ArrayList<Boolean>();
 //        for (int i=0;i<packagesOnDevice.size();i++)

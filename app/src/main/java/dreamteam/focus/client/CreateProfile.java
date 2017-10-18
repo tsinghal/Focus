@@ -11,6 +11,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import dreamteam.focus.Profile;
@@ -24,6 +26,7 @@ import dreamteam.focus.client.adapter.AdapterApps;
 public class CreateProfile extends AppCompatActivity {
     public static ArrayList<String> appsOnDevice;
     public static ArrayList<String> packagesOnDevice;
+
 
     AdapterApps appsList;
     Button submit;
@@ -45,6 +48,8 @@ public class CreateProfile extends AppCompatActivity {
 
         getSystemApps();
 
+//        Collections.sort(appsOnDevice); //sorting the apps by name
+//        Collections.sort(packagesOnDevice);
 
 
         appsList=new AdapterApps(getApplicationContext(),appsOnDevice);
@@ -92,17 +97,19 @@ public class CreateProfile extends AppCompatActivity {
 
     public void getSystemApps()
     {
+;
+
         PackageManager pm=getPackageManager();
         List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
         for (ApplicationInfo packageInfo : packages) {
             String appName=getAppNameFromPackage(packageInfo.packageName);
 
-           if(!appName.equals("this app") && !appName.contains(".") && !packageInfo.packageName.equals("com.htc.launcher") && !packageInfo.packageName.equals("dreamteam.focus") && !packageInfo.packageName.equals("com.google.android.apps.nexuslauncher") && !packageInfo.packageName.equals("com.android.systemui")&& !packageInfo.packageName.equals("com.google.android.packageinstaller")  )
-            {
-                appsOnDevice.add(appName);
-                packagesOnDevice.add(packageInfo.packageName);
+           if(!appName.equals("this app") && !appName.contains(".") && !packageInfo.packageName.equals("com.htc.launcher") && !packageInfo.packageName.equals("dreamteam.focus") && !packageInfo.packageName.equals("com.google.android.apps.nexuslauncher") && !packageInfo.packageName.equals("com.android.systemui")&& !packageInfo.packageName.equals("com.google.android.packageinstaller")  ) {
+               appsOnDevice.add(appName);
+               packagesOnDevice.add(packageInfo.packageName);
 
-            }
+           }
+
         }
 
     }

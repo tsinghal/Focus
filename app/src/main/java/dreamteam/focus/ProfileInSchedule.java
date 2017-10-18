@@ -1,13 +1,14 @@
 package dreamteam.focus;
 
-import java.util.ArrayList;
-import java.util.Date;
+        import java.io.Serializable;
+        import java.util.ArrayList;
+        import java.util.Date;
 
 /**
  * Created by bowie on 10/2/17.
  */
 
-public class ProfileInSchedule {
+public class ProfileInSchedule implements Serializable {
     private Profile profile;
     private Date startTime;
     private Date endTime;
