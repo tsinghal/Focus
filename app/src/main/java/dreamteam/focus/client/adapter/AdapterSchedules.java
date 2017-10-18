@@ -69,14 +69,14 @@ public class AdapterSchedules extends ArrayAdapter<Schedule> {
                 {
                     s.setActive(true);
                     Schedules.db.activateSchedule(s.getName());
-                    ((Schedules) parent.getContext()).updateList();
+                    ((Schedules)parent.getContext()).updateList();
                 }
                 else
                 {
                     //Off
                     s.setActive(false);
                     Schedules.db.deactivateSchedule(s.getName());
-                    ((Schedules) parent.getContext()).updateList();
+                    ((Schedules)parent.getContext()).updateList();
                 }
             }
         });

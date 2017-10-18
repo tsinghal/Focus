@@ -1,6 +1,7 @@
 package dreamteam.focus.client.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.text.format.DateFormat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,11 +34,12 @@ import dreamteam.focus.server.DatabaseConnector;
 public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
     public DatabaseConnector db;
-
+    public Context mcontext;
 
     public AdapterCalendarRemove(Context context, ArrayList<ProfileInSchedule> profilesArray)
     {
         super(context,0, profilesArray);
+        mcontext=context;
     }
 
     @Nullable
@@ -90,6 +93,18 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             textProfileTime.setBackgroundColor(Color.RED);
         }
 
+        textProfileName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i=new Intent(mcontext,EditProfileInSchedule.class);
+                Bundle b=new Bundle();
+                b.putSerializable(EditProfileInSchedule.namePIS,s);
+                i.putExtras(b);
+                i.putExtra("scheduleName",((EditSchedule)(parent.getContext())).scheduleName);
+                v.getContext().startActivity(i);
+            }
+        });
+
         appStatus.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
@@ -117,9 +132,10 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         boolean condition=false;
         Date CurrentTime= Calendar.getInstance().getTime();
         SimpleDateFormat d1=new SimpleDateFormat("HH:mm");
+
         String s = d1.format(CurrentTime);
         try {
-            CurrentTime = d1.parse(s);
+            CurrentTime=d1.parse(s);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -186,6 +202,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
     public boolean getDay(Repeat_Enum re) //check if today,s day is equal to PIS day
     {
+
         String today = (String) DateFormat.format("EEEE", new Date() );
         today = today.toUpperCase();
         Log.d("DayActivation",today+" "+re.toString());

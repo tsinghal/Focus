@@ -36,6 +36,8 @@
             android:layout_height="48dp"
             android:layout_toEndOf="@id/textViewName"
             android:hint="Enter Schedule Name"
+            android:maxLines="1"
+            android:inputType="text"
             android:textColorHint="@color/blue"
             android:textStyle="italic"
             android:backgroundTint="@color/blue"
