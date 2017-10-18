@@ -3,6 +3,7 @@ package dreamteam.focus.client.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.format.DateFormat;
@@ -24,6 +25,7 @@ import java.util.Date;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
+import dreamteam.focus.client.EditProfileInSchedule;
 import dreamteam.focus.client.EditSchedule;
 import dreamteam.focus.server.DatabaseConnector;
 

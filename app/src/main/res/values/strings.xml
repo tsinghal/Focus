@@ -13,4 +13,11 @@
         <item>SATURDAY</item>
         <item>SUNDAY</item>
     </string-array>
+
+    <string name="notification_service">"Notification Listener Service"</string>
+    <string name="notification_service_explanation">"For notification blocking to work, you must enable grant this app notification access. Enable it now?"</string>
+    <string name="usage_access">"Usage access"</string>
+    <string name="usage_access_explanation">"For app blocking to work, you must enable usage access. Enable it now?"</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>
