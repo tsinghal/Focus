@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context="dreamteam.focus.client.timePicker">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/blue"
+        android:textColor="@color/white"
+        android:text="Select End Time"
+        android:textSize="28dp"
+        android:textAlignment="center"
+        android:typeface="serif"
+        android:id="@+id/textViewTitleOfTimePicker"/>
+
+    <TimePicker
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:timePickerMode="spinner"
+        android:amPmTextColor="@color/blue"
+        android:numbersInnerTextColor="@color/blue"
+        android:numbersTextColor="@color/blue"
+        android:id="@+id/timePicker"
+        android:layout_centerInParent="true"/>
+
+    <Button
+        android:layout_width="192dp"
+        android:layout_height="48dp"
+        android:layout_below="@+id/timePicker"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/buttonSetTime"
+        android:background="@color/blue"
+        android:textColor="@color/white"
+        android:text="Set Time"/>
+
+</android.widget.RelativeLayout>
