@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Schedules;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,8 +21,9 @@ import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
+import dreamteam.focus.client.MainActivity;
 
-public class EditProfileInSchedule extends AppCompatActivity {
+public class EditProfileInScheduleActivity extends AppCompatActivity {
 
     public static String namePIS="PIS";
     public Button updateSchedule;

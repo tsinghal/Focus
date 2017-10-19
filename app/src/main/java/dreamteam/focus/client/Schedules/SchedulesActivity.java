@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Schedules;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,14 +15,14 @@ import java.util.ArrayList;
 
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.adapter.AdapterSchedules;
+import dreamteam.focus.client.Adaptors.AdapterSchedules;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
  * Created by aarav on 10/13/17.
  */
 
-public class Schedules extends AppCompatActivity {
+public class SchedulesActivity extends AppCompatActivity {
 
     private Button addNewSchedule;
     public static DatabaseConnector db;
@@ -32,7 +32,7 @@ public class Schedules extends AppCompatActivity {
 //    private BroadcastReceiver MyReceiver = new BroadcastReceiver() {
 //        @Override
 //        public void onReceive(Context context, Intent intent) {
-//            Log.i("Schedules", "Broadcast Recieved: "+intent.getStringExtra("scheduleMessage"));
+//            Log.i("SchedulesActivity", "Broadcast Recieved: "+intent.getStringExtra("scheduleMessage"));
 //            String message = intent.getStringExtra("serviceMessage");
 //            //Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
 //            updateList();
@@ -72,7 +72,7 @@ public class Schedules extends AppCompatActivity {
                 }
 
                 if(schedulesInDb.size()<21){
-                    Intent i = new Intent(getApplicationContext(), CreateSchedule.class);
+                    Intent i = new Intent(getApplicationContext(), AddScheduleActivity.class);
                     startActivity(i);
                 } else {
                     Toast.makeText(getApplicationContext(), "You Have Reached a 20 Schedule Max!",Toast.LENGTH_SHORT).show();

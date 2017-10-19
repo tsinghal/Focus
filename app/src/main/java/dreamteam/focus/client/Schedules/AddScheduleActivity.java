@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Schedules;
 
 import android.content.Intent;
 import android.database.SQLException;
@@ -19,14 +19,14 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.adapter.AdapterCalendarNewRemove;
+import dreamteam.focus.client.Adaptors.AdapterCalendarNewRemove;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
  * Created by aarav on 10/13/17.
  */
 
-public class CreateSchedule extends AppCompatActivity {
+public class AddScheduleActivity extends AppCompatActivity {
 
     private Button addSchedule, discard, delete;
     private EditText nameText;
@@ -93,7 +93,7 @@ public class CreateSchedule extends AppCompatActivity {
                                 db.addSchedule(s);
                                 check = true;
                                 Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
-                                i.putExtra("CreateSchedule:ScheduleName", scheduleName);
+                                i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
                                 startActivity(i);
                             } else {
                                 Toast.makeText(getApplicationContext(), "Invalid Name", Toast.LENGTH_SHORT).show();
@@ -107,7 +107,7 @@ public class CreateSchedule extends AppCompatActivity {
                     else
                     {
                         Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
-                        i.putExtra("CreateSchedule:ScheduleName", scheduleName);
+                        i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
                         startActivity(i);
                     }
                 }
@@ -170,7 +170,7 @@ public class CreateSchedule extends AppCompatActivity {
 
         try {
             profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-            Log.e("error","In EditSchedule.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
+            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
         } catch (ParseException e) {
             e.getMessage();
         }
@@ -257,7 +257,7 @@ public class CreateSchedule extends AppCompatActivity {
 //
 //        try {
 //            profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-//            Log.e("error","In EditSchedule.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
+//            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
 //        } catch (ParseException e) {
 //            e.getMessage();
 //        }

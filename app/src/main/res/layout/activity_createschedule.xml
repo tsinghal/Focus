@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:weightSum="1"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="dreamteam.focus.client.CreateSchedule">
+    tools:context="dreamteam.focus.client.Schedules.AddScheduleActivity">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

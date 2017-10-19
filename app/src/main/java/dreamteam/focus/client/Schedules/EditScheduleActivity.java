@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Schedules;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,14 +18,15 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.adapter.AdapterCalendarRemove;
+import dreamteam.focus.client.MainActivity;
+import dreamteam.focus.client.Adaptors.AdapterCalendarRemove;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
  * Created by aarav on 10/13/17.
  */
 
-public class EditSchedule extends AppCompatActivity {
+public class EditScheduleActivity extends AppCompatActivity {
 
     private Button addSchedule, discard, delete;
     private EditText nameText;
@@ -62,7 +63,7 @@ public class EditSchedule extends AppCompatActivity {
 
 
         try {
-            for(int i=0;i<MainActivity.db.getSchedules().size();i++)
+            for(int i = 0; i< MainActivity.db.getSchedules().size(); i++)
             {
                 if(MainActivity.db.getSchedules().get(i).getName().equals(scheduleName))
                 {
@@ -86,8 +87,8 @@ public class EditSchedule extends AppCompatActivity {
         addProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), AddProfileToSchedule.class);
-                i.putExtra("EditSchedule:ScheduleName", scheduleName);
+                Intent i = new Intent(getApplicationContext(), AddProfileToScheduleActivity.class);
+                i.putExtra("EditScheduleActivity:ScheduleName", scheduleName);
                 startActivity(i);
             }
         });
@@ -160,7 +161,7 @@ public class EditSchedule extends AppCompatActivity {
 
         try {
             profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-            Log.e("error","In EditSchedule.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
+            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
         } catch (ParseException e) {
             e.getMessage();
         }
@@ -247,7 +248,7 @@ public class EditSchedule extends AppCompatActivity {
 //
 //        try {
 //            profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-//            Log.e("error","In EditSchedule.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
+//            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
 //        } catch (ParseException e) {
 //            e.getMessage();
 //        }

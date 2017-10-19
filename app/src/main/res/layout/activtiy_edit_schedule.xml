@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:weightSum="1"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="dreamteam.focus.client.EditSchedule">
+    tools:context="dreamteam.focus.client.Schedules.EditScheduleActivity">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -306,7 +306,7 @@
                 android:layout_height="40dp"
                 android:background="#FF0000"
                 android:textColor="@color/white"
-                android:text="Delete Profile"
+                android:text="Delete Schedule"
                 android:id="@+id/buttonDeleteChanges2"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true" />

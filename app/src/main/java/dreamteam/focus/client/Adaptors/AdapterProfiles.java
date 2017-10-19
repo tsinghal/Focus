@@ -1,4 +1,4 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,9 +16,10 @@ import java.util.ArrayList;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
-import dreamteam.focus.client.EditProfile;
+import dreamteam.focus.client.Profiles.EditProfileActivity;
 import dreamteam.focus.client.MainActivity;
-import dreamteam.focus.client.Profiles;
+import dreamteam.focus.client.Profiles.ProfilesActivity;
+import dreamteam.focus.client.Schedules.EditScheduleActivity;
 import dreamteam.focus.client.timePicker;
 
 
@@ -66,11 +67,11 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
               if(!appStatus.isChecked()&& p.isActive())
               {
                         MainActivity.db.deactivateProfile(p);
-//                  if(mcontext instanceof Profiles){
+//                  if(mcontext instanceof ProfilesActivity){
 //                      Log.d("TAG","IN");
-//                      ((Profiles)mcontext).updateList();
+//                      ((ProfilesActivity)mcontext).updateList();
 //                  }
-                  ((Profiles)parent.getContext()).updateList();
+                  ((ProfilesActivity)parent.getContext()).updateList();
               }
             }
         }
@@ -81,8 +82,8 @@ public class AdapterProfiles extends ArrayAdapter<Profile> {
             public void onClick(View v) {
 
                 final Intent i;
-                i = new Intent(v.getContext(),EditProfile.class);
-                i.putExtra(EditProfile.IntentNameString,p.getName() );
+                i = new Intent(v.getContext(), EditProfileActivity.class);
+                i.putExtra(EditProfileActivity.IntentNameString,p.getName() );
                 v.getContext().startActivity(i);
             }
         });
