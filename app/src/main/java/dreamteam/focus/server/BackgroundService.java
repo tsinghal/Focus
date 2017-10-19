@@ -68,8 +68,6 @@ public class BackgroundService extends NotificationListenerService {
     private int databaseVersion = -1;
     private HashSet<String> blockedApps;
     private NLServiceReceiver nlServiceReceiver;
-    NotificationManager mNotifyMgr;
-    Notification.Builder mBuilder;
 
     public BackgroundService() {
         schedules = new ArrayList<>();
@@ -149,7 +147,7 @@ public class BackgroundService extends NotificationListenerService {
 
         }
         // cancel only that notification of Focus (used to dismiss heads-up notifications from other apps
-        if (packageName.equals("dreamteam.focus") && sbn.getId() == NOTIFICATION_ID_MESSAGE) {
+        if (packageName.equals("dreamteam.focus") && sbn.getId() == NOTIFICATION_ID_SUPPRESS_NOTIFICATION) {
             cancelNotification(sbn.getKey());
         }
     }
@@ -160,14 +158,14 @@ public class BackgroundService extends NotificationListenerService {
      * @param id      the id of this notification
      * @param message the message of this notification
      */
-    public void sendNotification(int id, String message) {
+    private void sendNotification(int id, String message) {
 
         // Gets an instance of the NotificationManager service
-        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         Intent resultIntent = new Intent(this, MainActivity.class);
         PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        mBuilder = new Notification.Builder(getApplicationContext())
+        Notification.Builder mBuilder = new Notification.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_stat_name_notify)
                 .setContentTitle("User Alert")
                 .setContentText(message);
@@ -176,7 +174,7 @@ public class BackgroundService extends NotificationListenerService {
 
         // Builds the notification and issues it.
         mNotifyMgr.notify(id, mBuilder.build());
-        Log.d("sendNotification", "notification thrown!");
+        Log.i("sendNotification", "A notification was thrown!");
     }
 
     @Override
@@ -202,9 +200,7 @@ public class BackgroundService extends NotificationListenerService {
     }
 
     private String getNameFromSBN(StatusBarNotification sbn) {
-        String packageName = sbn.getPackageName();
-        Log.d(TAG, "getNameFromSBN" + packageName);
-        return packageName;
+        return sbn.getPackageName();
     }
 
     private void broadcastStatus() {
@@ -219,7 +215,6 @@ public class BackgroundService extends NotificationListenerService {
     @SuppressWarnings("SpellCheckingInspection")
     public void onCreate() {
         super.onCreate();
-        Log.i(TAG, "onCreate");
         nlServiceReceiver = new NLServiceReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.example.notifyservice.NOTIFICATION_LISTENER_SERVICE_EXAMPLE");
@@ -272,7 +267,7 @@ public class BackgroundService extends NotificationListenerService {
     /**
      * This function is executed every SCHEDULE_TIMEOUT_SEC seconds.
      */
-    public void tick() {
+    private void tick() {
         final String TAG = "tick()";
 
         int now = getTimeInInt(new Date()); // get system time
@@ -290,20 +285,23 @@ public class BackgroundService extends NotificationListenerService {
                 Log.i(TAG + " normal schedule", schedule.getName());
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
                     if (pis.repeatsOn().contains(todayInRepeatEnum())) { // profile has to be repeated on current day
-                        if ((getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
-                                now <= (getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC / 2)) {
-                            sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
-                                    "Profile : " + pis.getProfile().getName() + " is now active");
-                            // tell UI(do only after updating database), use broadcastStatus()
-                            addAppsToBlockedApps(pis.getProfile());
-                        } else if ((getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
-                                now <= (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC / 2)) {
-                            sendNotification(NOTIFICATION_ID_PROFILE_CHANGE,
-                                    "Profile : " + pis.getProfile().getName() + " is now inactive");
-                            // tell UI(do only after updating database), use broadcastStatus()
+                        int startTime = getTimeInInt(pis.getStartTime());
+                        int endTime = getTimeInInt(pis.getEndTime());
 
-                        } else if ((getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC / 2) <= now &&
-                                now <= (getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC / 2)) {
+                        if ((startTime - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
+                                now <= (startTime + SCHEDULE_TIMEOUT_SEC / 2)) {
+                            sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
+                                    "Profile : " + pis.getProfile().getName() + " is now active");
+                            // TODO tell UI(do only after updating database), use broadcastStatus()
+                            addAppsToBlockedApps(pis.getProfile());
+                        } else if ((endTime - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
+                                now <= (endTime + SCHEDULE_TIMEOUT_SEC / 2)) {
+                            sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
+                                    "Profile : " + pis.getProfile().getName() + " is now inactive");
+                            // TODO tell UI(do only after updating database), use broadcastStatus()
+
+                        } else if ((startTime + SCHEDULE_TIMEOUT_SEC / 2) <= now &&
+                                now <= (endTime - SCHEDULE_TIMEOUT_SEC / 2)) {
                             addAppsToBlockedApps(pis.getProfile());
                         }
                     }
@@ -312,34 +310,33 @@ public class BackgroundService extends NotificationListenerService {
         }
 
         for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
+            int startTime = getTimeInInt(pis.getStartTime());
+            int endTime = getTimeInInt(pis.getEndTime());
             Log.d(TAG + " anonymousPIS - start",
-                    (getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC / 2) + " <= " + now +
-                            " && " +
-                            now + " <= " + (getTimeInInt(pis.getStartTime()) + SCHEDULE_TIMEOUT_SEC / 2)
+                    (startTime - SCHEDULE_TIMEOUT_SEC / 2) + " <= " + now +
+                            " <= " + (startTime + SCHEDULE_TIMEOUT_SEC / 2)
             );
-            Log.d(TAG + " anonymousPIS - end",
-                    (getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC / 2) + " <= " + now +
-                            " && " +
-                            now + " <= " + (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC / 2)
+            Log.d(TAG + " anonymousPIS -   end",
+                    (endTime - SCHEDULE_TIMEOUT_SEC / 2) + " <= " + now +
+                            " <= " + (endTime + SCHEDULE_TIMEOUT_SEC / 2)
             );
 
-            if ((getTimeInInt(pis.getStartTime()) - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
-                    now <= (getTimeInInt(pis.getStartTime()) + 60)) {
+            if ((startTime - SCHEDULE_TIMEOUT_SEC / 2) <= now && now <= (startTime + 60)) {
                 if (anonymousPISOldSize < anonymousPIS.size()) {
-//                    sendNotification(NOTIFICATION_ID_PROFILE_CHANGE, "Your profile is now instantly active.");
-                    sendNotification(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE,
+//                    sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE), "Your profile is now instantly active.");
+                    sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE),
                             "Profile : " + pis.getProfile().getName() + " is now active");
                     anonymousPISOldSize = anonymousPIS.size();
                 }
 
-            } else if ((getTimeInInt(pis.getEndTime()) - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
-                    now <= (getTimeInInt(pis.getEndTime()) + SCHEDULE_TIMEOUT_SEC / 2)) {
-                sendNotification(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE,
+            } else if ((endTime - SCHEDULE_TIMEOUT_SEC / 2) <= now && now <= (endTime + SCHEDULE_TIMEOUT_SEC / 2)) {
+                sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
                         "Profile : " + pis.getProfile().getName() + " is now inactive");
 
 
                 if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {
                     // TODO: tell UI(do only after updating database)
+                    Log.d(TAG, "to be implemented");
                 }
                 continue; // do not add this profile's apps to blockedApps
             }
@@ -363,7 +360,7 @@ public class BackgroundService extends NotificationListenerService {
                     int tmp = db.getNotificationsCountForApp(app);
                     if (tmp != 0) {
                         // TODO: 10/16/17 getNotificationCount needs verification
-                        sendNotification(NOTIFICATION_ID_UNSEEN_NOTIFICATIONS + (int) (Math.random() * 1000),
+                        sendNotification(generateNotificationID(NOTIFICATION_ID_UNSEEN_NOTIFICATIONS),
                                 "You have " + tmp + " unseen notifications from " + getAppNameFromPackage(app));
                     }
                 }
@@ -440,7 +437,7 @@ public class BackgroundService extends NotificationListenerService {
      * @return package name of foreground app
      * @link https://stackoverflow.com/questions/2166961
      */
-    public String getForegroundTask() {
+    private String getForegroundTask() {
         String currentApp = null;
         if (isUsageAccessGranted()) {
             currentApp = "NULL";
@@ -478,23 +475,23 @@ public class BackgroundService extends NotificationListenerService {
      */
     private void updateFromServer() {
         final String TAG = "updateFromServer()";
-        Log.i(TAG, "getting update from server");
+//        Log.i(TAG, "getting update from server");
         try {
             schedules = db.getSchedules();
             anonymousPIS = db.getProfilesInSchedule(ANONYMOUS_SCHEDULE);
             databaseVersion = db.getDatabaseVersion(); // sync version with db
         } catch (ParseException e) {
             e.printStackTrace();
-            Log.e(TAG, "error getting schedules from database");
+            Log.e(TAG, "Error getting schedules from database.");
         }
-        Log.i(TAG, "completed update");
+        Log.i(TAG, "Completed update.");
     }
 
     /**
      * @param packageName: string of package name from which app name is derived
      * @link https://stackoverflow.com/questions/41054355
      */
-    public String getAppNameFromPackage(String packageName) {
+    private String getAppNameFromPackage(String packageName) {
         PackageManager manager = getApplicationContext().getPackageManager();
         ApplicationInfo info;
         try {
