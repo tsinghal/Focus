@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="dreamteam.focus.client.EditSchedule">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@color/blue"
+            android:textColor="@color/white"
+            android:text="Edit Schedule"
+            android:textSize="36dp"
+            android:textAlignment="center"
+            android:typeface="serif"
+            android:id="@+id/textViewCreate"/>
+
+        <TextView
+            android:id="@+id/textViewName"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_below="@id/textViewCreate"
+            android:layout_marginTop="24dp"
+            android:text="Name"
+            android:textColor="@color/blue"
+            android:textSize="30dp"
+            android:typeface="serif" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_toEndOf="@id/textViewName"
+            android:hint="Enter Schedule Name"
+            android:textColorHint="@color/blue"
+            android:textStyle="italic"
+            android:backgroundTint="@color/blue"
+            android:textColor="@color/blue"
+            android:typeface="serif"
+            android:textAlignment="center"
+            android:layout_alignTop="@+id/textViewName"
+            android:id="@+id/textEditScheduleName"/>
+
+        <TextView
+            android:id="@+id/textViewAddProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/textViewName"
+            android:layout_marginTop="17dp"
+            android:text="Add Profile to Schedule"
+            android:textAlignment="viewStart"
+            android:textAllCaps="false"
+
+            android:textColor="@color/blue"
+            android:textSize="25dp"
+            android:typeface="serif" />
+
+        <Button
+            android:id="@+id/buttonAddProfileToSchedule"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:background="@color/blue"
+            android:text="+"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:layout_alignBaseline="@+id/textViewAddProfile"
+            android:layout_alignBottom="@+id/textViewAddProfile"
+            android:layout_alignParentEnd="true" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_below="@+id/textViewAddProfile">
+
+            <TextView
+                android:id="@+id/textViewMonday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/textViewName"
+                android:text="Monday"
+                android:layout_marginTop="8dp"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+
+                android:textColor="#DC143C"
+                android:textSize="20dp"
+                android:typeface="serif" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#f90303"/>
+
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:id="@+id/listViewMonday"
+                android:minHeight="28dp"/>
+
+            <TextView
+                android:id="@+id/textViewTuesday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/textViewName"
+                android:text="Tuesday"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+
+                android:textColor="#DC143C"
+                android:textSize="20dp"
+                android:typeface="serif" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#f90303"/>
+
+            <ListView
+                android:layout_width="match_parent"
+                android:minHeight="28dp"
+                android:layout_height="192dp"
+
+                android:id="@+id/listViewTuesday"/>
+
+            <TextView
+                android:id="@+id/textViewWednesday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/textViewName"
+                android:text="Wednesday"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+
+                android:textColor="#DC143C"
+                android:textSize="20dp"
+                android:typeface="serif" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#f90303"/>
+
+            <ListView
+                android:layout_width="match_parent"
+                android:minHeight="28dp"
+                android:layout_height="192dp"
+
+                android:id="@+id/listViewWednesday" />
+
+            <TextView
+                android:id="@+id/textViewTThursday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/textViewName"
+                android:text="Thursday"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+
+                android:textColor="#DC143C"
+                android:textSize="20dp"
+                android:typeface="serif" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#f90303"/>
+
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:minHeight="28dp"
+                android:id="@+id/listViewThursday"/>
+
+            <TextView
+                android:id="@+id/textViewFriday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/textViewName"
+                android:text="Friday"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+
+                android:textColor="#DC143C"
+                android:textSize="20dp"
+                android:typeface="serif" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#f90303"/>
+
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:minHeight="28dp"
+                android:id="@+id/listViewFriday"/>
+
+            <TextView
+                android:id="@+id/textViewSaturday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/textViewName"
+                android:text="Saturday"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+
+                android:textColor="#DC143C"
+                android:textSize="20dp"
+                android:typeface="serif" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#f90303"/>
+
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:minHeight="28dp"
+                android:id="@+id/listViewSaturday" />
+
+            <TextView
+                android:id="@+id/textViewSunday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/textViewName"
+                android:text="Sunday"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+
+                android:textColor="#DC143C"
+                android:textSize="20dp"
+                android:typeface="serif" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#f90303"/>
+
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:minHeight="28dp"
+                android:id="@+id/listViewSunday"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:layout_width="192dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/blue"
+                    android:textColor="@color/white"
+                    android:text="Save Changes"
+                    android:id="@+id/buttonAddSchedule"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@color/blue"
+                    android:textColor="@color/white"
+                    android:text="Discard Changes"
+                    android:layout_marginLeft="4dp"
+                    android:id="@+id/buttonDiscardSchedule"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_toEndOf="@+id/buttonAddSchedule" />
+
+            </RelativeLayout>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_marginTop="4dp"
+                android:layout_height="40dp"
+                android:background="#FF0000"
+                android:textColor="@color/white"
+                android:text="Delete Profile"
+                android:id="@+id/buttonDeleteChanges2"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true" />
+
+        </LinearLayout>
+
+
+
+
+    </RelativeLayout>
+</ScrollView>

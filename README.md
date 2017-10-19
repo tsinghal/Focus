@@ -8,12 +8,18 @@ _Focus!_ is an Android application that seeks to eliminate distracting Android n
 all while allowing other services to run unchanged.
 
 ## Authors
-| Name              | Email            | Section |
-| ----------------- | ----------------:| -------:|
-| Bowie Chen        | boweiche@usc.edu |   30113 |
-| Tushar Singhal    | tsinghal@usc.edu |   30113 |
-| Shatrujeet Naruka |   naruka@usc.edu |   30113 |
-| Prateek Bhatia    | prateekb@usc.edu |   30113 |
-| Aarav Malpani     |  malpani@usc.edu |   30113 |
+| Name              | Email                      |
+| ----------------- | --------------------------:|
+| Bowie Chen        | boweiche [@] usc [dot] edu |
+| Tushar Singhal    | tsinghal [@] usc [dot] edu |
+| Shatrujeet Naruka |   naruka [@] usc [dot] edu |
+| Prateek Bhatia    | prateekb [@] usc [dot] edu |
+| Aarav Malpani     |  malpani [@] usc [dot] edu |
 
-## Compilation Instructions
+## Build Instructions
+This project includes a Gradle file that specifies all dependencies required to build this project. 
+
+1. Import project into Android Studio by invoking `File > Open...`
+1. Sync Gradle file with project by invoking `Tools > Android > Sync Project with Gradle Files`
+1. The application is now ready to be built and run. 
+Invoke `Run > Run 'app'` and select a target Android device or Android emulator to run the app. 
