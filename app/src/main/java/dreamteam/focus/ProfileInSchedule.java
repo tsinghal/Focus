@@ -5,6 +5,7 @@ import java.util.Date;
 
 /**
  * Created by bowie on 10/2/17.
+ * A unit ProfileInSchedule.
  */
 
 public class ProfileInSchedule {
@@ -40,7 +41,7 @@ public class ProfileInSchedule {
         return startTime;
     }
 
-    public void setStartTime(Date startTime) {
+    void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
@@ -48,7 +49,7 @@ public class ProfileInSchedule {
         return endTime;
     }
 
-    public void setEndTime(Date endTime) {
+    void setEndTime(Date endTime) {
         this.endTime = endTime;
     }
 
@@ -56,19 +57,19 @@ public class ProfileInSchedule {
         return repeats;
     }
 
-    /**
-     * Checks if a day is part of this repeat configuration
-     *
-     * @param day: a day in Repeat_Enum
-     * @return true if Repeat_Enum is in ProfileInSchdeule.repeats
-     * @see Repeat_Enum
-     */
-    public boolean repeatsOn(Repeat_Enum day) {
-        for (Repeat_Enum repeat : repeats) {
-            if (repeat.equals(day)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    /**
+//     * Checks if a day is part of this repeat configuration
+//     *
+//     * @param day: a day in Repeat_Enum
+//     * @return true if Repeat_Enum is in ProfileInSchedule.repeats
+//     * @see Repeat_Enum
+//     */
+//    public boolean repeatsOn(Repeat_Enum day) {
+//        for (Repeat_Enum repeat : repeats) {
+//            if (repeat.equals(day)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 }

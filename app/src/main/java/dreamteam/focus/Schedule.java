@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 /**
  * Created by bowie on 10/2/17.
+ * A unit Schedule.
  */
 
 public class Schedule {
@@ -41,9 +42,9 @@ public class Schedule {
         this.name = name;
     }
 
-    public void addProfileToCalendar(ProfileInSchedule pis) {
-        calendar.add(pis);
-    }
+//    public void addProfileToCalendar(ProfileInSchedule pis) {
+//        calendar.add(pis);
+//    }
 
     public boolean isActive() {
         return active;
