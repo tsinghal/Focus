@@ -14,21 +14,11 @@ import static junit.framework.Assert.assertTrue;
  * Created by bowie on 10/21/17.
  * Completed documentation in testing doc.
  */
+@SuppressWarnings("unused")
 public class ProfileInScheduleTest {
     private Profile profile1;
     private Profile profile2;
     private ProfileInSchedule pis;
-
-    private static final class Constants {
-        // GMT -8
-        private static long TIME_0000 = 946713600000L;
-        private static long TIME_0200 = 946720800000L;
-        private static long TIME_0400 = 946728000000L;
-        private static long TIME_0600 = 946735200000L;
-        private static long TIME_0800 = 946742400000L;
-        private static long TIME_1000 = 946749600000L;
-        private static long TIME_1200 = 946756800000L;
-    }
 
     private ArrayList<Repeat_Enum> repeat;
 
