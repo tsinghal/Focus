@@ -125,6 +125,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILE_IN_SCHEDULE_REPEATS);
         // Create tables again
         onCreate(db);
+        db.execSQL("INSERT INTO " + TABLE_SCHEDULES + " VALUES ('AnonymousSchedule', 'true')");
 
         database_version = 0;
     }
