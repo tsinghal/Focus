@@ -78,8 +78,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
+            android:layout_marginTop="10dp"
             android:layout_below="@+id/textViewAddProfile">
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <TextView
                 android:id="@+id/textViewMonday"
@@ -90,28 +95,25 @@
                 android:layout_below="@+id/textViewName"
                 android:text="Monday"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="6dp"
                 android:textAlignment="viewStart"
                 android:textAllCaps="false"
-
                 android:textColor="#DC143C"
                 android:textSize="20dp"
                 android:typeface="serif" />
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#f90303"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="192dp">
             <ListView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/listViewMonday"
-                android:minHeight="28dp"/>
+                android:minHeight="28dp"
+                android:layout_marginBottom="3dp"/>
 
-            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <TextView
                 android:id="@+id/textViewTuesday"
@@ -121,7 +123,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/textViewName"
                 android:text="Tuesday"
-
+                android:layout_marginBottom="6dp"
                 android:textAlignment="viewStart"
                 android:textAllCaps="false"
 
@@ -129,17 +131,17 @@
                 android:textSize="20dp"
                 android:typeface="serif" />
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#f90303"/>
-
             <ListView
                 android:layout_width="match_parent"
                 android:minHeight="28dp"
                 android:layout_height="192dp"
-
+                android:layout_marginBottom="3dp"
                 android:id="@+id/listViewTuesday"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <TextView
                 android:id="@+id/textViewWednesday"
@@ -151,22 +153,23 @@
                 android:text="Wednesday"
                 android:textAlignment="viewStart"
                 android:textAllCaps="false"
-
+                android:layout_marginBottom="6dp"
                 android:textColor="#DC143C"
                 android:textSize="20dp"
                 android:typeface="serif" />
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#f90303"/>
 
             <ListView
                 android:layout_width="match_parent"
                 android:minHeight="28dp"
                 android:layout_height="192dp"
-
+                android:layout_marginBottom="3dp"
                 android:id="@+id/listViewWednesday" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <TextView
                 android:id="@+id/textViewTThursday"
@@ -178,21 +181,22 @@
                 android:text="Thursday"
                 android:textAlignment="viewStart"
                 android:textAllCaps="false"
-
+                android:layout_marginBottom="6dp"
                 android:textColor="#DC143C"
                 android:textSize="20dp"
                 android:typeface="serif" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#f90303"/>
 
             <ListView
                 android:layout_width="match_parent"
                 android:layout_height="192dp"
                 android:minHeight="28dp"
-                android:id="@+id/listViewThursday"/>
+                android:id="@+id/listViewThursday"
+                android:layout_marginBottom="3dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <TextView
                 android:id="@+id/textViewFriday"
@@ -204,21 +208,23 @@
                 android:text="Friday"
                 android:textAlignment="viewStart"
                 android:textAllCaps="false"
-
+                android:layout_marginBottom="6dp"
                 android:textColor="#DC143C"
                 android:textSize="20dp"
                 android:typeface="serif" />
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#f90303"/>
 
             <ListView
                 android:layout_width="match_parent"
                 android:layout_height="192dp"
                 android:minHeight="28dp"
-                android:id="@+id/listViewFriday"/>
+                android:id="@+id/listViewFriday"
+                android:layout_marginBottom="3dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <TextView
                 android:id="@+id/textViewSaturday"
@@ -230,21 +236,23 @@
                 android:text="Saturday"
                 android:textAlignment="viewStart"
                 android:textAllCaps="false"
-
+                android:layout_marginBottom="6dp"
                 android:textColor="#DC143C"
                 android:textSize="20dp"
                 android:typeface="serif" />
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#f90303"/>
 
             <ListView
                 android:layout_width="match_parent"
                 android:layout_height="192dp"
                 android:minHeight="28dp"
-                android:id="@+id/listViewSaturday" />
+                android:id="@+id/listViewSaturday"
+                android:layout_marginBottom="3dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <TextView
                 android:id="@+id/textViewSunday"
@@ -256,21 +264,23 @@
                 android:text="Sunday"
                 android:textAlignment="viewStart"
                 android:textAllCaps="false"
-
+                android:layout_marginBottom="6dp"
                 android:textColor="#DC143C"
                 android:textSize="20dp"
                 android:typeface="serif" />
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#f90303"/>
 
             <ListView
                 android:layout_width="match_parent"
                 android:layout_height="192dp"
                 android:minHeight="28dp"
-                android:id="@+id/listViewSunday"/>
+                android:id="@+id/listViewSunday"
+                android:layout_marginBottom="3dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <RelativeLayout
                 android:layout_width="match_parent"

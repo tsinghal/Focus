@@ -6,8 +6,11 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -20,6 +23,7 @@ import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.Adaptors.AdapterCalendarNewRemove;
+import dreamteam.focus.client.ListUtils;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -45,7 +49,6 @@ public class AddScheduleActivity extends AppCompatActivity {
     private ListView monday,tuesday, wednesday, thursday, friday, saturday, sunday;
     private Schedule s;
     private boolean check;
-
 
 
     @Override
@@ -175,75 +178,7 @@ public class AddScheduleActivity extends AppCompatActivity {
             e.getMessage();
         }
 
-
-
-        mondaySchedules = new ArrayList<ProfileInSchedule>();
-        tuesdaySchedules = new ArrayList<ProfileInSchedule>();
-        wednesdaySchedules = new ArrayList<ProfileInSchedule>();
-        thursdaySchedules = new ArrayList<ProfileInSchedule>();
-        fridaySchedules = new ArrayList<ProfileInSchedule>();
-        saturdaySchedules = new ArrayList<ProfileInSchedule>();
-        sundaySchedules = new ArrayList<ProfileInSchedule>();
-
-
-
-
-        for (int i = 0; i < profileArray.size(); i++) {
-            //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
-            Log.e("error","Profile Enum Value: "+ profileArray.get(i).repeatsOn().toString());
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)){
-                mondaySchedules.add(profileArray.get(i));
-            }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.TUESDAY)){
-                tuesdaySchedules.add(profileArray.get(i));
-            }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.WEDNESDAY)){
-                wednesdaySchedules.add(profileArray.get(i));
-            }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.THURSDAY)){
-                thursdaySchedules.add(profileArray.get(i));
-            }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.FRIDAY)){
-                fridaySchedules.add(profileArray.get(i));
-            }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.SATURDAY)){
-                saturdaySchedules.add(profileArray.get(i));
-            }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.SUNDAY)){
-                sundaySchedules.add(profileArray.get(i));
-            }
-
-        }
-
-        monday = (ListView) findViewById(R.id.listViewMonday3);
-        mon = new AdapterCalendarNewRemove(getApplicationContext(), mondaySchedules);
-        monday.setAdapter(mon);
-
-
-        tuesday = (ListView) findViewById(R.id.listViewTuesday3);
-        tue = new AdapterCalendarNewRemove(getApplicationContext(), tuesdaySchedules);
-        tuesday.setAdapter(tue);
-
-        wednesday = (ListView) findViewById(R.id.listViewWednesday3);
-        wed = new AdapterCalendarNewRemove(getApplicationContext(), wednesdaySchedules);
-        wednesday.setAdapter(wed);
-
-        thursday = (ListView) findViewById(R.id.listViewThursday3);
-        thu = new AdapterCalendarNewRemove(getApplicationContext(), thursdaySchedules);
-        thursday.setAdapter(thu);
-
-        friday = (ListView) findViewById(R.id.listViewFriday3);
-        fri = new AdapterCalendarNewRemove(getApplicationContext(), fridaySchedules);
-        friday.setAdapter(fri);
-
-        saturday = (ListView) findViewById(R.id.listViewSaturday3);
-        sat = new AdapterCalendarNewRemove(getApplicationContext(), saturdaySchedules);
-        saturday.setAdapter(sat);
-
-        sunday = (ListView) findViewById(R.id.listViewSunday3);
-        sun = new AdapterCalendarNewRemove(getApplicationContext(), sundaySchedules);
-        sunday.setAdapter(sun);
-
+        updateList();
     }
 
     @Override
@@ -254,16 +189,6 @@ public class AddScheduleActivity extends AppCompatActivity {
 
     public void updateList()
     {
-//
-//        try {
-//            profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-//            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
-//        } catch (ParseException e) {
-//            e.getMessage();
-//        }
-
-
-
         mondaySchedules = new ArrayList<ProfileInSchedule>();
         tuesdaySchedules = new ArrayList<ProfileInSchedule>();
         wednesdaySchedules = new ArrayList<ProfileInSchedule>();
@@ -271,9 +196,6 @@ public class AddScheduleActivity extends AppCompatActivity {
         fridaySchedules = new ArrayList<ProfileInSchedule>();
         saturdaySchedules = new ArrayList<ProfileInSchedule>();
         sundaySchedules = new ArrayList<ProfileInSchedule>();
-
-
-
 
         for (int i = 0; i < profileArray.size(); i++) {
             //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
@@ -330,6 +252,15 @@ public class AddScheduleActivity extends AppCompatActivity {
         sunday = (ListView) findViewById(R.id.listViewSunday3);
         sun = new AdapterCalendarNewRemove(getApplicationContext(), sundaySchedules);
         sunday.setAdapter(sun);
+
+        ListUtils.setDynamicHeight(monday);
+        ListUtils.setDynamicHeight(tuesday);
+        ListUtils.setDynamicHeight(wednesday);
+        ListUtils.setDynamicHeight(thursday);
+        ListUtils.setDynamicHeight(friday);
+        ListUtils.setDynamicHeight(saturday);
+        ListUtils.setDynamicHeight(sunday);
+
     }
 
     @Override
@@ -348,6 +279,6 @@ public class AddScheduleActivity extends AppCompatActivity {
                 finish();
             }
         }
-
     }
+
 }
