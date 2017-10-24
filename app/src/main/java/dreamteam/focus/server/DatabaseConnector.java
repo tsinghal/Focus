@@ -5,17 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import java.lang.reflect.Array;
-import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 
 import dreamteam.focus.Profile;
@@ -179,7 +174,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean addBlockedApps(Profile profile) throws SQLException {
+    private boolean addBlockedApps(Profile profile) throws SQLException {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -218,7 +213,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             ContentValues args = new ContentValues();
             args.put(KEY_PROFILE_NAME, updatedProfile.getName());
 
-            db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_PROFILE_NAME + "='" + updatedProfile.getName() + "'", null);
+            db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_PROFILE_NAME + "='" + originalProfileName + "'", null);
         }
 
         incrementDatabaseVersion();
@@ -241,12 +236,15 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 + KEY_SCHEDULE_NAME + "='" + scheduleName + "' AND "
                 + KEY_REPEAT_ENUM + "='" + re.toString() + "'";
 
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = db. rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
-            return cursor.getInt(0);
+            int id = cursor.getInt(0);
+            cursor.close();
+            return id;
         }
+
         return -1;
     }
 
@@ -271,8 +269,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 //    }
 
     public boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
-
-        incrementDatabaseVersion();
 
         return removeProfileFromSchedule(oldPis, scheduleName, oldPis.repeatsOn().get(0)) &&
                 addProfileInSchedule(newPis, scheduleName);
@@ -300,17 +296,15 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
-
-        return cursor.getCount() > 0;
+        boolean hasSchedule = cursor.getCount() > 0;
+        cursor.close();
+        db.close();
+        return hasSchedule;
     }
 
     public boolean updateSchedule(String oldScheduleName, Schedule newSchedule) throws ParseException {
 
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        removeSchedule(oldScheduleName);
-        incrementDatabaseVersion();
-        return addSchedule(newSchedule);
+        return removeSchedule(oldScheduleName) && addSchedule(newSchedule);
     }
 
     public boolean removeProfile(String profileName) {
@@ -338,7 +332,10 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         incrementDatabaseVersion();
-        return db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_NAME + "='" + profileName + "'", null) > 0;
+        boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_NAME + "='" + profileName + "'", null) >= 0;
+        cursor.close();
+        db.close();
+        return answer;
     }
 
     //ACTIVATE PROFILE IS ONLY CALLED FOR INSTANT ACTIVATION
@@ -350,8 +347,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         values.put(KEY_ACTIVE, "true");
 
         incrementDatabaseVersion();
-        return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
+
+        boolean answer = db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
                 addProfileInSchedule(pis, "AnonymousSchedule");
+        db.close();
+        return answer;
     }
 
     public boolean deactivateProfile(Profile profile) {
@@ -361,9 +361,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         values.put(KEY_ACTIVE, "false");
 
-        incrementDatabaseVersion();
-        return db.update(TABLE_PROFILES, values, KEY_NAME + "='" + profile.getName() + "'", null) > 0 &&
+        boolean answer = db.update(TABLE_PROFILES, values, KEY_NAME + "='" + profile.getName() + "'", null) > 0 &&
                 removeProfileFromSchedule(profile, "AnonymousSchedule");
+
+        db.close();
+        return answer;
     }
 
     private ArrayList<Repeat_Enum> getProfileInScheduleRepeats(Integer profileInScheduleID) {
@@ -386,11 +388,13 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
 
+        cursor.close();
+        db.close();
         // return contact list
         return repeats;
     }
 
-    public boolean addProfileInScheduleRepeats(ProfileInSchedule pis, Integer profileInScheduleID) {
+    private boolean addProfileInScheduleRepeats(ProfileInSchedule pis, Integer profileInScheduleID) {
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<Repeat_Enum> repeats = pis.repeatsOn();
         for(int i=0; i<repeats.size(); i++) {
@@ -407,6 +411,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         incrementDatabaseVersion();
+        db.close();
         return true;
     }
 
@@ -444,6 +449,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         incrementDatabaseVersion();
+        cursor.close();
+        db.close();
         return true;
     }
 
@@ -457,12 +464,17 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         if(cursor.moveToFirst()) {
 
             incrementDatabaseVersion();
-            return db.delete(TABLE_PROFILE_IN_SCHEDULE,
+            boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE,
                     KEY_PROFILE_NAME + "='" + profile.getName() + "' AND "
                             + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0
                     && db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + cursor.getInt(0), null) >= 0;
+            cursor.close();
+            db.close();
+            return answer;
         }
 
+        cursor.close();
+        db.close();
         return false;
     }
 
@@ -485,6 +497,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             throw e;
         }
 
+        db.close();
         return true;
     }
 
@@ -493,18 +506,23 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         incrementDatabaseVersion();
         addProfileInScheduleDeleted(pis, scheduleName);
-        return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0
+
+        boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0
                 && db.delete(TABLE_PROFILE_IN_SCHEDULE,
                 KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
                         + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        db.close();
+        return answer;
     }
 
     public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName, Repeat_Enum re) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         incrementDatabaseVersion();
-        return db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0
+
+        boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0
                 && db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0;
+        return answer;
     }
 
     public ArrayList<String> getBlockedApps(String profileName) {
@@ -526,6 +544,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
 
+        cursor.close();
+        db.close();
         return blockedApps;
     }
 
@@ -542,10 +562,14 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             Profile profile = new Profile(cursor.getString(0), getBlockedApps(cursor.getString(0)));
             profile.setActive(Boolean.parseBoolean(cursor.getString(1)));
+            cursor.close();
+            db.close();
             return profile;
         }
 
         // return contact list
+        cursor.close();
+        db.close();
         return null;
     }
 
@@ -572,6 +596,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         // return contact list
+        cursor.close();
+        db.close();
         return profiles;
     }
 
@@ -598,6 +624,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         // return contact list
+        cursor.close();
+        db.close();
         return schedules;
     }
 
@@ -628,6 +656,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         // return contact list
+        cursor.close();
+        db.close();
         return profilesInSchedule;
     }
 
@@ -647,6 +677,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         incrementDatabaseVersion();
+        db.close();
         return true;
     }
 
@@ -658,7 +689,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         values.put(KEY_ACTIVE, "true");
 
         incrementDatabaseVersion();
-        return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        boolean answer = db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        db.close();
+        return answer;
     }
 
     public boolean deactivateSchedule(String scheduleName) {
@@ -669,7 +702,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         values.put(KEY_ACTIVE, "false");
 
         incrementDatabaseVersion();
-        return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        boolean answer = db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        return answer;
     }
 
     public Integer getNotificationsCountForApp(String appName) {
@@ -681,6 +715,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         int count = cursor.getCount();
 
         db.delete(TABLE_BLOCKED_NOTIFICATIONS, KEY_APP_NAME + "='" + appName + "'", null);
+        cursor.close();
+        db.close();
         return count;
     }
 
@@ -730,6 +766,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         incrementDatabaseVersion();
+        db.close();
         return true;
     }
 
@@ -745,7 +782,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         incrementDatabaseVersion();
-        return db.delete(TABLE_SCHEDULES, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        boolean answer = db.delete(TABLE_SCHEDULES, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
+        db.close();
+        return answer;
     }
 
     public Integer getDatabaseVersion() {
