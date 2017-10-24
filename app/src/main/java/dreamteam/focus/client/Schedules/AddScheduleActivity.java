@@ -87,10 +87,11 @@ public class AddScheduleActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    String names = name.getText().toString();
-                    s = new Schedule(names);
+
                     if(!check)
                     {
+                        String names = name.getText().toString();
+                        s = new Schedule(names);
                         try {
                             if (!db.hasSchedule(names)){
                                 db.addSchedule(s);
@@ -99,7 +100,7 @@ public class AddScheduleActivity extends AppCompatActivity {
                                 i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
                                 startActivity(i);
                             } else {
-                                Toast.makeText(getApplicationContext(), "Invalid Name", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Invalid Name, Name Already Exists!", Toast.LENGTH_SHORT).show();
                             }
                         } catch(SQLException e) {
                             Log.e("errorS", e.getMessage());
@@ -138,26 +139,41 @@ public class AddScheduleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                String names = name.getText().toString();
-                s = new Schedule(names);
 
-                if(check) {
-                    ProfileInSchedule pis;
-                    Profile p;
-                    int pos;
-                    for (int i = 0; i < pisArray.size(); i++) {
-                        pis = pisArray.get(i);
-                        pos = positionArray.get(i);
-                        db.removeProfileFromSchedule(pis, scheduleName, pis.repeatsOn().get(0));
+                if(!check)
+                {
+
+                    if(name.getText().toString().matches("")){
+                        Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        String names = name.getText().toString();
+                        s = new Schedule(names);
+                        try {
+                            if (!db.hasSchedule(names)) {
+                                db.addSchedule(s);
+                                check = true;
+                                //Intent i = new Intent(getApplicationContext(), SchedulesActivity.class);
+                                finish();
+                            } else {
+
+                                Toast.makeText(getApplicationContext(), "Invalid Name, Name Already Exisits!", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (SQLException e) {
+                            Log.e("errorS", e.getMessage());
+                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     }
 
-                    for (int i = 0; i < profileInScheduleArray.size(); i++) {
-                        db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
-                    }
-                    finish();
                 }
                 else {
-                    db.addSchedule(s);
+                    String names = name.getText().toString();
+                    if(s.getName().equals(names)) {
+                        db.addSchedule(s);
+                    } else {
+
+                    }
+
                     finish();
                 }
                 //ADD TO DATABASE HERE

@@ -37,6 +37,7 @@ android:background="@color/background">
     android:hint="Enter Profile Name"
     android:textColorHint="@color/blue"
     android:maxLines="1"
+    android:maxLength="12"
     android:inputType="text"
     android:textStyle="italic"
     android:backgroundTint="@color/blue"

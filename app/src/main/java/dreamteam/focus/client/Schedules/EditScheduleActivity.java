@@ -122,16 +122,19 @@ public class EditScheduleActivity extends AppCompatActivity {
 
 
                 String newName = name.getText().toString();
-
-                if(!newName.equals(scheduleName)){
-                    if(!db.hasSchedule(newName)){
-                        db.updateScheduleName(scheduleName, newName);
-                        finish();
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Schedule Name Already Exisits!",Toast.LENGTH_SHORT).show();
-                    }
+                if(name.getText().toString().matches("")){
+                    Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
                 } else {
-                    finish();
+                    if (!newName.equals(scheduleName)) {
+                        if (!db.hasSchedule(newName)) {
+                            db.updateScheduleName(scheduleName, newName);
+                            finish();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Schedule Name Already Exisits!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        finish();
+                    }
                 }
 
                 //ADD TO DATABASE HERE
