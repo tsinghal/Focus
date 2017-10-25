@@ -23,7 +23,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 35;
+    private static int DATABASE_VERSION = 44;
 
     private static int database_version = 0;
 
@@ -198,11 +198,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
-    private String getDateString(java.util.Date d) {
+    public String getDateString(java.util.Date d) {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(d);
     }
 
-    private java.util.Date getDate(String d) throws ParseException {
+    public java.util.Date getDate(String d) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).parse(d);
     }
 
@@ -819,6 +819,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return database_version;
     }
 
+    public void clear() { ++DATABASE_VERSION;}
 
 }
 
