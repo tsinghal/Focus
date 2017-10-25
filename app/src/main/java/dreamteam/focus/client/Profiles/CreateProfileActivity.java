@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Profiles;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -11,29 +11,31 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
-import dreamteam.focus.client.adapter.AdapterApps;
+import dreamteam.focus.client.ArrangeAppsByName;
+import dreamteam.focus.client.MainActivity;
+import dreamteam.focus.client.Adaptors.AdapterApps;
 
 /**
  * Created by shatrujeet lawa on 10/8/2017.
  */
 
-public class CreateProfile extends AppCompatActivity {
+public class CreateProfileActivity extends AppCompatActivity {
     public static ArrayList<String> appsOnDevice;
     public static ArrayList<String> packagesOnDevice;
-
+    public static TreeMap<String, String> treemap;
+    public static HashMap<String, String> map;
+    public static ArrayList<String> blockedPackages;
 
     AdapterApps appsList;
     Button submit;
     Button discard;
     String profileName;
-
-    public static ArrayList<String> blockedPackages;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,12 +47,10 @@ public class CreateProfile extends AppCompatActivity {
         //change this
         appsOnDevice=new ArrayList<String>();
         packagesOnDevice=new ArrayList<String>();
+        treemap = new TreeMap<String, String>();
+        map = new HashMap<String, String>();
 
         getSystemApps();
-
-//        Collections.sort(appsOnDevice); //sorting the apps by name
-//        Collections.sort(packagesOnDevice);
-
 
         appsList=new AdapterApps(getApplicationContext(),appsOnDevice);
 
@@ -97,19 +97,21 @@ public class CreateProfile extends AppCompatActivity {
 
     public void getSystemApps()
     {
-;
-
         PackageManager pm=getPackageManager();
         List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
         for (ApplicationInfo packageInfo : packages) {
             String appName=getAppNameFromPackage(packageInfo.packageName);
 
            if(!appName.equals("this app") && !appName.contains(".") && !packageInfo.packageName.equals("com.htc.launcher") && !packageInfo.packageName.equals("dreamteam.focus") && !packageInfo.packageName.equals("com.google.android.apps.nexuslauncher") && !packageInfo.packageName.equals("com.android.systemui")&& !packageInfo.packageName.equals("com.google.android.packageinstaller")  ) {
-               appsOnDevice.add(appName);
-               packagesOnDevice.add(packageInfo.packageName);
 
+               map.put(packageInfo.packageName, appName);
            }
-
+        }
+        ArrangeAppsByName arrange = new ArrangeAppsByName();
+        TreeMap<String, String> sortedMap = arrange.sortMapByValue(map);
+        for (String key : sortedMap.keySet()) {
+            packagesOnDevice.add(key);
+            appsOnDevice.add(sortedMap.get(key));
         }
 
     }

@@ -1,5 +1,6 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Schedules;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 
@@ -18,30 +20,39 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.adapter.AdapterCalendarRemove;
+import dreamteam.focus.client.ListUtils;
+import dreamteam.focus.client.MainActivity;
+import dreamteam.focus.client.Adaptors.AdapterCalendarRemove;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
  * Created by aarav on 10/13/17.
  */
 
-public class EditSchedule extends AppCompatActivity {
+<<<<<<< Updated upstream:app/src/main/java/dreamteam/focus/client/Schedules/EditScheduleActivity.java
+public class EditScheduleActivity extends AppCompatActivity {
+=======
+public class EditSchedule extends AppCompatActivity implements Serializable{
+>>>>>>> Stashed changes:app/src/main/java/dreamteam/focus/client/EditSchedule.java
 
     private Button addSchedule, discard, delete;
     private EditText nameText;
     private Button addProfileButton;
-    public static ArrayList<ProfileInSchedule> profileArray;
+    public static ArrayList<ProfileInSchedule> profileArray;  //the static rference for the ProfileInSchedule,vhanges nothing in database
     public static ArrayList<Integer> positionArray;
-    public static ArrayList<ProfileInSchedule> pisArray;
-    public static ArrayList<ProfileInSchedule> profileInScheduleArray;
+    public static ArrayList<ProfileInSchedule> pisArray; //contains the profileInSchedules that needs to be removed from the DB
+    public static ArrayList<ProfileInSchedule> profileInScheduleArray;//contains the profileInSchedules that needs to be added to the DB
     AdapterCalendarRemove mon,tue,wed,thu,fri,sat,sun;
     private EditText name;
-    private DatabaseConnector db;
     public static String scheduleName;
+    DatabaseConnector db;
     private ArrayList<ProfileInSchedule> mondaySchedules, tuesdaySchedules, wednesdaySchedules, thursdaySchedules,
             fridaySchedules, saturdaySchedules, sundaySchedules;
     private ListView monday,tuesday, wednesday, thursday, friday, saturday, sunday;
     public Schedule CurrentSchedule;
+
+    public static String editPISOld="OldPIS";
+    public static String editPISNew="NewPIS";
 
 
 
@@ -49,24 +60,23 @@ public class EditSchedule extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activtiy_edit_schedule);
+        db=new DatabaseConnector(this);
         pisArray=new ArrayList<ProfileInSchedule>();
         positionArray=new ArrayList<Integer>();
         profileInScheduleArray=new ArrayList<ProfileInSchedule>();
 
-        db = new DatabaseConnector(this);
 
         Bundle bundle = getIntent().getExtras();
         if(bundle != null){
             scheduleName = bundle.getString("Schedule Name");
         }
 
-
         try {
-            for(int i=0;i<MainActivity.db.getSchedules().size();i++)
+            for(int i=0;i<db.getSchedules().size();i++)
             {
-                if(MainActivity.db.getSchedules().get(i).getName().equals(scheduleName))
+                if(db.getSchedules().get(i).getName().equals(scheduleName))
                 {
-                    CurrentSchedule=MainActivity.db.getSchedules().get(i);
+                    CurrentSchedule=db.getSchedules().get(i);
                 }
             }
         } catch (ParseException e) {
@@ -86,8 +96,8 @@ public class EditSchedule extends AppCompatActivity {
         addProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), AddProfileToSchedule.class);
-                i.putExtra("EditSchedule:ScheduleName", scheduleName);
+                Intent i = new Intent(getApplicationContext(), AddProfileToScheduleActivity.class);
+                i.putExtra("EditScheduleActivity:ScheduleName", scheduleName); //TODO: check this
                 startActivity(i);
             }
         });
@@ -107,31 +117,42 @@ public class EditSchedule extends AppCompatActivity {
                 Profile p;
                 int pos;
 
+
                 for(int i=0;i<profileInScheduleArray.size();i++)
                 {
                     Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
                     db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
                 }
-                
+
+
                 for(int i=0;i<pisArray.size();i++)
                 {
                     pis=pisArray.get(i);
-                    pos=positionArray.get(i);
-                    Log.d("TAG2", String.valueOf(db.removeProfileFromSchedule(pis,scheduleName, pis.repeatsOn().get(0))));
+//                    pos=positionArray.get(i);
+                    db.removeProfileFromSchedule(pis,scheduleName, pis.repeatsOn().get(0));
                 }
 
 
-                String newName = name.getText().toString();
+<<<<<<< Updated upstream:app/src/main/java/dreamteam/focus/client/Schedules/EditScheduleActivity.java
+=======
 
-                if(!newName.equals(scheduleName)){
-                    if(!db.hasSchedule(newName)){
-                        db.updateScheduleName(scheduleName, newName);
-                        finish();
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Schedule Name Already Exisits!",Toast.LENGTH_SHORT).show();
-                    }
+                String newName = name.getText().toString();
+>>>>>>> Stashed changes:app/src/main/java/dreamteam/focus/client/EditSchedule.java
+
+                String newName = name.getText().toString();
+                if(name.getText().toString().matches("")){
+                    Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
                 } else {
-                    finish();
+                    if (!newName.equals(scheduleName)) {
+                        if (!db.hasSchedule(newName)) {
+                            db.updateScheduleName(scheduleName, newName);
+                            finish();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Schedule Name Already Exisits!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        finish();
+                    }
                 }
 
 
@@ -160,7 +181,7 @@ public class EditSchedule extends AppCompatActivity {
 
         try {
             profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-            Log.e("error","In EditSchedule.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
+            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
         } catch (ParseException e) {
             e.getMessage();
         }
@@ -234,6 +255,15 @@ public class EditSchedule extends AppCompatActivity {
         sun = new AdapterCalendarRemove(getApplicationContext(), sundaySchedules);
         sunday.setAdapter(sun);
 
+        ListUtils.setDynamicHeight(monday);
+        ListUtils.setDynamicHeight(tuesday);
+        ListUtils.setDynamicHeight(wednesday);
+        ListUtils.setDynamicHeight(thursday);
+        ListUtils.setDynamicHeight(friday);
+        ListUtils.setDynamicHeight(saturday);
+        ListUtils.setDynamicHeight(sunday);
+
+
     }
 
     @Override
@@ -253,7 +283,6 @@ public class EditSchedule extends AppCompatActivity {
 //        }
 
 
-
         mondaySchedules = new ArrayList<ProfileInSchedule>();
         tuesdaySchedules = new ArrayList<ProfileInSchedule>();
         wednesdaySchedules = new ArrayList<ProfileInSchedule>();
@@ -261,8 +290,6 @@ public class EditSchedule extends AppCompatActivity {
         fridaySchedules = new ArrayList<ProfileInSchedule>();
         saturdaySchedules = new ArrayList<ProfileInSchedule>();
         sundaySchedules = new ArrayList<ProfileInSchedule>();
-
-
 
 
         for (int i = 0; i < profileArray.size(); i++) {
@@ -320,10 +347,69 @@ public class EditSchedule extends AppCompatActivity {
         sunday = (ListView) findViewById(R.id.listViewSunday);
         sun = new AdapterCalendarRemove(getApplicationContext(), sundaySchedules);
         sunday.setAdapter(sun);
+
+        ListUtils.setDynamicHeight(monday);
+        ListUtils.setDynamicHeight(tuesday);
+        ListUtils.setDynamicHeight(wednesday);
+        ListUtils.setDynamicHeight(thursday);
+        ListUtils.setDynamicHeight(friday);
+        ListUtils.setDynamicHeight(saturday);
+        ListUtils.setDynamicHeight(sunday);
+
     }
 
     public boolean getState()
     {
         return CurrentSchedule.isActive();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 1) {     //Update profile array with new Profile In schedule
+            if (resultCode == Activity.RESULT_OK) {
+                String result = data.getStringExtra("result");
+                Bundle b=data.getExtras();
+                ProfileInSchedule oldPIS=(ProfileInSchedule) b.getSerializable(editPISOld);
+                ProfileInSchedule newPIS=(ProfileInSchedule) b.getSerializable(editPISNew);
+
+
+                for (int i=0;i<profileArray.size();i++) {
+
+                    ProfileInSchedule currentPIS=profileArray.get(i);
+
+                    if(currentPIS.getProfile().getName().toString().equals(oldPIS.getProfile().getName().toString()))
+                    {
+                        if (currentPIS.getStartTime().getTime()==oldPIS.getStartTime().getTime() && currentPIS.getEndTime().getTime()==oldPIS.getEndTime().getTime())
+                        {
+                            if(currentPIS.repeatsOn().size()!=0) {
+                                if(currentPIS.repeatsOn().get(0)==oldPIS.repeatsOn().get(0)) {
+                                    Log.d("Tagsy","It does contain");
+                                    profileArray.remove(currentPIS);
+                                    pisArray.add(currentPIS);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                try {
+                    if(db.getProfilesInSchedule(scheduleName).contains(oldPIS)){
+                        Log.d("Tagsy","It does contain"+profileArray.size());
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                //profileArray.remove(oldPIS);
+                profileArray.add(newPIS);
+
+                profileInScheduleArray.add(newPIS);
+                //pisArray.add(oldPIS);
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
+        updateList();
     }
 }

@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Profiles;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -14,17 +14,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
-import dreamteam.focus.client.adapter.AdapterAppsEdit;
+import dreamteam.focus.client.ArrangeAppsByName;
+import dreamteam.focus.client.MainActivity;
+import dreamteam.focus.client.Adaptors.AdapterAppsEdit;
 
-public class EditProfile extends AppCompatActivity {
+public class EditProfileActivity extends AppCompatActivity {
 
 
     public static ArrayList<String> appsOnDevice;
     public static ArrayList<String> packagesOnDevice;
-
+    public static TreeMap<String, String> treemap;
+    public static HashMap<String, String> map;
+    public static ArrayList<String> blockedPackages;
 
     AdapterAppsEdit appsList;
     Button submit;
@@ -32,9 +37,6 @@ public class EditProfile extends AppCompatActivity {
     String profileName;
     public static String IntentNameString="ProfileName";
 
-    public static ArrayList<String> blockedApps;
-    public static ArrayList<String> blockedPackages;
-    public  ArrayList<Boolean> statusApps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,36 +48,18 @@ public class EditProfile extends AppCompatActivity {
 
 
         //get blockedApps
-        blockedPackages=MainActivity.db.getBlockedApps(profileName);
+        blockedPackages= MainActivity.db.getBlockedApps(profileName);
 
-
-//        Toast.makeText(getApplicationContext(),blockedPackages.size()+" ",Toast.LENGTH_LONG).show();
         //change this
 
         appsOnDevice=new ArrayList<String>();
         packagesOnDevice=new ArrayList<String>();
+        treemap = new TreeMap<String, String>();
+        map = new HashMap<String, String>();
 
         getSystemApps();
 
         Collections.sort(appsOnDevice); //sorting the apps by name
-//        Collections.sort(packagesOnDevice);
-
-//       statusApps=new ArrayList<Boolean>();
-//        for (int i=0;i<packagesOnDevice.size();i++)
-//        {
-//            if(blockedPackages.contains(packagesOnDevice.get(i)))
-//            {
-//
-//                statusApps.add(true);
-//                Log.d("Rat",i+" "+appsOnDevice.get(i)+" "+statusApps.get(i));
-//            }
-//            else
-//            {
-//
-//                statusApps.add(false);
-//                Log.d("Rats",i+" "+appsOnDevice.get(i)+" "+statusApps.get(i));
-//            }
-//        }
 
         appsList=new AdapterAppsEdit(getApplicationContext(),appsOnDevice);
 
@@ -105,8 +89,6 @@ public class EditProfile extends AppCompatActivity {
                 finish();
             }
         });
-
-
     }
 
     public void getSystemApps()
@@ -118,9 +100,14 @@ public class EditProfile extends AppCompatActivity {
 
             if(!appName.equals("this app") && !appName.contains(".") && !packageInfo.packageName.equals("com.htc.launcher") && !packageInfo.packageName.equals("dreamteam.focus") && !packageInfo.packageName.equals("com.google.android.apps.nexuslauncher") && !packageInfo.packageName.equals("com.android.systemui")&& !packageInfo.packageName.equals("com.google.android.packageinstaller")  )
             {
-                appsOnDevice.add(appName);
-                packagesOnDevice.add(packageInfo.packageName);
+                map.put(packageInfo.packageName, appName);
             }
+        }
+        ArrangeAppsByName arrange = new ArrangeAppsByName();
+        TreeMap<String, String> sortedMap = arrange.sortMapByValue(map);
+        for (String key : sortedMap.keySet()) {
+            packagesOnDevice.add(key);
+            appsOnDevice.add(sortedMap.get(key));
         }
 
     }

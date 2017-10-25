@@ -1,5 +1,6 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -25,8 +26,8 @@ import java.util.Date;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
-import dreamteam.focus.client.EditProfileInSchedule;
-import dreamteam.focus.client.EditSchedule;
+import dreamteam.focus.client.Schedules.EditProfileInScheduleActivity;
+import dreamteam.focus.client.Schedules.EditScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -37,6 +38,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
     public DatabaseConnector db;
     public Context mcontext;
+    public ProfileInSchedule s;
 
     public AdapterCalendarRemove(Context context, ArrayList<ProfileInSchedule> profilesArray)
     {
@@ -50,7 +52,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
     public View getView(final int position, View convertView, final ViewGroup parent)
     {
-        final ProfileInSchedule s = getItem(position);
+         s = getItem(position);
         Log.d("LOOK", s.repeatsOn().toString());
         db = new DatabaseConnector(getContext());
 
@@ -70,7 +72,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
         appStatus.setText("Remove");
 
-        if(((EditSchedule)parent.getContext()).getState()) //if an active state of schedule
+        if(((EditScheduleActivity)parent.getContext()).getState()) //if an active state of schedule
         {
                 if(getDay(s.repeatsOn().get(0)) )
                 {
@@ -98,12 +100,19 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         textProfileName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i=new Intent(mcontext,EditProfileInSchedule.class);
+                Intent i=new Intent(mcontext,EditProfileInScheduleActivity.class);
                 Bundle b=new Bundle();
-                b.putSerializable(EditProfileInSchedule.namePIS,s);
+                b.putSerializable(EditProfileInScheduleActivity.namePIS,s);
                 i.putExtras(b);
-                i.putExtra("scheduleName",((EditSchedule)(parent.getContext())).scheduleName);
+<<<<<<< Updated upstream:app/src/main/java/dreamteam/focus/client/Adaptors/AdapterCalendarRemove.java
+                i.putExtra("scheduleName",((EditScheduleActivity)(parent.getContext())).scheduleName);
                 v.getContext().startActivity(i);
+=======
+                i.putExtra("scheduleName",((EditSchedule)(parent.getContext())).scheduleName);
+
+//                v.getContext().startActivity(i);
+                ((Activity)parent.getContext()).startActivityForResult(i,1);
+>>>>>>> Stashed changes:app/src/main/java/dreamteam/focus/client/adapter/AdapterCalendarRemove.java
             }
         });
 
@@ -112,13 +121,13 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             public void onClick(View view){
                 Log.e("error","REMOVE IS CLICKED");
 
-                EditSchedule.pisArray.add(s);
-                EditSchedule.positionArray.add(position);
-                EditSchedule.profileArray.remove(s);
+                EditScheduleActivity.pisArray.add(s);
+                EditScheduleActivity.positionArray.add(position);
+                EditScheduleActivity.profileArray.remove(s);
                 Log.d("TAG",s.repeatsOn().toString());
-                EditSchedule.profileInScheduleArray.remove(s);//Changed
-                ((EditSchedule)parent.getContext()).updateList();
-            //    db.removeProfileFromSchedule(s,EditSchedule.scheduleName, s.repeatsOn().get(pos`ition));
+                EditScheduleActivity.profileInScheduleArray.remove(s);//Changed
+                ((EditScheduleActivity)parent.getContext()).updateList();
+            //    db.removeProfileFromSchedule(s,EditScheduleActivity.scheduleName, s.repeatsOn().get(pos`ition));
 //                Log.e("error",String.valueOf(s.repeatsOn().size()));
 
             }
@@ -217,4 +226,9 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         Log.d("ReturnValue","false");
         return false;
     }
+
+
+
 }
+
+

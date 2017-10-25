@@ -1,4 +1,4 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
 import android.content.Context;
 import android.util.Log;
@@ -13,7 +13,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import dreamteam.focus.R;
-import dreamteam.focus.client.EditProfile;
+import dreamteam.focus.client.Profiles.EditProfileActivity;
 
 /**
  * Created by shatrujeet lawa on 10/13/2017.
@@ -32,15 +32,13 @@ public class AdapterAppsEdit extends ArrayAdapter<String> {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         final String appName = getItem(position);
-        int index = EditProfile.appsOnDevice.indexOf(appName);
-        final String packageName=EditProfile.packagesOnDevice.get(index);
+        int index = EditProfileActivity.appsOnDevice.indexOf(appName);
+        final String packageName=EditProfileActivity.packagesOnDevice.get(index);
         final TextView textAppName;
         CheckBox appStatus;
 
 
-
         View    conView = LayoutInflater.from(getContext()).inflate(R.layout.app_listitem, parent, false);
-
 
 
         textAppName = (TextView) conView.findViewById(R.id.textViewAppName);
@@ -49,36 +47,25 @@ public class AdapterAppsEdit extends ArrayAdapter<String> {
         appStatus=(CheckBox)conView.findViewById(R.id.checkBoxAppStatus);
 
 
-
-        if (EditProfile.blockedPackages.contains(packageName))
+        if (EditProfileActivity.blockedPackages.contains(packageName))
         {
           Log.e("BlockedPackage",packageName+" "+appName+" "+position);
             appStatus.setChecked(true);
         }
 
-
-
-
         appStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d("Listener Reached","Yes");
-                if (EditProfile.blockedPackages.contains(packageName)) {
+                if (EditProfileActivity.blockedPackages.contains(packageName)) {
                     if (!isChecked){
-                        EditProfile.blockedPackages.remove(packageName);
-
+                        EditProfileActivity.blockedPackages.remove(packageName);
                     }
-
                 } else {
                     if (isChecked) {
-
-                        EditProfile.blockedPackages.add(packageName);
-
-
+                        EditProfileActivity.blockedPackages.add(packageName);
                     }
                 }
-
-
             }
         });
 

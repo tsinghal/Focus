@@ -32,6 +32,7 @@
         android:layout_toEndOf="@id/textViewName"
         android:id="@+id/editViewProfileName"
         android:maxLines="1"
+        android:maxLength="12"
         android:inputType="text"
         android:hint="Enter Profile Name"
         android:textColorHint="@color/blue"

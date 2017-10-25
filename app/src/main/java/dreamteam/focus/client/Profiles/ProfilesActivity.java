@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Profiles;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,14 +17,15 @@ import java.util.ArrayList;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
-import dreamteam.focus.client.adapter.AdapterProfiles;
+import dreamteam.focus.client.MainActivity;
+import dreamteam.focus.client.Adaptors.AdapterProfiles;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
  * Created by shatrujeet lawa on 10/8/2017.
  */
 
-public class Profiles extends AppCompatActivity {
+public class ProfilesActivity extends AppCompatActivity {
 
     private Button addNewProfile;
     ArrayList<Profile> profileArray;
@@ -36,7 +37,7 @@ public class Profiles extends AppCompatActivity {
     private BroadcastReceiver MyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("Profiles", "Broadcast Recieved: "+intent.getStringExtra("profileMessage"));
+            Log.i("ProfilesActivity", "Broadcast Recieved: "+intent.getStringExtra("profileMessage"));
             String message = intent.getStringExtra("serviceMessage");
             //Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
            updateList();
@@ -55,7 +56,7 @@ public class Profiles extends AppCompatActivity {
         DatabaseConnector db=new DatabaseConnector(getApplicationContext());
        // updateList(); //every time list opens up,update Profile list
         profileArray= new ArrayList<Profile>();
-        profileArray=MainActivity.db.getProfiles();
+        profileArray= MainActivity.db.getProfiles();
         profileArrayAdapter=new AdapterProfiles(getApplicationContext(), profileArray);
         profileListView=(ListView)findViewById(R.id.listViewProfiles);
         profileListView.setAdapter(profileArrayAdapter);
@@ -72,7 +73,7 @@ public class Profiles extends AppCompatActivity {
             public void onClick(View v) {
                 if(MainActivity.db.getProfiles().size()<=profileLimit)
                 {
-                    Intent i = new Intent(getApplicationContext(), CreateProfile.class);
+                    Intent i = new Intent(getApplicationContext(), CreateProfileActivity.class);
                     startActivity(i);
                 }
                 else

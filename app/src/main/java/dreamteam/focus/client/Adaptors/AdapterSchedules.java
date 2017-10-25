@@ -1,4 +1,4 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,8 +17,8 @@ import java.util.ArrayList;
 
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.EditSchedule;
-import dreamteam.focus.client.Schedules;
+import dreamteam.focus.client.Schedules.EditScheduleActivity;
+import dreamteam.focus.client.Schedules.SchedulesActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -68,15 +68,15 @@ public class AdapterSchedules extends ArrayAdapter<Schedule> {
                 if (isChecked)
                 {
                     s.setActive(true);
-                    Schedules.db.activateSchedule(s.getName());
-                    ((Schedules)parent.getContext()).updateList();
+                    SchedulesActivity.db.activateSchedule(s.getName());
+                    ((SchedulesActivity)parent.getContext()).updateList();
                 }
                 else
                 {
                     //Off
                     s.setActive(false);
-                    Schedules.db.deactivateSchedule(s.getName());
-                    ((Schedules)parent.getContext()).updateList();
+                    SchedulesActivity.db.deactivateSchedule(s.getName());
+                    ((SchedulesActivity)parent.getContext()).updateList();
                 }
             }
         });
@@ -86,7 +86,7 @@ public class AdapterSchedules extends ArrayAdapter<Schedule> {
             public void onClick(View v) {
 
 
-                Intent y = new Intent(context.getApplicationContext(), EditSchedule.class);
+                Intent y = new Intent(context.getApplicationContext(), EditScheduleActivity.class);
                 Log.e("error","intent created");
                 y.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 y.putExtra("Schedule Name", s.getName().toString());

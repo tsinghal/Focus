@@ -1,5 +1,7 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Schedules;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.sql.Array;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,19 +24,21 @@ import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
+import dreamteam.focus.client.MainActivity;
 
-public class EditProfileInSchedule extends AppCompatActivity {
+public class EditProfileInScheduleActivity extends AppCompatActivity {
 
     public static String namePIS="PIS";
     public Button updateSchedule;
     public Button discardChanges;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editprofileinschedule);
 
-        Bundle b=getIntent().getExtras();
-        final ProfileInSchedule pis = (ProfileInSchedule) b.getSerializable(namePIS);;
+        final Bundle b=getIntent().getExtras();
+        final ProfileInSchedule pis = (ProfileInSchedule) b.getSerializable(namePIS);
 
 //        if(b!=null)
 //        {
@@ -209,10 +214,16 @@ public class EditProfileInSchedule extends AppCompatActivity {
 
                 String scheduleName=getIntent().getStringExtra("scheduleName").toString();
 
-                MainActivity.db.removeProfileFromSchedule(pis,scheduleName,pis.repeatsOn().get(0));
-                MainActivity.db.addProfileInSchedule(NPis,scheduleName);
-//                MainActivity.db.updateProfileInSchedule(pis,NPis,scheduleName);
+//                MainActivity.db.removeProfileFromSchedule(pis,scheduleName,pis.repeatsOn().get(0));
+//                MainActivity.db.addProfileInSchedule(NPis,scheduleName);
 
+                Bundle bundle=new Bundle();  //sending old and new PIS to edit scehdule
+                bundle.putSerializable(EditSchedule.editPISOld,(ProfileInSchedule)b.getSerializable(namePIS));
+                bundle.putSerializable(EditSchedule.editPISNew,NPis);
+
+                Intent i=new Intent();
+                i.putExtras(bundle);
+                setResult(Activity.RESULT_OK,i);
                 finish();
             }
 
@@ -228,4 +239,6 @@ public class EditProfileInSchedule extends AppCompatActivity {
             }
         });
     }
+
+
 }
