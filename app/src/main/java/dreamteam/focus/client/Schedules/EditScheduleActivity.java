@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
@@ -102,7 +103,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         discard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-             finish();
+                finish();
             }
         });
 
@@ -118,7 +119,11 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
                 for(int i=0;i<profileInScheduleArray.size();i++)
                 {
                     Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
-                    db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
+                    try {
+                        db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
+                    }catch (android.database.SQLException e){
+                        Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+                    }
                 }
 
 
@@ -405,3 +410,4 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         updateList();
     }
 }
+

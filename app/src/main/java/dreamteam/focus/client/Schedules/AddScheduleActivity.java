@@ -82,40 +82,44 @@ public class AddScheduleActivity extends AppCompatActivity {
             public void onClick(View v) {
 
 
-                scheduleName = name.getText().toString();
-                if(name.getText().toString().matches("")){
-                    Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
-                }
-                else {
+                //scheduleName = name.getText().toString();
+//                if(name.getText().toString().matches("")){
+//                    Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
+//                }
+//                else {
 
-                    if(!check)
-                    {
-                        String names = name.getText().toString();
-                        s = new Schedule(names);
-                        try {
-                            if (!db.hasSchedule(names)){
-                                db.addSchedule(s);
+                if(!check)
+                {
+                    String names = "TemporaryScheduleNameToCreate";
+                    s = new Schedule(names);
+                    try {
+                        if (!db.hasSchedule(names)){
+                            try {
+                                //db.addSchedule(s);
                                 check = true;
                                 Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
-                                i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
+                                //i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
                                 startActivity(i);
-                            } else {
-                                Toast.makeText(getApplicationContext(), "Invalid Name, Name Already Exists!", Toast.LENGTH_SHORT).show();
+                            }catch (android.database.SQLException e){
+                                Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
                             }
-                        } catch(SQLException e) {
-                            Log.e("errorS", e.getMessage());
-                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Invalid Name, Name Already Exists!", Toast.LENGTH_SHORT).show();
                         }
+                    } catch(SQLException e) {
+                        Log.e("errorS", e.getMessage());
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
 
-                    }
-                    else
-                    {
-                        Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
-                        i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
-                        startActivity(i);
-                    }
+                }
+                else
+                {
+                    Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
+                    i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
+                    startActivity(i);
                 }
             }
+            // }
         });
 
 
@@ -151,7 +155,11 @@ public class AddScheduleActivity extends AppCompatActivity {
                         s = new Schedule(names);
                         try {
                             if (!db.hasSchedule(names)) {
-                                db.addSchedule(s);
+                                try{
+                                    db.addSchedule(s);
+                                }catch (android.database.SQLException e){
+                                    Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+                                }
                                 check = true;
                                 //Intent i = new Intent(getApplicationContext(), SchedulesActivity.class);
                                 finish();
@@ -167,14 +175,22 @@ public class AddScheduleActivity extends AppCompatActivity {
 
                 }
                 else {
-                    String names = name.getText().toString();
-                    if(s.getName().equals(names)) {
-                        db.addSchedule(s);
+                    if(name.getText().toString().matches("")){
+                        Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
                     } else {
-
+                        String names = name.getText().toString();
+                        if(db.hasSchedule(names)){
+                            Toast.makeText(getApplicationContext(), "Please Enter A Unique Name", Toast.LENGTH_SHORT).show();
+                        } else {
+                            if (s.getName().equals(names)) {
+                                db.addSchedule(s);
+                            } else {
+                                s.setName(names);
+                                db.addSchedule(s);
+                            }
+                            finish();
+                        }
                     }
-
-                    finish();
                 }
                 //ADD TO DATABASE HERE
 //                String names = name.getText().toString();
