@@ -29,11 +29,8 @@ import dreamteam.focus.server.DatabaseConnector;
  * Created by aarav on 10/13/17.
  */
 
-<<<<<<< Updated upstream:app/src/main/java/dreamteam/focus/client/Schedules/EditScheduleActivity.java
-public class EditScheduleActivity extends AppCompatActivity {
-=======
-public class EditSchedule extends AppCompatActivity implements Serializable{
->>>>>>> Stashed changes:app/src/main/java/dreamteam/focus/client/EditSchedule.java
+
+public class EditScheduleActivity extends AppCompatActivity implements Serializable{
 
     private Button addSchedule, discard, delete;
     private EditText nameText;
@@ -133,11 +130,6 @@ public class EditSchedule extends AppCompatActivity implements Serializable{
                 }
 
 
-<<<<<<< Updated upstream:app/src/main/java/dreamteam/focus/client/Schedules/EditScheduleActivity.java
-=======
-
-                String newName = name.getText().toString();
->>>>>>> Stashed changes:app/src/main/java/dreamteam/focus/client/EditSchedule.java
 
                 String newName = name.getText().toString();
                 if(name.getText().toString().matches("")){

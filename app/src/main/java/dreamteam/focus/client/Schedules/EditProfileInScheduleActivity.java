@@ -218,8 +218,8 @@ public class EditProfileInScheduleActivity extends AppCompatActivity {
 //                MainActivity.db.addProfileInSchedule(NPis,scheduleName);
 
                 Bundle bundle=new Bundle();  //sending old and new PIS to edit scehdule
-                bundle.putSerializable(EditSchedule.editPISOld,(ProfileInSchedule)b.getSerializable(namePIS));
-                bundle.putSerializable(EditSchedule.editPISNew,NPis);
+                bundle.putSerializable(EditScheduleActivity.editPISOld,(ProfileInSchedule)b.getSerializable(namePIS));
+                bundle.putSerializable(EditScheduleActivity.editPISNew,NPis);
 
                 Intent i=new Intent();
                 i.putExtras(bundle);

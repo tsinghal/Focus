@@ -104,15 +104,8 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
                 Bundle b=new Bundle();
                 b.putSerializable(EditProfileInScheduleActivity.namePIS,s);
                 i.putExtras(b);
-<<<<<<< Updated upstream:app/src/main/java/dreamteam/focus/client/Adaptors/AdapterCalendarRemove.java
                 i.putExtra("scheduleName",((EditScheduleActivity)(parent.getContext())).scheduleName);
-                v.getContext().startActivity(i);
-=======
-                i.putExtra("scheduleName",((EditSchedule)(parent.getContext())).scheduleName);
-
-//                v.getContext().startActivity(i);
                 ((Activity)parent.getContext()).startActivityForResult(i,1);
->>>>>>> Stashed changes:app/src/main/java/dreamteam/focus/client/adapter/AdapterCalendarRemove.java
             }
         });
 
