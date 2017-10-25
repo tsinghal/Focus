@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -22,7 +23,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 33;
+    private static final int DATABASE_VERSION = 35;
 
     private static int database_version = 0;
 
@@ -91,8 +92,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 + KEY_PROFILE_NAME + " TEXT NOT NULL,"
                 + KEY_START_TIME + " TEXT NOT NULL,"
                 + KEY_END_TIME + " TEXT NOT NULL,"
-                + KEY_SCHEDULE_NAME + " TEXT NOT NULL,"
-                + " UNIQUE (" + KEY_PROFILE_NAME + ", " + KEY_START_TIME + ", " + KEY_END_TIME + ", " + KEY_SCHEDULE_NAME + ")" + ")";
+                + KEY_SCHEDULE_NAME + " TEXT NOT NULL" + ")";
 
         String CREATE_SCHEDULES_TABLE = "CREATE TABLE " + TABLE_SCHEDULES + "("
                 + KEY_SCHEDULE_NAME + " TEXT NOT NULL PRIMARY KEY UNIQUE,"
@@ -193,6 +193,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 throw e;
             }
         }
+
         incrementDatabaseVersion();
         return true;
     }
@@ -415,7 +416,31 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
+    private boolean alreadyExists(ProfileInSchedule pis, String scheduleName) {
+        String selectQuery = "SELECT  *, repeat_enum FROM " + TABLE_PROFILE_IN_SCHEDULE
+                + " JOIN " + TABLE_PROFILE_IN_SCHEDULE_REPEATS + " ON "
+                + TABLE_PROFILE_IN_SCHEDULE_REPEATS + "." + KEY_PROFILE_IN_SCHEDULE_ID + "=" + TABLE_PROFILE_IN_SCHEDULE + "." + KEY_PROFILE_IN_SCHEDULE_ID
+                + " WHERE "
+                + KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
+                + KEY_START_TIME + "='" + getDateString(pis.getStartTime()) + "' AND "
+                + KEY_END_TIME + "='" + getDateString(pis.getEndTime()) + "' AND "
+                + KEY_SCHEDULE_NAME + "='" + scheduleName + "' AND "
+                + KEY_REPEAT_ENUM + "='" + pis.repeatsOn().get(0).toString() + "'";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        boolean answer = cursor.getCount() > 0;
+        cursor.close();
+        db.close();
+        return answer;
+    }
+
     public boolean addProfileInSchedule(ProfileInSchedule pis, String scheduleName) throws SQLException {
+
+        if(alreadyExists(pis, scheduleName)) {
+            throw new SQLiteConstraintException();
+        }
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -522,6 +547,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0
                 && db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0;
+
+        db.close();
         return answer;
     }
 
@@ -635,7 +662,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE "
-                + KEY_SCHEDULE_NAME + "='" + scheduleName + "'";
+                + KEY_SCHEDULE_NAME + "='" + scheduleName + "' ORDER BY " + KEY_START_TIME;
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -772,7 +799,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     //CHANGED SO IF ERROR, LOOK HERE FIRST
     public boolean removeSchedule(String scheduleName) throws ParseException {
-        SQLiteDatabase db = this.getWritableDatabase();
 
         //Delete profileinschedule
         ArrayList<ProfileInSchedule> profilesInSchedule = getProfilesInSchedule(scheduleName);
@@ -782,6 +808,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         incrementDatabaseVersion();
+        SQLiteDatabase db = this.getWritableDatabase();
+
         boolean answer = db.delete(TABLE_SCHEDULES, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
         db.close();
         return answer;
