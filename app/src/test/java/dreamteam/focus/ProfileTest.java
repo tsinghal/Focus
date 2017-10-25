@@ -11,8 +11,9 @@ import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by bowie on 10/21/17.
- * Completed documentation in testing doc.
+ * Complete documentation in testing doc.
  */
+@SuppressWarnings("unused")
 public class ProfileTest {
     private ArrayList<String> blacklist1;
     private Profile profile;
