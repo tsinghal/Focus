@@ -17,12 +17,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
+
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.Profiles.ProfilesActivity;
 import dreamteam.focus.client.Schedules.SchedulesActivity;
 import dreamteam.focus.server.BackgroundService;
 import dreamteam.focus.server.DatabaseConnector;
+
+import dreamteam.focus.Profile;
+
 
 public class MainActivity extends AppCompatActivity {
     private Button schedulesButton;
@@ -56,6 +61,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         db = new DatabaseConnector(getApplicationContext());
+
+        /*ArrayList<String> l = new ArrayList<>();
+        Profile p = new Profile("Work", l);
+        db.createProfile(p);
+        Profile q = new Profile("School", l);
+        db.createProfile(q);
+        Profile r = new Profile("Driving", l);
+        db.createProfile(r);*/
+
+
 
         schedulesButton = (Button) findViewById(R.id.buttonSchedules);
         profilesButton = (Button) findViewById(R.id.buttonProfiles);

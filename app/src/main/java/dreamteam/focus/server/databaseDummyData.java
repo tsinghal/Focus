@@ -1,3 +1,5 @@
+/*
+
 Context appContext = InstrumentationRegistry.getTargetContext();
     DatabaseConnector db = new DatabaseConnector(appContext);
 
@@ -49,3 +51,4 @@ Context appContext = InstrumentationRegistry.getTargetContext();
 //        db.addSchedule(schedule1);
 //        db.addSchedule(schedule2);
     }
+*/

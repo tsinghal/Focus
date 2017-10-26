@@ -121,8 +121,8 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
                     Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
                     try {
                         db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
-                    }catch (android.database.SQLException e){
-                        Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+                    } catch (android.database.SQLException e){
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
 

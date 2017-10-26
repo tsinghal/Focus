@@ -47,10 +47,7 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
 
         db = new DatabaseConnector(this);
 
-        Bundle bundle = getIntent().getExtras();
-        if(bundle != null){
-            scheduleName = bundle.getString("AddScheduleActivity:ScheduleName");
-        }
+        scheduleName = "TemporaryScheduleNameToCreate";
 
         r = new ArrayList<Repeat_Enum>();
 

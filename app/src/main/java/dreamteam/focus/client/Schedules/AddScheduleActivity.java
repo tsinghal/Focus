@@ -95,10 +95,10 @@ public class AddScheduleActivity extends AppCompatActivity {
                     try {
                         if (!db.hasSchedule(names)){
                             try {
-                                //db.addSchedule(s);
+                                db.addSchedule(s);
                                 check = true;
                                 Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
-                                //i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
+                                i.putExtra("AddScheduleActivity:ScheduleName", names);
                                 startActivity(i);
                             }catch (android.database.SQLException e){
                                 Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
@@ -115,7 +115,7 @@ public class AddScheduleActivity extends AppCompatActivity {
                 else
                 {
                     Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
-                    i.putExtra("AddScheduleActivity:ScheduleName", scheduleName);
+                    i.putExtra("AddScheduleActivity:ScheduleName", "TemporaryScheduleNameToCreate");
                     startActivity(i);
                 }
             }
@@ -126,9 +126,9 @@ public class AddScheduleActivity extends AppCompatActivity {
         discard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(db.hasSchedule(s.getName()) && check){
+                if(db.hasSchedule("TemporaryScheduleNameToCreate") && check){
                     try {
-                        db.removeSchedule(s.getName());
+                        db.removeSchedule("TemporaryScheduleNameToCreate");
                         finish();
                     } catch (ParseException e) {
                         e.printStackTrace();
@@ -185,8 +185,39 @@ public class AddScheduleActivity extends AppCompatActivity {
                             if (s.getName().equals(names)) {
                                 db.addSchedule(s);
                             } else {
-                                s.setName(names);
-                                db.addSchedule(s);
+                                ProfileInSchedule pis;
+                                Profile p;
+                                int pos;
+
+
+                                for(int i=0;i<profileInScheduleArray.size();i++)
+                                {
+                                    Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
+                                    try {
+                                        db.addProfileInSchedule(profileInScheduleArray.get(i), "TemporaryScheduleNameToCreate");
+                                    }catch (android.database.SQLException e){
+                                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+
+                                for(int i=0;i<pisArray.size();i++)
+                                {
+                                    pis=pisArray.get(i);
+//                                  pos=positionArray.get(i);
+                                    db.removeProfileFromSchedule(pis,"TemporaryScheduleNameToCreate", pis.repeatsOn().get(0));
+                                }
+
+                                db.updateScheduleName("TemporaryScheduleNameToCreate", names);
+
+                                if(db.hasSchedule("TemporaryScheduleNameToCreate")){
+                                    try {
+                                        db.removeSchedule("TemporaryScheduleNameToCreate");
+
+                                    } catch (ParseException e){
+                                        Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
                             }
                             finish();
                         }
@@ -300,9 +331,9 @@ public class AddScheduleActivity extends AppCompatActivity {
         super.onBackPressed();
         if(check)
         {
-            if(db.hasSchedule(s.getName()) && check){
+            if(db.hasSchedule("TemporaryScheduleNameToCreate") && check){
                 try {
-                    db.removeSchedule(s.getName());
+                    db.removeSchedule("TemporaryScheduleNameToCreate");
                     finish();
                 } catch (ParseException e) {
                     e.printStackTrace();
