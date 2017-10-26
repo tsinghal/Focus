@@ -212,13 +212,13 @@ public class EditProfileInScheduleActivity extends AppCompatActivity {
                   re.add(e);
                 ProfileInSchedule NPis=new ProfileInSchedule(pis.getProfile(),startT,endT,re);
 
-                String scheduleName=getIntent().getStringExtra("scheduleName").toString();
+   //             String scheduleName=getIntent().getStringExtra("scheduleName").toString();
 
 //                MainActivity.db.removeProfileFromSchedule(pis,scheduleName,pis.repeatsOn().get(0));
 //                MainActivity.db.addProfileInSchedule(NPis,scheduleName);
 
                 Bundle bundle=new Bundle();  //sending old and new PIS to edit scehdule
-                bundle.putSerializable(EditScheduleActivity.editPISOld,(ProfileInSchedule)b.getSerializable(namePIS));
+                bundle.putSerializable(EditScheduleActivity.editPISOld,pis);
                 bundle.putSerializable(EditScheduleActivity.editPISNew,NPis);
 
                 Intent i=new Intent();

@@ -39,10 +39,14 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
     public DatabaseConnector db;
     public Context mcontext;
     public ProfileInSchedule s;
+    public int hoursLeft,minutesLeft,secondsLeft;
 
     public AdapterCalendarRemove(Context context, ArrayList<ProfileInSchedule> profilesArray)
     {
         super(context,0, profilesArray);
+        hoursLeft=0;
+        minutesLeft=0;
+        secondsLeft=0;
         mcontext=context;
     }
 
@@ -79,6 +83,8 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
                    if( getTime(s.getStartTime(),s.getEndTime()))
                    {
                        textProfileTime.setBackgroundColor(Color.GREEN);
+//                       secondsLeft=getSecondsLeft();
+                       textProfileTime.setText(hoursLeft+":"+minutesLeft+":"+secondsLeft);
                    }
                     else {
                        textProfileTime.setTextColor(Color.WHITE);
@@ -135,7 +141,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
     {
         boolean condition=false;
         Date CurrentTime= Calendar.getInstance().getTime();
-        SimpleDateFormat d1=new SimpleDateFormat("HH:mm");
+        SimpleDateFormat d1=new SimpleDateFormat("HH:mm:ss");
 
         String s = d1.format(CurrentTime);
         try {
@@ -144,13 +150,15 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             e.printStackTrace();
         }
 
-        String startTimeString=new SimpleDateFormat("HH:mm").format(CurrentTime);
+        String startTimeString=new SimpleDateFormat("HH:mm:ss").format(CurrentTime);
         String[] parts=startTimeString.split(":");
 
 
         int currentHour= Integer.parseInt(parts[0]);
 
         int currentMin=Integer.parseInt(parts[1].toString());
+
+        secondsLeft=59-Integer.parseInt(parts[2].toString());
 
         s = d1.format(startTime);
         try {
@@ -181,25 +189,53 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         if(startHour<=currentHour && currentHour<=endHour)
         {
 
-            if(startMin<=currentMin && currentMin<=endMin && endHour==startHour && currentMin>=startMin)
+            if( currentMin<=endMin && endHour==startHour && currentMin>=startMin)
             {
+
                 condition=true;
             }
 
             if(startHour==currentHour && currentMin>=startMin)
-                condition=true;
+            {
+               condition=true;
+
+               if(currentHour==endHour && currentMin>endMin)
+                condition=false;
+            }
 
             if(endHour==currentHour && currentMin<=endMin)
+            {
                 condition=true;
 
+                if(currentHour==startHour && currentMin<startMin)
+                condition=false;
+            }
+
             if((endHour-startHour)>1)
+            {
+
                 condition=true;
+            }
 
 
         }
 
         Log.e("TimeActivation",startHour+":"+startMin+" - "+currentHour+":"+currentMin+" - "+endHour+":"+endMin+"-"+condition);
 
+
+
+        if(condition)
+        {
+            hoursLeft=endHour-currentHour;
+            if(currentMin>endMin)
+            {
+                hoursLeft--;
+                minutesLeft=(60-currentMin)+endMin;
+            }
+            else
+                minutesLeft=endMin-currentMin;
+
+        }
         return condition;
 
     }
@@ -220,7 +256,26 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         return false;
     }
 
-
+//    public int getSecondsLeft()
+//    {
+//        Date CurrentTime= Calendar.getInstance().getTime();
+//        SimpleDateFormat d1=new SimpleDateFormat("HH:mm:ss");
+//
+//        String s = d1.format(CurrentTime);
+//        try {
+//            CurrentTime=d1.parse(s);
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
+//
+//        String startTimeString=new SimpleDateFormat("HH:mm:ss").format(CurrentTime);
+//        String[] parts=startTimeString.split(":");
+//
+//        return Integer.parseInt(parts[2].toString());
+//
+//
+//
+//    }
 
 }
 
