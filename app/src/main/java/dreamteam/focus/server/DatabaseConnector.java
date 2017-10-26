@@ -23,7 +23,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static int DATABASE_VERSION = 45;
+    private static int DATABASE_VERSION = 46;
 
     private static int database_version = 0;
 

@@ -189,7 +189,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         if(startHour<=currentHour && currentHour<=endHour)
         {
 
-            if( currentMin<=endMin && endHour==startHour && currentMin>=startMin)
+            if( currentMin<endMin && endHour==startHour && currentMin>=startMin)
             {
 
                 condition=true;
@@ -199,11 +199,11 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             {
                condition=true;
 
-               if(currentHour==endHour && currentMin>endMin)
+               if(currentHour==endHour && currentMin>=endMin)
                 condition=false;
             }
 
-            if(endHour==currentHour && currentMin<=endMin)
+            if(endHour==currentHour && currentMin<endMin)
             {
                 condition=true;
 
