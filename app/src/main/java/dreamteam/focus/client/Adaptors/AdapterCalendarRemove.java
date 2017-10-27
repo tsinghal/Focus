@@ -245,14 +245,13 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
         String today = (String) DateFormat.format("EEEE", new Date() );
         today = today.toUpperCase();
-        Log.d("DayActivation",today+" "+re.toString());
 
         if(today.equals(re.toString()))
         {
-            Log.d("ReturnValue","True");
+
             return true;
         }
-        Log.d("ReturnValue","false");
+
         return false;
     }
 
