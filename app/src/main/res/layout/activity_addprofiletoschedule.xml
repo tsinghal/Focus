@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:weightSum="1"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".client.AddProfileToSchedule">
+    tools:context=".client.Schedules.AddProfileToScheduleActivity">
 
     <LinearLayout
         android:orientation="vertical"

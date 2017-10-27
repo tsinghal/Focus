@@ -1,12 +1,13 @@
 package dreamteam.focus;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by bowie on 10/2/17.
  */
 
-public class Schedule {
+public class Schedule implements Serializable {
     private String name;
     private ArrayList<ProfileInSchedule> calendar;
     private boolean active;

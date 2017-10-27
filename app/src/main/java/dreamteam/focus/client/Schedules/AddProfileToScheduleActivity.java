@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.Schedules;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,18 +20,18 @@ import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
-import dreamteam.focus.client.adapter.AdapterAddProfileToNewSchedule;
+import dreamteam.focus.client.Adaptors.AdapterAddProfileToSchedule;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
  * Created by aarav on 10/13/17.
  */
 
-public class AddProfileToNewSchedule extends AppCompatActivity {
+public class AddProfileToScheduleActivity extends AppCompatActivity {
 
     private Button addProfile, discard;
     ArrayList<Profile> profileArray;
-    AdapterAddProfileToNewSchedule profileArrayAdapter;
+    AdapterAddProfileToSchedule profileArrayAdapter;
     private TimePicker startTime, endTime;
     private Switch monday, tuesday, wednesday, thursday, friday, saturday, sunday;
     private DatabaseConnector db;
@@ -49,7 +49,7 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
         if(bundle != null){
-            scheduleName = bundle.getString("CreateSchedule:ScheduleName");
+            scheduleName = bundle.getString("EditScheduleActivity:ScheduleName");
         }
 
         r = new ArrayList<Repeat_Enum>();
@@ -73,7 +73,7 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
         profileArray=new ArrayList<Profile>();
         profileArray = db.getProfiles();
 
-        profileArrayAdapter= new AdapterAddProfileToNewSchedule(getApplicationContext(), profileArray);
+        profileArrayAdapter= new AdapterAddProfileToSchedule(getApplicationContext(), profileArray);
 
         lvNames.setAdapter(profileArrayAdapter);
 
@@ -215,14 +215,11 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-
-
-
                     if(endHour<startHour) //if end of night
                     {
 
-                        Toast.makeText(getApplicationContext(), "Exceeding the ten hour limit", Toast.LENGTH_LONG).show();
-                        return;
+                            Toast.makeText(getApplicationContext(), "Exceeding the ten hour limit", Toast.LENGTH_LONG).show();
+                            return;
 
                     }
                     if(endHour==startHour && endMin<startMin)
@@ -243,6 +240,7 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
                         return;
                     }
 
+
                     if(!profilesToBeBlocked.isEmpty()){
                         for(int i=0; i<profilesToBeBlocked.size(); i++) {
                             for(int j=0; j<r.size(); j++) {
@@ -250,8 +248,8 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
                                 individualR.add(r.get(j));
                                 ProfileInSchedule p = new ProfileInSchedule(profilesToBeBlocked.get(i),startTime,endTime,individualR);
                                 //db.addProfileInSchedule(p, scheduleName);
-                                CreateSchedule.profileInScheduleArray.add(p);
-                                CreateSchedule.profileArray.add(p);
+                                EditScheduleActivity.profileInScheduleArray.add(p);
+                                EditScheduleActivity.profileArray.add(p);
                             }
 
                             finish();
@@ -271,10 +269,5 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
                 finish();
             }
         });
-
-
-
-
-
     }
 }

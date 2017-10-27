@@ -1,7 +1,10 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.format.DateFormat;
@@ -12,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.text.format.DateFormat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,7 +26,8 @@ import java.util.Date;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
-import dreamteam.focus.client.EditSchedule;
+import dreamteam.focus.client.Schedules.EditProfileInScheduleActivity;
+import dreamteam.focus.client.Schedules.EditScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -32,11 +37,17 @@ import dreamteam.focus.server.DatabaseConnector;
 public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
     public DatabaseConnector db;
-
+    public Context mcontext;
+    public ProfileInSchedule s;
+    public int hoursLeft,minutesLeft,secondsLeft;
 
     public AdapterCalendarRemove(Context context, ArrayList<ProfileInSchedule> profilesArray)
     {
         super(context,0, profilesArray);
+        hoursLeft=0;
+        minutesLeft=0;
+        secondsLeft=0;
+        mcontext=context;
     }
 
     @Nullable
@@ -45,7 +56,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
     public View getView(final int position, View convertView, final ViewGroup parent)
     {
-        final ProfileInSchedule s = getItem(position);
+         s = getItem(position);
         Log.d("LOOK", s.repeatsOn().toString());
         db = new DatabaseConnector(getContext());
 
@@ -65,13 +76,15 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
         appStatus.setText("Remove");
 
-        if(((EditSchedule)parent.getContext()).getState()) //if an active state of schedule
+        if(((EditScheduleActivity)parent.getContext()).getState()) //if an active state of schedule
         {
                 if(getDay(s.repeatsOn().get(0)) )
                 {
                    if( getTime(s.getStartTime(),s.getEndTime()))
                    {
                        textProfileTime.setBackgroundColor(Color.GREEN);
+//                       secondsLeft=getSecondsLeft();
+                       textProfileTime.setText(hoursLeft+":"+minutesLeft+":"+secondsLeft);
                    }
                     else {
                        textProfileTime.setTextColor(Color.WHITE);
@@ -90,18 +103,30 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             textProfileTime.setBackgroundColor(Color.RED);
         }
 
+        textProfileName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i=new Intent(mcontext,EditProfileInScheduleActivity.class);
+                Bundle b=new Bundle();
+                b.putSerializable(EditProfileInScheduleActivity.namePIS,s);
+                i.putExtras(b);
+                i.putExtra("scheduleName",((EditScheduleActivity)(parent.getContext())).scheduleName);
+                ((Activity)parent.getContext()).startActivityForResult(i,1);
+            }
+        });
+
         appStatus.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 Log.e("error","REMOVE IS CLICKED");
 
-                EditSchedule.pisArray.add(s);
-                EditSchedule.positionArray.add(position);
-                EditSchedule.profileArray.remove(s);
+                EditScheduleActivity.pisArray.add(s);
+                EditScheduleActivity.positionArray.add(position);
+                EditScheduleActivity.profileArray.remove(s);
                 Log.d("TAG",s.repeatsOn().toString());
-                EditSchedule.profileInScheduleArray.remove(s);//Changed
-                ((EditSchedule)parent.getContext()).updateList();
-            //    db.removeProfileFromSchedule(s,EditSchedule.scheduleName, s.repeatsOn().get(pos`ition));
+                EditScheduleActivity.profileInScheduleArray.remove(s);//Changed
+                ((EditScheduleActivity)parent.getContext()).updateList();
+            //    db.removeProfileFromSchedule(s,EditScheduleActivity.scheduleName, s.repeatsOn().get(pos`ition));
 //                Log.e("error",String.valueOf(s.repeatsOn().size()));
 
             }
@@ -116,21 +141,24 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
     {
         boolean condition=false;
         Date CurrentTime= Calendar.getInstance().getTime();
-        SimpleDateFormat d1=new SimpleDateFormat("HH:mm");
+        SimpleDateFormat d1=new SimpleDateFormat("HH:mm:ss");
+
         String s = d1.format(CurrentTime);
         try {
-            CurrentTime = d1.parse(s);
+            CurrentTime=d1.parse(s);
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        String startTimeString=new SimpleDateFormat("HH:mm").format(CurrentTime);
+        String startTimeString=new SimpleDateFormat("HH:mm:ss").format(CurrentTime);
         String[] parts=startTimeString.split(":");
 
 
         int currentHour= Integer.parseInt(parts[0]);
 
         int currentMin=Integer.parseInt(parts[1].toString());
+
+        secondsLeft=59-Integer.parseInt(parts[2].toString());
 
         s = d1.format(startTime);
         try {
@@ -161,31 +189,60 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         if(startHour<=currentHour && currentHour<=endHour)
         {
 
-            if(startMin<=currentMin && currentMin<=endMin && endHour==startHour && currentMin>=startMin)
+            if( currentMin<endMin && endHour==startHour && currentMin>=startMin)
             {
+
                 condition=true;
             }
 
             if(startHour==currentHour && currentMin>=startMin)
+            {
+               condition=true;
+
+               if(currentHour==endHour && currentMin>=endMin)
+                condition=false;
+            }
+
+            if(endHour==currentHour && currentMin<endMin)
+            {
                 condition=true;
 
-            if(endHour==currentHour && currentMin<=endMin)
-                condition=true;
+                if(currentHour==startHour && currentMin<startMin)
+                condition=false;
+            }
 
             if((endHour-startHour)>1)
+            {
+
                 condition=true;
+            }
 
 
         }
 
         Log.e("TimeActivation",startHour+":"+startMin+" - "+currentHour+":"+currentMin+" - "+endHour+":"+endMin+"-"+condition);
 
+
+
+        if(condition)
+        {
+            hoursLeft=endHour-currentHour;
+            if(currentMin>endMin)
+            {
+                hoursLeft--;
+                minutesLeft=(60-currentMin)+endMin;
+            }
+            else
+                minutesLeft=endMin-currentMin;
+
+        }
         return condition;
 
     }
 
     public boolean getDay(Repeat_Enum re) //check if today,s day is equal to PIS day
     {
+
         String today = (String) DateFormat.format("EEEE", new Date() );
         today = today.toUpperCase();
         Log.d("DayActivation",today+" "+re.toString());
@@ -198,4 +255,28 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         Log.d("ReturnValue","false");
         return false;
     }
+
+//    public int getSecondsLeft()
+//    {
+//        Date CurrentTime= Calendar.getInstance().getTime();
+//        SimpleDateFormat d1=new SimpleDateFormat("HH:mm:ss");
+//
+//        String s = d1.format(CurrentTime);
+//        try {
+//            CurrentTime=d1.parse(s);
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
+//
+//        String startTimeString=new SimpleDateFormat("HH:mm:ss").format(CurrentTime);
+//        String[] parts=startTimeString.split(":");
+//
+//        return Integer.parseInt(parts[2].toString());
+//
+//
+//
+//    }
+
 }
+
+
