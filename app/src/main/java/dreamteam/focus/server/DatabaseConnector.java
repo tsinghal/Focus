@@ -23,7 +23,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static int DATABASE_VERSION = 44;
+    private static int DATABASE_VERSION = 46;
 
     private static int database_version = 0;
 
@@ -545,9 +545,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         incrementDatabaseVersion();
 
-        boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0
-                && db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, re), null) > 0;
-
+        int id = getProfileID(pis, scheduleName, re);
+        boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + id, null) > 0
+                && db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_IN_SCHEDULE_ID + "=" + id, null) > 0;
         db.close();
         return answer;
     }
