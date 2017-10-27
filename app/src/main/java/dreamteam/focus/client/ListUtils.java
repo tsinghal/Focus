@@ -8,11 +8,14 @@ import android.widget.ListView;
 
 /**
  * Created by Tushar on 10/22/17.
+ * Utilities for ListView.
  */
-
-// src: https://stackoverflow.com/questions/17693578/android-how-to-display-2-listviews-in-one-activity-one-after-the-other
-
 public class ListUtils {
+    /**
+     * src = https://stackoverflow.com/questions/17693578
+     *
+     * @param mListView ListView to set dynamic height
+     */
     public static void setDynamicHeight(ListView mListView) {
         ListAdapter mListAdapter = mListView.getAdapter();
         if (mListAdapter == null) {
