@@ -25,6 +25,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 /**
  * Created by bowie on 10/23/17.
  * Tests MainActivity.java
+ * NOTICE: The app must be granted usage access and notification access prior to running.
  */
 
 @RunWith(AndroidJUnit4.class)
@@ -53,6 +54,49 @@ public class MainActivityTest {
      */
     @Rule
     public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(MainActivity.class);
+
+    /**
+     * src = https://stackoverflow.com/questions/39376856
+     *
+     * @throws Exception if assertion fails
+     */
+//    @Test
+//    public void usageAccessDialogTrue() throws Exception {
+//        onView(withText(R.string.usage_access))
+//                .inRoot(isDialog())
+//                .check(matches(isDisplayed()));
+//        onView(withText(R.string.yes)).perform(click());
+//        intended(allOf(
+//                hasAction(Settings.ACTION_USAGE_ACCESS_SETTINGS),
+//                toPackage("com.android.settings")));
+//    }
+//
+//    @Test
+//    public void usageAccessDialogFalse() throws Exception {
+//        onView(withText(R.string.usage_access))
+//                .inRoot(isDialog())
+//                .check(matches(isDisplayed()));
+//        onView(withText(R.string.no)).perform(click());
+//    }
+//
+//    @Test
+//    public void notificationAccessDialogTrue() throws Exception {
+//        onView(withText(R.string.notification_service))
+//                .inRoot(isDialog())
+//                .check(matches(isDisplayed()));
+//        onView(withText(R.string.yes)).perform(click());
+//        intended(allOf(
+//                hasAction(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS),
+//                toPackage("com.android.settings")));
+//    }
+//
+//    @Test
+//    public void notificationAccessDialogFalse() throws Exception {
+//        onView(withText(R.string.notification_service))
+//                .inRoot(isDialog())
+//                .check(matches(isDisplayed()));
+//        onView(withText(R.string.no)).perform(click());
+//    }
 
     @Test
     public void profileButton() throws Exception {
