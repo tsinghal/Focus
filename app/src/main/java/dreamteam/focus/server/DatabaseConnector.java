@@ -437,7 +437,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     public boolean addProfileInSchedule(ProfileInSchedule pis, String scheduleName) throws SQLException {
 
-        if(alreadyExists(pis, scheduleName)) {
+        if(scheduleName != "AnonymousSchedule" && alreadyExists(pis, scheduleName)) {
             throw new SQLiteConstraintException();
         }
 
@@ -452,6 +452,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         try {
             db.insertOrThrow(TABLE_PROFILE_IN_SCHEDULE, null, values);
+            if(scheduleName = "AnonymousSchedule") {
+                return true;
+            }
         } catch (SQLException e) {
             Log.d("error", e.getMessage());
             db.close();
