@@ -23,7 +23,10 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static int DATABASE_VERSION = 46;
+//    private static int DATABASE_VERSION = 44;
+
+    // This variable is causing more trouble than it solves.
+    // It will be factored out in future releases.
 
     private static int database_version = 0;
 
@@ -69,7 +72,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     private static final String TABLE_DELETED_PROFILE_IN_SCHEDULE = "deleted_profile_in_schedule";
 
     public DatabaseConnector(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, DATABASE_NAME, null, 1);
     }
 
     //creating Tables
@@ -122,7 +125,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BLOCKED_APPS);
@@ -134,7 +136,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // Create tables again
         onCreate(db);
         db.execSQL("INSERT INTO " + TABLE_SCHEDULES + " VALUES ('AnonymousSchedule', 'true')");
-
         database_version = 0;
     }
 
@@ -150,7 +151,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        //Throws on profile duplicacy
+        //Throws on profile duplicate
         ContentValues values = new ContentValues();
 
         values.put(KEY_NAME, profile.getName());
@@ -198,11 +199,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
-    public String getDateString(java.util.Date d) {
+    private String getDateString(java.util.Date d) {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(d);
     }
 
-    public java.util.Date getDate(String d) throws ParseException {
+    private java.util.Date getDate(String d) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).parse(d);
     }
 
@@ -269,11 +270,10 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 //        return db.update(TABLE_PROFILE_IN_SCHEDULE_REPEATS, args, KEY_PROFILE_IN_SCHEDULE_ID + "=" + oldProfileID, null) > 0;
 //    }
 
-    public boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
-
-        return removeProfileFromSchedule(oldPis, scheduleName, oldPis.repeatsOn().get(0)) &&
-                addProfileInSchedule(newPis, scheduleName);
-    }
+//    public boolean updateProfileInSchedule(ProfileInSchedule oldPis, ProfileInSchedule newPis, String scheduleName) {
+//        return removeProfileFromSchedule(oldPis, scheduleName, oldPis.repeatsOn().get(0)) &&
+//                addProfileInSchedule(newPis, scheduleName);
+//    }
 
     public boolean updateScheduleName(String oldScheduleName, String newScheduleName) {
 
@@ -303,10 +303,10 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return hasSchedule;
     }
 
-    public boolean updateSchedule(String oldScheduleName, Schedule newSchedule) throws ParseException {
-
-        return removeSchedule(oldScheduleName) && addSchedule(newSchedule);
-    }
+//    public boolean updateSchedule(String oldScheduleName, Schedule newSchedule) throws ParseException {
+//
+//        return removeSchedule(oldScheduleName) && addSchedule(newSchedule);
+//    }
 
     public boolean removeProfile(String profileName) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -370,7 +370,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     }
 
     private ArrayList<Repeat_Enum> getProfileInScheduleRepeats(Integer profileInScheduleID) {
-        ArrayList<Repeat_Enum> repeats = new ArrayList<Repeat_Enum>();
+        ArrayList<Repeat_Enum> repeats = new ArrayList<>();
 
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE_REPEATS + " WHERE "
@@ -437,7 +437,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     public boolean addProfileInSchedule(ProfileInSchedule pis, String scheduleName) throws SQLException {
 
-        if(alreadyExists(pis, scheduleName)) {
+        if(!scheduleName.equals("AnonymousSchedule") && alreadyExists(pis, scheduleName)) {
             throw new SQLiteConstraintException();
         }
 
@@ -452,6 +452,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         try {
             db.insertOrThrow(TABLE_PROFILE_IN_SCHEDULE, null, values);
+            if(scheduleName.equals("AnonymousSchedule")) {
+                return true;
+            }
         } catch (SQLException e) {
             Log.d("error", e.getMessage());
             db.close();
@@ -464,7 +467,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        int index = -1;
+        int index;
         if(cursor.moveToFirst()) {
             do {
                 index = cursor.getInt(0);
@@ -479,7 +482,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean removeProfileFromSchedule(Profile profile, String scheduleName) {
+    private boolean removeProfileFromSchedule(Profile profile, String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         String selectQuery = "SELECT * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE " + KEY_PROFILE_NAME + "='" + profile.getName()
@@ -503,7 +506,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return false;
     }
 
-    public boolean addProfileInScheduleDeleted(ProfileInSchedule pis, String scheduleName) {
+    private boolean addProfileInScheduleDeleted(ProfileInSchedule pis, String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -526,7 +529,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName) {
+    boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         incrementDatabaseVersion();
@@ -548,12 +551,13 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         int id = getProfileID(pis, scheduleName, re);
         boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + id, null) > 0
                 && db.delete(TABLE_PROFILE_IN_SCHEDULE, KEY_PROFILE_IN_SCHEDULE_ID + "=" + id, null) > 0;
+
         db.close();
         return answer;
     }
 
     public ArrayList<String> getBlockedApps(String profileName) {
-        ArrayList<String> blockedApps = new ArrayList<String>();
+        ArrayList<String> blockedApps = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + TABLE_BLOCKED_APPS + " WHERE "
                 + KEY_PROFILE_NAME + "='" + profileName + "'";
@@ -601,7 +605,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     }
 
     public ArrayList<Profile> getProfiles() {
-        ArrayList<Profile> profiles = new ArrayList<Profile>();
+        ArrayList<Profile> profiles = new ArrayList<>();
 
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_PROFILES;
@@ -629,7 +633,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     }
 
     public ArrayList<Schedule> getSchedules() throws ParseException {
-        ArrayList<Schedule> schedules = new ArrayList<Schedule>();
+        ArrayList<Schedule> schedules = new ArrayList<>();
 
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SCHEDULE_NAME + " NOT LIKE 'AnonymousSchedule'";
@@ -658,7 +662,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     //TESTED
     public ArrayList<ProfileInSchedule> getProfilesInSchedule(String scheduleName) throws ParseException {
-        ArrayList<ProfileInSchedule> profilesInSchedule = new ArrayList<ProfileInSchedule>();
+        ArrayList<ProfileInSchedule> profilesInSchedule = new ArrayList<>();
 
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_PROFILE_IN_SCHEDULE + " WHERE "
@@ -688,7 +692,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return profilesInSchedule;
     }
 
-    public boolean addBlockedNotification(String notificationAppName) {
+    boolean addBlockedNotification(String notificationAppName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -729,11 +733,10 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         values.put(KEY_ACTIVE, "false");
 
         incrementDatabaseVersion();
-        boolean answer = db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
-        return answer;
+        return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
     }
 
-    public Integer getNotificationsCountForApp(String appName) {
+    Integer getNotificationsCountForApp(String appName) {
 
         String selectQuery = "SELECT * FROM " + TABLE_BLOCKED_NOTIFICATIONS + " WHERE " + KEY_APP_NAME + "='" + appName + "'";
 
@@ -747,7 +750,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return count;
     }
 
-    //SERVER WILL IMPLEMENT THIS INSTEAD BY ITERATING THROUGH EACH PROFILEINSCHEDULE IN SCHEDULE AND CALLING getNotificationsCountForApp
+    //SERVER WILL IMPLEMENT THIS INSTEAD BY ITERATING THROUGH EACH ProfileInSchedule IN SCHEDULE AND CALLING getNotificationsCountForApp
 //    public HashMap<String, Integer> getNotificationsForSchedule(Schedule schedule) {
 //        HashMap<String, Integer> notifications = new HashMap<String, Integer>();
 //
@@ -772,7 +775,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     public boolean addSchedule(Schedule schedule) throws SQLException {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        //Throws on profile duplicacy
+        //Throws on profile duplicate
         ContentValues values = new ContentValues();
 
         values.put(KEY_SCHEDULE_NAME, schedule.getName());
@@ -800,7 +803,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     //CHANGED SO IF ERROR, LOOK HERE FIRST
     public boolean removeSchedule(String scheduleName) throws ParseException {
 
-        //Delete profileinschedule
+        //Delete ProfileInSchedule
         ArrayList<ProfileInSchedule> profilesInSchedule = getProfilesInSchedule(scheduleName);
 
         for(int i=0; i<profilesInSchedule.size(); i++) {
@@ -815,18 +818,29 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return answer;
     }
 
-    public Integer getDatabaseVersion() {
+    Integer getDatabaseVersion() {
         return database_version;
     }
 
-    public void clear() { ++DATABASE_VERSION;}
+    void clear() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BLOCKED_APPS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BLOCKED_NOTIFICATIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILE_IN_SCHEDULE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCHEDULES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILE_IN_SCHEDULE_REPEATS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_DELETED_PROFILE_IN_SCHEDULE);
+        onCreate(db);
+        db.execSQL("INSERT INTO " + TABLE_SCHEDULES + " VALUES ('AnonymousSchedule', 'true')");
+    }
 
 }
 
 //public class DatabaseConnector {
 //    public boolean createProfile(Profile profile) {} DONE for profiles, blockedApps TESTED
 //
-//    public boolean removeProfile(Profile profile) {} DONE for profiles, blockedApps, blockedNotifications, profileinschedule TESTED
+//    public boolean removeProfile(Profile profile) {} DONE for profiles, blockedApps, blockedNotifications, ProfileInSchedule TESTED
 //
 //    public boolean updateProfile(Profile profile) {} DONE for remove Profile, blockedApps, and updated createProfile TESTED
 //
