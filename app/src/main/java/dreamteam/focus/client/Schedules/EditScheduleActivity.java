@@ -3,7 +3,6 @@ package dreamteam.focus.client.Schedules;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -16,9 +15,6 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
@@ -55,11 +51,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
     public static String editPISOld="OldPIS";
     public static String editPISNew="NewPIS";
-
-
-    Handler mHandler = new Handler(); //this stuff is to update the list every second Timer
-    Thread downloadThread;
-    boolean isRunning = true;
 
 
 
@@ -112,7 +103,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         discard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-             finish();
+                finish();
             }
         });
 
@@ -125,46 +116,16 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
                 int pos;
 
 
-
-
                 for(int i=0;i<profileInScheduleArray.size();i++)
                 {
                     Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
                     try {
-
                         db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
+                    } catch (android.database.SQLException e){
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                    catch(android.database.SQLException e)
-                    {
-                        boolean checks=true;
-
-                        ProfileInSchedule pp=profileInScheduleArray.get(i);
-                        for (int j=0;j<pisArray.size();j++) {
-
-                            ProfileInSchedule currentPIS=pisArray.get(j);
-
-                            if(currentPIS.getProfile().getName().toString().equals(pp.getProfile().getName().toString()))
-                            {
-                                if (currentPIS.getStartTime().getTime()==pp.getStartTime().getTime() && currentPIS.getEndTime().getTime()==pp.getEndTime().getTime())
-                                {
-                                    if(currentPIS.repeatsOn().size()!=0) {
-                                        if(currentPIS.repeatsOn().get(0)==pp.repeatsOn().get(0)) {
-                                            Log.d("Taggss","It does contain");
-                                            pisArray.remove(currentPIS);
-                                            checks=false;
-
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if(checks)
-                            Toast.makeText(getApplicationContext(),"You can't have two Profiles with same components",Toast.LENGTH_SHORT).show();
-
-                    }
-
                 }
+
 
                 for(int i=0;i<pisArray.size();i++)
                 {
@@ -172,9 +133,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 //                    pos=positionArray.get(i);
                     db.removeProfileFromSchedule(pis,scheduleName, pis.repeatsOn().get(0));
                 }
-
-
-
 
 
 
@@ -301,35 +259,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         ListUtils.setDynamicHeight(friday);
         ListUtils.setDynamicHeight(saturday);
         ListUtils.setDynamicHeight(sunday);
-
-
-        //This code would be for Timer
-        downloadThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // TODO Auto-generated method stub
-                while (isRunning) {
-                    try {
-                        Thread.sleep(1000); // run at every 1 seconds
-                        mHandler.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                // TODO Auto-generated method stub
-                                // Write your code here to update the UI.
-                                updateList();
-                            }
-                        });
-                    } catch (Exception e) {
-                        // TODO: handle exception
-                    }
-                }
-            }
-        });
-
-        downloadThread.start();
-        //code for Timer ends
-
 
 
     }
@@ -481,3 +410,4 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         updateList();
     }
 }
+

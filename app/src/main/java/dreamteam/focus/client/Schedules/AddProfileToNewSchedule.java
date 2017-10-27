@@ -47,9 +47,7 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
 
         db = new DatabaseConnector(this);
 
-
         scheduleName = "TemporaryScheduleNameToCreate";
-
 
         r = new ArrayList<Repeat_Enum>();
 
