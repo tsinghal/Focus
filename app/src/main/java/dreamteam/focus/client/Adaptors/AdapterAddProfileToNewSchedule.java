@@ -1,4 +1,4 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
-import dreamteam.focus.client.AddProfileToNewSchedule;
+import dreamteam.focus.client.Schedules.AddProfileToNewSchedule;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**

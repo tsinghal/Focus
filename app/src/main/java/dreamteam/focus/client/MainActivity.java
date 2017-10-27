@@ -19,6 +19,8 @@ import android.widget.Button;
 
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
+import dreamteam.focus.client.Profiles.ProfilesActivity;
+import dreamteam.focus.client.Schedules.SchedulesActivity;
 import dreamteam.focus.server.BackgroundService;
 import dreamteam.focus.server.DatabaseConnector;
 
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         profilesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), Profiles.class);
+                Intent i = new Intent(getApplicationContext(), ProfilesActivity.class);
                 startActivity(i);
             }
         });
@@ -69,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         schedulesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent s = new Intent(getApplicationContext(), Schedules.class);
+                Intent s = new Intent(getApplicationContext(), SchedulesActivity.class);
                 startActivity(s);
             }
         });

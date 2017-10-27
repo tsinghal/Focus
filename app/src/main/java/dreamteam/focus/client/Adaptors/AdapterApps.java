@@ -1,4 +1,4 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -15,7 +15,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import dreamteam.focus.R;
-import dreamteam.focus.client.CreateProfile;
+import dreamteam.focus.client.Profiles.CreateProfileActivity;
 
 
 public class AdapterApps extends ArrayAdapter<String> {
@@ -32,42 +32,39 @@ public class AdapterApps extends ArrayAdapter<String> {
     public View getView(final int position, View convertView, final ViewGroup parent)
     {
         final String appName = getItem(position);
-        int index = CreateProfile.appsOnDevice.indexOf(appName);
-        final String packageName=CreateProfile.packagesOnDevice.get(index);
+        int index = CreateProfileActivity.appsOnDevice.indexOf(appName);
+        final String packageName=CreateProfileActivity.packagesOnDevice.get(index);
         final TextView textAppName;
         CheckBox appStatus;
 
          View   conView = LayoutInflater.from(getContext()).inflate(R.layout.app_listitem , parent, false);
 
-
-         textAppName=(TextView)conView.findViewById(R.id.textViewAppName);
+        textAppName=(TextView)conView.findViewById(R.id.textViewAppName);
         textAppName.setText(appName);
 
          appStatus=(CheckBox) conView.findViewById(R.id.checkBoxAppStatus);
 
-        if (CreateProfile.blockedPackages.contains(packageName))
+        if (CreateProfileActivity.blockedPackages.contains(packageName))
         {
             Log.e("BlockedPackage",packageName+" "+appName+" "+position);
             appStatus.setChecked(true);
         }
 
-
         appStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(CreateProfile.blockedPackages.contains(appName))
+                if(CreateProfileActivity.blockedPackages.contains(appName))
                 {
                     if(!isChecked){
-                        CreateProfile.blockedPackages.remove(packageName);
+                        CreateProfileActivity.blockedPackages.remove(packageName);
 
                     }
-
                 }
                 else
                 {
                     if(isChecked)
                     {
-                        CreateProfile.blockedPackages.add(packageName);
+                        CreateProfileActivity.blockedPackages.add(packageName);
                     }
                 }
             }
