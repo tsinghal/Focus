@@ -1,4 +1,4 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
-import dreamteam.focus.client.AddProfileToSchedule;
+import dreamteam.focus.client.Schedules.AddProfileToScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -60,12 +60,12 @@ public class AdapterAddProfileToSchedule extends ArrayAdapter<Profile> {
                 if (isChecked)
                 {
                     Log.e("error","iIS CHECKED!!!!!");
-                    AddProfileToSchedule.profilesToBeBlocked.add(s);
+                    AddProfileToScheduleActivity.profilesToBeBlocked.add(s);
                 }
                 else
                 {
-                    if(AddProfileToSchedule.profilesToBeBlocked.contains(s)){
-                        AddProfileToSchedule.profilesToBeBlocked.remove(s);
+                    if(AddProfileToScheduleActivity.profilesToBeBlocked.contains(s)){
+                        AddProfileToScheduleActivity.profilesToBeBlocked.remove(s);
                     }
                 }
             }

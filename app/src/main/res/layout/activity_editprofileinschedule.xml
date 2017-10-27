@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="dreamteam.focus.client.Schedules.EditProfileInScheduleActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@color/blue"
+            android:textColor="@color/white"
+            android:text="Change Profile of Schedule"
+            android:textSize="28dp"
+            android:textAlignment="center"
+            android:typeface="serif"
+            android:id="@+id/textViewTitleChangeProfileInSchedule"/>
+
+        <TextView
+            android:id="@+id/textViewEditProfilesInSchedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/blue"
+            android:text="Profile Name:"
+            android:textSize="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/textViewTitleChangeProfileInSchedule"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:backgroundTint="@color/blue"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:id="@+id/textViewPisName"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/blue"
+            android:layout_alignBaseline="@+id/textViewEditProfilesInSchedule"
+            android:layout_alignBottom="@+id/textViewEditProfilesInSchedule"
+            android:layout_toEndOf="@+id/textViewEditProfilesInSchedule" />
+
+        <TextView
+            android:id="@+id/textViewWeekName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/blue"
+            android:text="Day of the Week:"
+            android:textSize="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/textViewEditProfilesInSchedule"
+            android:layout_alignParentStart="true" />
+
+        <Spinner
+            android:id="@+id/spinnerPisDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/textViewWeekName"
+            android:layout_toEndOf="@+id/textViewWeekName"
+            android:spinnerMode="dialog"
+            android:entries="@array/entries"
+            />
+
+        <TextView
+            android:id="@+id/textViewStartTimeEditProfileInSchedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/blue"
+            android:text="Start Time:"
+            android:textSize="20dp"
+            android:layout_below="@+id/textViewWeekName"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="16dp" />
+
+        <TimePicker
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:timePickerMode="spinner"
+            android:amPmTextColor="@color/blue"
+            android:numbersInnerTextColor="@color/blue"
+            android:numbersTextColor="@color/blue"
+            android:id="@+id/timePickerPisStartTime"
+            android:layout_below="@+id/textViewStartTimeEditProfileInSchedule"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/textViewEndTimeEditProfileInSchedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/blue"
+            android:text="End Time:"
+            android:textSize="20dp"
+            android:layout_below="@+id/timePickerPisStartTime"
+            android:layout_alignParentStart="true" />
+
+        <TimePicker
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:timePickerMode="spinner"
+            android:amPmTextColor="@color/blue"
+            android:numbersInnerTextColor="@color/blue"
+            android:numbersTextColor="@color/blue"
+            android:id="@+id/timePickerPisEndTime"
+            android:layout_below="@+id/textViewEndTimeEditProfileInSchedule"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            android:layout_width="192dp"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="12dp"
+            android:background="@color/blue"
+            android:textColor="@color/white"
+            android:layout_below="@+id/timePickerPisEndTime"
+            android:text="Update Schedule"
+            android:id="@+id/buttonPisSave"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="#FF0000"
+            android:textColor="@color/white"
+            android:text="Discard Changes"
+            android:layout_marginLeft="4dp"
+            android:id="@+id/buttonPisDiscard"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@+id/buttonPisSave" />
+
+    </RelativeLayout>
+</ScrollView>

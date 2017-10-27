@@ -11,7 +11,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/focus_logo"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -36,19 +36,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".client.Profiles" />
-        <activity android:name=".client.Schedules" />
-        <activity android:name=".client.AddProfileToSchedule" />
-        <activity android:name=".client.AddProfileToNewSchedule" />
-        <activity android:name=".client.CreateSchedule" />
-        <activity android:name=".client.EditSchedule" />
+        <activity android:name=".client.Profiles.ProfilesActivity" />
+        <activity android:name=".client.Schedules.SchedulesActivity" />
+        <activity android:name=".client.Schedules.AddProfileToScheduleActivity" />
+        <activity android:name=".client.Schedules.AddProfileToNewSchedule" />
+        <activity android:name=".client.Schedules.AddScheduleActivity" />
+        <activity android:name=".client.Schedules.EditScheduleActivity" />
         <activity android:name=".client.timePicker" />
-        <activity android:name=".client.EditProfileInSchedule" />
+        <activity android:name=".client.Schedules.EditProfileInScheduleActivity" />
         <activity
-            android:name=".client.CreateProfile"
+            android:name=".client.Profiles.CreateProfileActivity"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".client.EditProfile"
+            android:name=".client.Profiles.EditProfileActivity"
             android:windowSoftInputMode="adjustPan" />
     </application>
 </manifest>

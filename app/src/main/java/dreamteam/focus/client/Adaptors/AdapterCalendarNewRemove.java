@@ -1,4 +1,4 @@
-package dreamteam.focus.client.adapter;
+package dreamteam.focus.client.Adaptors;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
-import dreamteam.focus.client.CreateSchedule;
+import dreamteam.focus.client.Schedules.AddScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -65,13 +65,13 @@ public class AdapterCalendarNewRemove extends ArrayAdapter<ProfileInSchedule> {
             public void onClick(View view){
                 Log.e("error","REMOVE IS CLICKED");
 
-                CreateSchedule.pisArray.add(s);
-                CreateSchedule.positionArray.add(position);
+                AddScheduleActivity.pisArray.add(s);
+                AddScheduleActivity.positionArray.add(position);
 
-                CreateSchedule.profileArray.remove(s);
-                CreateSchedule.profileInScheduleArray.remove(s);
-                ((CreateSchedule)parent.getContext()).updateList();
-                //    db.removeProfileFromSchedule(s,EditSchedule.scheduleName, s.repeatsOn().get(position));
+                AddScheduleActivity.profileArray.remove(s);
+                AddScheduleActivity.profileInScheduleArray.remove(s);
+                ((AddScheduleActivity)parent.getContext()).updateList();
+                //    db.removeProfileFromSchedule(s,EditScheduleActivity.scheduleName, s.repeatsOn().get(position));
 //                Log.e("error",String.valueOf(s.repeatsOn().size()));
 
             }
