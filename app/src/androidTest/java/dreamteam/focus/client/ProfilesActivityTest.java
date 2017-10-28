@@ -1,6 +1,7 @@
 package dreamteam.focus.client;
 
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
@@ -17,11 +18,13 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import dreamteam.focus.R;
+import dreamteam.focus.server.DatabaseConnector;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.pressBack;
@@ -43,6 +46,12 @@ import static org.hamcrest.core.IsNot.not;
 public class ProfilesActivityTest {
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class);
+
+    @Before
+    public void setUp() throws Exception {
+        DatabaseConnector db = new DatabaseConnector(InstrumentationRegistry.getTargetContext());
+        db.clear();
+    }
 
     @Test
     public void instantActivationChangesStatus() {
@@ -428,8 +437,13 @@ public class ProfilesActivityTest {
                 TimePicker tp =  (TimePicker) view;
                 int hour=tp.getHour();
                 int min=tp.getMinute();
-                tp.setHour(hour);
-                tp.setMinute(min+11);
+
+                if(min + 11 > 59){
+                    tp.setHour(hour + 1);
+                    tp.setMinute(min);}
+                else
+                    tp.setMinute(min+11);
+
             }
             @Override
             public String getDescription() {

@@ -822,7 +822,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return database_version;
     }
 
-    void clear() {
+    public void clear() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BLOCKED_APPS);

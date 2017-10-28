@@ -57,6 +57,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
     public View getView(final int position, View convertView, final ViewGroup parent)
     {
          s = getItem(position);
+
         Log.d("LOOK", s.repeatsOn().toString());
         db = new DatabaseConnector(getContext());
 
@@ -108,6 +109,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             public void onClick(View v) {
                 Intent i=new Intent(mcontext,EditProfileInScheduleActivity.class);
                 Bundle b=new Bundle();
+                s=getItem(position);
                 b.putSerializable(EditProfileInScheduleActivity.namePIS,s);
                 i.putExtras(b);
                 i.putExtra("scheduleName",((EditScheduleActivity)(parent.getContext())).scheduleName);
@@ -119,7 +121,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             @Override
             public void onClick(View view){
                 Log.e("error","REMOVE IS CLICKED");
-
+                s=getItem(position);
                 EditScheduleActivity.pisArray.add(s);
                 EditScheduleActivity.positionArray.add(position);
                 EditScheduleActivity.profileArray.remove(s);
