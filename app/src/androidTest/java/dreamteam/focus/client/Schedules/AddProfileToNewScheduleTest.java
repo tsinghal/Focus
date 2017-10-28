@@ -63,7 +63,16 @@ public class AddProfileToNewScheduleTest {
     public void setUp() throws Exception{
         db = new DatabaseConnector(InstrumentationRegistry.getTargetContext());
         db.clear();
-        Intents.init();
+
+        ArrayList<String> s = new ArrayList<>();
+        s.add("Email");
+        Profile p = new Profile("Driving", s);
+        Profile q = new Profile("Class", s);
+        Profile r = new Profile("zzzz", s);
+
+        db.createProfile(p);
+        db.createProfile(q);
+        db.createProfile(r);
 
         try {
             Thread.sleep(3000);
@@ -71,75 +80,6 @@ public class AddProfileToNewScheduleTest {
             e.printStackTrace();
         }
 
-        /*ViewInteraction appCompatButton = onView(
-                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
-        appCompatButton.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatButton2 = onView(
-                allOf(withId(R.id.buttonAddProfile), withText("+"), isDisplayed()));
-        appCompatButton2.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatEditText = onView(
-                withId(R.id.editViewProfileName));
-        appCompatEditText.perform(scrollTo(), replaceText("Home"), ViewActions.closeSoftKeyboard());
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction checkBox3 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewApps),
-                                23)),
-                        isDisplayed()));
-        checkBox3.perform(click());
-
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatButton3 = onView(
-                allOf(withId(R.id.buttonCreateProfile), withText("Create Profile"), isDisplayed()));
-        appCompatButton3.perform(click());
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        pressBack();
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-*/
         ViewInteraction appCompatButton4 = onView(
                 allOf(withId(R.id.buttonSchedules), withText("Schedules"), isDisplayed()));
         appCompatButton4.perform(click());
@@ -246,29 +186,24 @@ public class AddProfileToNewScheduleTest {
             e.printStackTrace();
         }
 
-        /*ViewInteraction checkBox = onView(
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction checkBox = onView(
                 allOf(withId(R.id.checkBoxProfile2),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.ListViewProfilesToAdd),
-                                        0),
-                                0),
-                        isDisplayed()));
-        checkBox.perform(scrollTo());
+                        withParent(childAtPosition(
+                                withId(R.id.ListViewProfilesToAdd),
+                                0))));
+        checkBox.perform(scrollTo(), click());
 
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        checkBox.perform(click());
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.buttonAddProfile), withText("Add Profile")));
@@ -316,29 +251,24 @@ public class AddProfileToNewScheduleTest {
             e.printStackTrace();
         }
 
-        /*ViewInteraction checkBox = onView(
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction checkBox = onView(
                 allOf(withId(R.id.checkBoxProfile2),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.ListViewProfilesToAdd),
-                                        0),
-                                0),
-                        isDisplayed()));
-        checkBox.perform(scrollTo());
+                        withParent(childAtPosition(
+                                withId(R.id.ListViewProfilesToAdd),
+                                0))));
+        checkBox.perform(scrollTo(), click());
 
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        checkBox.perform(click());
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.buttonAddProfile), withText("Add Profile")));
@@ -387,29 +317,24 @@ public class AddProfileToNewScheduleTest {
             e.printStackTrace();
         }
 
-        /*ViewInteraction checkBox = onView(
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction checkBox = onView(
                 allOf(withId(R.id.checkBoxProfile2),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.ListViewProfilesToAdd),
-                                        0),
-                                0),
-                        isDisplayed()));
-        checkBox.perform(scrollTo());
+                        withParent(childAtPosition(
+                                withId(R.id.ListViewProfilesToAdd),
+                                0))));
+        checkBox.perform(scrollTo(), click());
 
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        checkBox.perform(click());
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.buttonAddProfile), withText("Add Profile")));
@@ -458,29 +383,24 @@ public class AddProfileToNewScheduleTest {
             e.printStackTrace();
         }
 
-        /*ViewInteraction checkBox = onView(
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction checkBox = onView(
                 allOf(withId(R.id.checkBoxProfile2),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.ListViewProfilesToAdd),
-                                        0),
-                                0),
-                        isDisplayed()));
-        checkBox.perform(scrollTo());
+                        withParent(childAtPosition(
+                                withId(R.id.ListViewProfilesToAdd),
+                                0))));
+        checkBox.perform(scrollTo(), click());
 
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        checkBox.perform(click());
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.buttonAddProfile), withText("Add Profile")));
@@ -529,29 +449,24 @@ public class AddProfileToNewScheduleTest {
             e.printStackTrace();
         }
 
-        /*ViewInteraction checkBox = onView(
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction checkBox = onView(
                 allOf(withId(R.id.checkBoxProfile2),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.ListViewProfilesToAdd),
-                                        0),
-                                0),
-                        isDisplayed()));
-        checkBox.perform(scrollTo());
+                        withParent(childAtPosition(
+                                withId(R.id.ListViewProfilesToAdd),
+                                0))));
+        checkBox.perform(scrollTo(), click());
 
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        checkBox.perform(click());
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.buttonAddProfile), withText("Add Profile")));
@@ -569,5 +484,96 @@ public class AddProfileToNewScheduleTest {
 
     }
 
+    @Test
+    public void testProfileItemCreatedInSchedule() {
 
+        ViewInteraction switch_ = onView(
+                allOf(withId(R.id.switch2), withText("Tuesday")));
+        switch_.perform(scrollTo(), click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction Starttime = onView(withId(R.id.timePickerStartTime));
+        Starttime.perform(scrollTo(), setTime(12, 15));
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction Endtime = onView(withId(R.id.timePickerEndTime));
+        Endtime.perform(scrollTo(), setTime(14, 25));
+
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction checkBox = onView(
+                allOf(withId(R.id.checkBoxProfile2),
+                        withParent(childAtPosition(
+                                withId(R.id.ListViewProfilesToAdd),
+                                2))));
+        checkBox.perform(scrollTo(), click());
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.buttonAddProfile), withText("Add Profile")));
+        appCompatButton.perform(scrollTo(), click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction textView = onView(
+                allOf(withId(R.id.textViewProfileScheduleName), withText("zzzz"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.listViewTuesday3),
+                                        0),
+                                1),
+                        isDisplayed()));
+        textView.check(matches(withText("zzzz")));
+
+        ViewInteraction button = onView(
+                allOf(withId(R.id.toggleScheduleProfileStatus),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.listViewTuesday3),
+                                        0),
+                                2),
+                        isDisplayed()));
+        button.check(matches(isDisplayed()));
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton7 = onView(
+                allOf(withId(R.id.buttonDiscardSchedule3), withText("Discard Changes")));
+        appCompatButton7.perform(scrollTo(), click());
+
+    }
 }

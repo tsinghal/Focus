@@ -198,7 +198,9 @@ public class AddScheduleActivityTest {
             e.printStackTrace();
         }
 
-        onView(allOf(withId(R.id.textViewScheduleName), withText("Work"), childAtPosition(childAtPosition(withId(R.id.ScheduleNames), 0), 0), isDisplayed())).check(doesNotExist());
+        onView(allOf(withId(R.id.textViewScheduleName), withText("Work"), childAtPosition(childAtPosition(withId(R.id.ScheduleNames), 0),
+                                0),
+                        isDisplayed())).check(doesNotExist());
     }
 
     @Test

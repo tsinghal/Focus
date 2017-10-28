@@ -187,8 +187,6 @@ public class SchedulesActivityTest {
         };
     }
 
-
-
     @Test
     public void testCreateScheduleButton() throws Exception {
         try {
@@ -434,7 +432,6 @@ public class SchedulesActivityTest {
         db.clear();
     }
 
-
     @Test
     public void testAndoridBackButton() {
         //Getting the view and pressing the Android back button
@@ -455,13 +452,9 @@ public class SchedulesActivityTest {
         intended(hasComponent(MainActivity.class.getName()));
     }
 
-
-
     @After
     public void tearDown() throws Exception {
         Intents.release();
     }
-
-
 
 }
