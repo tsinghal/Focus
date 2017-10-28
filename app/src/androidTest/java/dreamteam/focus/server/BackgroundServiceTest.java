@@ -161,7 +161,6 @@ public class BackgroundServiceTest {
 
 
         version = db.getDatabaseVersion();
-
     }
 
     @Test
@@ -205,6 +204,12 @@ public class BackgroundServiceTest {
         ViewInteraction time=onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
         time.perform(setTime());
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         ViewInteraction appCompatButton4 = onView(
                 allOf(withId(R.id.buttonSetTime), withText("Set Time"), isDisplayed()));
         appCompatButton4.perform(click());
@@ -215,7 +220,7 @@ public class BackgroundServiceTest {
             e.printStackTrace();
         }
 
-        //testing notification
+        //testing notification using UIAutomator
 
         String NOTIFICATION_TEXT = "Profile : profile1 is now active";
 
@@ -226,8 +231,272 @@ public class BackgroundServiceTest {
         UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
         assertEquals(NOTIFICATION_TITLE, title.getText());
         assertEquals(NOTIFICATION_TEXT, text.getText());
+        device.pressHome();
+    }
+
+    @Test
+    public void instantProfileDeactivate() {
+
+        //activate a profile, so as to check behavior when user deactivates is
+        //db.activateProfile(pis2);
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
+        appCompatButton.perform(click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction toggleButton = onView(
+                allOf(withId(R.id.toggleProfileStatus), withText("OFF"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                1)),
+                        isDisplayed()));
+        toggleButton.perform(click());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction time=onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
+        time.perform(setTime());
 
 
+        ViewInteraction appCompatButton4 = onView(
+                allOf(withId(R.id.buttonSetTime), withText("Set Time"), isDisplayed()));
+        appCompatButton4.perform(click());
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        toggleButton = onView(
+                allOf(withId(R.id.toggleProfileStatus), withText("ON"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                1)),
+                        isDisplayed()));
+        toggleButton.perform(click());
+
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //testing notification
+
+        String NOTIFICATION_TEXT = "Your profile is now inactive.";
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.openNotification();
+        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 10000);
+        UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
+        UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
+        assertEquals(NOTIFICATION_TITLE, title.getText());
+        assertEquals(NOTIFICATION_TEXT, text.getText());
+        device.pressHome();
+    }
+
+    @Test
+    public void instantProfileScheduledDeactivate() {
+
+        //activate a profile, so as to check behavior when user deactivates is
+        //db.activateProfile(pis2);
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
+        appCompatButton.perform(click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction toggleButton = onView(
+                allOf(withId(R.id.toggleProfileStatus), withText("OFF"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                1)),
+                        isDisplayed()));
+        toggleButton.perform(click());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction time=onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
+        time.perform(setTime());
+
+
+        ViewInteraction appCompatButton4 = onView(
+                allOf(withId(R.id.buttonSetTime), withText("Set Time"), isDisplayed()));
+        appCompatButton4.perform(click());
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        toggleButton = onView(
+                allOf(withId(R.id.toggleProfileStatus), withText("ON"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                1)),
+                        isDisplayed()));
+        toggleButton.perform(click());
+
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //testing notification
+
+        String NOTIFICATION_TEXT = "Your profile is now inactive.";
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.openNotification();
+        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 10000);
+        UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
+        UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
+        assertEquals(NOTIFICATION_TITLE, title.getText());
+        assertEquals(NOTIFICATION_TEXT, text.getText());
+        device.pressHome();
+    }
+
+    @Test
+    public void activeProfileDeleted() {
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
+        appCompatButton.perform(click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction toggleButton = onView(
+                allOf(withId(R.id.toggleProfileStatus), withText("OFF"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                0)),
+                        isDisplayed()));
+        toggleButton.perform(click());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction time=onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
+        time.perform(setTime());
+
+
+        ViewInteraction appCompatButton4 = onView(
+                allOf(withId(R.id.buttonSetTime), withText("Set Time"), isDisplayed()));
+        appCompatButton4.perform(click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction textView = onView(
+                allOf(withId(R.id.textViewProfileName), withText("profile1"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                0)),
+                        isDisplayed()));
+        textView.perform(click());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        appCompatButton4 = onView(
+                allOf(withId(R.id.buttonDiscardChanges), withText("Delete Profile"), isDisplayed()));
+        appCompatButton4.perform(click());
+
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //testing notification
+
+        String NOTIFICATION_TEXT = "Your profile is now inactive.";
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.openNotification();
+        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 10000);
+        UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
+        UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
+        assertEquals(NOTIFICATION_TITLE, title.getText());
+        assertEquals(NOTIFICATION_TEXT, text.getText());
+        device.pressHome();
     }
 
     private static Matcher<View> childAtPosition(
