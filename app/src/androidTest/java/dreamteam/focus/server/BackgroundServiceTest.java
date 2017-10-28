@@ -1,8 +1,15 @@
 package dreamteam.focus.server;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.ViewInteraction;
 import android.support.test.rule.ActivityTestRule;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -13,9 +20,21 @@ import java.util.Date;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
+import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
+
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.pressBack;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static android.support.test.espresso.action.ViewActions.replaceText;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
 
 /**
  * Created by bowie on 10/21/17.
@@ -94,6 +113,11 @@ public class BackgroundServiceTest {
         profile2 = new Profile("profile2", appBlacklist2);
         profile3 = new Profile("profile3", appBlacklist3);
 
+        db.createProfile(profile1);
+        db.createProfile(profile2);
+        db.createProfile(profile3);
+
+
         pis1 = new ProfileInSchedule(profile1,
                 new Date(Constants.TIME_1000), new Date(Constants.TIME_1200), enum1);
         pis2 = new ProfileInSchedule(profile2,
@@ -125,6 +149,69 @@ public class BackgroundServiceTest {
 
         version = db.getDatabaseVersion();
 
+    }
+
+    @Test
+    public void instantProfileActivate() {
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
+        appCompatButton.perform(click());
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction toggleButton = onView(
+                allOf(withId(R.id.toggleProfileStatus), withText("OFF"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                0)),
+                        isDisplayed()));
+        toggleButton.perform(click());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton4 = onView(
+                allOf(withId(R.id.buttonSetTime), withText("Set Time"), isDisplayed()));
+        appCompatButton4.perform(click());
+
+    }
+
+    private static Matcher<View> childAtPosition(
+            final Matcher<View> parentMatcher, final int position) {
+
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Child at position " + position + " in parent ");
+                parentMatcher.describeTo(description);
+            }
+
+            @Override
+            public boolean matchesSafely(View view) {
+                ViewParent parent = view.getParent();
+                return parent instanceof ViewGroup && parentMatcher.matches(parent)
+                        && view.equals(((ViewGroup) parent).getChildAt(position));
+            }
+        };
     }
 
     @After
