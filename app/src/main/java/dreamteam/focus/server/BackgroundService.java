@@ -47,9 +47,9 @@ public class BackgroundService extends NotificationListenerService {
     private static final String ACTION_STATUS_BROADCAST =
             "com.example.notifyservice.NotificationService_Status";
     private static final String TAG = "BackgroundService";
-    private static final int SCHEDULE_TIMEOUT_SEC = 5;
+    private static final int SCHEDULE_TIMEOUT_SEC = 3;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
-    private static final double WINDOW_SIZE = 2 / 3;
+    private static final double WINDOW_SIZE = 0.5;
 
     private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
 
