@@ -1,11 +1,15 @@
 package dreamteam.focus.server;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.TimePicker;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -210,6 +214,27 @@ public class BackgroundServiceTest {
                 ViewParent parent = view.getParent();
                 return parent instanceof ViewGroup && parentMatcher.matches(parent)
                         && view.equals(((ViewGroup) parent).getChildAt(position));
+            }
+        };
+    }
+
+    public static ViewAction setTime() {
+        return new ViewAction() {
+            @Override
+            public void perform(UiController uiController, View view) {
+                TimePicker tp =  (TimePicker) view;
+                int hour=tp.getHour();
+                int min=tp.getMinute();
+                tp.setHour(hour);
+                tp.setMinute(min+11);
+            }
+            @Override
+            public String getDescription() {
+                return "Set the passed time into the TimePicker";
+            }
+            @Override
+            public Matcher<View> getConstraints() {
+                return ViewMatchers.isAssignableFrom(TimePicker.class);
             }
         };
     }
