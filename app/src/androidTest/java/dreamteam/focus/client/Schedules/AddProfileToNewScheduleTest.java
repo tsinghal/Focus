@@ -37,6 +37,7 @@ import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -460,7 +461,7 @@ public class AddProfileToNewScheduleTest {
                         withParent(childAtPosition(
                                 withId(R.id.ListViewProfilesToAdd),
                                 0))));
-        checkBox.perform(scrollTo(), click());
+        checkBox.perform(scrollTo());
 
         try {
             Thread.sleep(2000);
@@ -575,5 +576,89 @@ public class AddProfileToNewScheduleTest {
                 allOf(withId(R.id.buttonDiscardSchedule3), withText("Discard Changes")));
         appCompatButton7.perform(scrollTo(), click());
 
+    }
+
+    @Test
+    public void testProfileItemNotCreatedInSchedule() {
+
+        ViewInteraction switch_ = onView(
+                allOf(withId(R.id.switch1), withText("Monday")));
+        switch_.perform(scrollTo(), click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction Starttime = onView(withId(R.id.timePickerStartTime));
+        Starttime.perform(scrollTo(), setTime(12, 15));
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction Endtime = onView(withId(R.id.timePickerEndTime));
+        Endtime.perform(scrollTo(), setTime(14, 25));
+
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction checkBox = onView(
+                allOf(withId(R.id.checkBoxProfile2),
+                        withParent(childAtPosition(
+                                withId(R.id.ListViewProfilesToAdd),
+                                0))));
+        checkBox.perform(scrollTo(), click());
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton6 = onView(
+                allOf(withId(R.id.buttonDiscardProfile), withText("Discard")));
+        appCompatButton6.perform(scrollTo(), click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        onView(
+                allOf(withId(R.id.textViewProfileScheduleName), withText("Driving"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.listViewMonday3),
+                                        0),
+                                1),
+                        isDisplayed())).check(doesNotExist());
+
+        onView(
+                allOf(withId(R.id.toggleScheduleProfileStatus),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.listViewMonday3),
+                                        0),
+                                2),
+                        isDisplayed())).check(doesNotExist());
+
+        ViewInteraction appCompatButton7 = onView(
+                allOf(withId(R.id.buttonDiscardSchedule3), withText("Discard Changes")));
+        appCompatButton7.perform(scrollTo(), click());
     }
 }

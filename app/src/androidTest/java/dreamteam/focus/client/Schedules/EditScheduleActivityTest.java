@@ -46,7 +46,7 @@ import static org.junit.Assert.*;
  */
 
 @RunWith(AndroidJUnit4.class)
-public class EditProfileInScheduleActivityTest {
+public class EditScheduleActivityTest {
 
     private DatabaseConnector db;
 

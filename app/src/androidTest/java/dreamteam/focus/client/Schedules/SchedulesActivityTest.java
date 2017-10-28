@@ -441,15 +441,8 @@ public class SchedulesActivityTest {
             e.printStackTrace();
         }
 
-        Espresso.pressBack();
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        intended(hasComponent(MainActivity.class.getName()));
+        pressBack();
+        onView(withId(R.id.buttonSchedules)).check(matches(isDisplayed()));
     }
 
     @After
