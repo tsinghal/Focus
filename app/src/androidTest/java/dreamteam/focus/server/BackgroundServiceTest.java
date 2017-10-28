@@ -1,11 +1,16 @@
 package dreamteam.focus.server;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
+import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject2;
+import android.support.test.uiautomator.Until;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -13,6 +18,7 @@ import android.widget.TimePicker;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Before;
@@ -35,9 +41,11 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.Matchers.allOf;
 
 /**
@@ -51,6 +59,7 @@ public class BackgroundServiceTest {
     private static final String BAD_SCHEDULE_NAME = "dfsjdofiewoiheegeg";
     private static final String GOOD_SCHEDULE_NAME = "test123";
     private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
+    private static final String NOTIFICATION_TITLE = "User Alert";
     private Profile profile1;
     private Profile profile2;
     private Profile profile3;
@@ -171,7 +180,7 @@ public class BackgroundServiceTest {
         appCompatButton.perform(click());
 
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -193,9 +202,31 @@ public class BackgroundServiceTest {
             e.printStackTrace();
         }
 
+        ViewInteraction time=onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
+        time.perform(setTime());
+
         ViewInteraction appCompatButton4 = onView(
                 allOf(withId(R.id.buttonSetTime), withText("Set Time"), isDisplayed()));
         appCompatButton4.perform(click());
+
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //testing notification
+
+        String NOTIFICATION_TEXT = "Profile : profile1 is now active";
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.openNotification();
+        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 7000);
+        UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
+        UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
+        assertEquals(NOTIFICATION_TITLE, title.getText());
+        assertEquals(NOTIFICATION_TEXT, text.getText());
+
 
     }
 

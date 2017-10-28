@@ -164,7 +164,7 @@ public class BackgroundService extends NotificationListenerService {
         Intent resultIntent = new Intent(this, MainActivity.class);
 
         Notification.Builder mBuilder = new Notification.Builder(getApplicationContext())
-                .setSmallIcon(R.drawable.ic_stat_name_notify)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("User Alert")
                 .setContentText(message);
 
