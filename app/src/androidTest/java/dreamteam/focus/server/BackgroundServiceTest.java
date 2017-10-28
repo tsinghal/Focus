@@ -1,19 +1,28 @@
 package dreamteam.focus.server;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
+import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObject2;
+import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.Until;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.TextView;
 import android.widget.TimePicker;
+
+import junit.framework.Assert;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -33,23 +42,37 @@ import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
+import dreamteam.focus.client.Profiles.ProfilesActivity;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static android.support.test.espresso.action.ViewActions.replaceText;
+import static android.support.test.espresso.intent.Intents.intended;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Created by bowie on 10/21/17.
  * Complete documentation in testing doc.
  */
+@SuppressWarnings({"FieldCanBeLocal", "unused"})
 public class BackgroundServiceTest {
+    private static final String WHATSAPP = "com.whatsapp";
+    private static final String FACEBOOK_MESSENGER = "com.facebook.orca";
+    private static final String BAD_SCHEDULE_NAME = "dfsjdofiewoiheegeg";
     private static final String GOOD_SCHEDULE_NAME = "test123";
+    private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
     private static final String NOTIFICATION_TITLE = "User Alert";
     private static final long DELAY_MILLIS = 250;
 
@@ -62,6 +85,7 @@ public class BackgroundServiceTest {
     @Before
     public void setUp() throws Exception {
         db = new DatabaseConnector(InstrumentationRegistry.getTargetContext());
+        db.clear();
 
         ArrayList<String> appBlacklist1 = new ArrayList<>();
         appBlacklist1.add("com.facebook.orca");
@@ -123,6 +147,8 @@ public class BackgroundServiceTest {
         db.addSchedule(schedule2);
         db.addSchedule(schedule3);
         db.addSchedule(goodSchedule);
+
+        //Intents.init();
     }
 
     @Test
@@ -461,6 +487,73 @@ public class BackgroundServiceTest {
         device.pressHome();
     }
 
+    @Test
+    public void openBlockedApp() {
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
+        appCompatButton.perform(click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction toggleButton = onView(
+                allOf(withId(R.id.toggleProfileStatus), withText("OFF"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                1)),
+                        isDisplayed()));
+        toggleButton.perform(click());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction time=onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
+        time.perform(setTime());
+
+
+        ViewInteraction appCompatButton4 = onView(
+                allOf(withId(R.id.buttonSetTime), withText("Set Time"), isDisplayed()));
+        appCompatButton4.perform(click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        Context context = InstrumentationRegistry.getInstrumentation().getContext(); //gets the context based on the instrumentation
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(FACEBOOK_MESSENGER);  //sets the intent to start your app
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);  //clear out any previous task, i.e., make sure it starts on the initial screen
+        context.startActivity(intent);  //starts the app
+        device.wait(Until.hasObject(By.pkg(FACEBOOK_MESSENGER)), 3000);
+
+        //checks if current display has messenger
+        UiObject title = device.findObject(new UiSelector().packageName(FACEBOOK_MESSENGER));
+        assertFalse(title.exists());
+
+    }
+
     private static Matcher<View> childAtPosition(
             final Matcher<View> parentMatcher, final int position) {
 
@@ -484,11 +577,14 @@ public class BackgroundServiceTest {
         return new ViewAction() {
             @Override
             public void perform(UiController uiController, View view) {
-                TimePicker tp = (TimePicker) view;
-                int hour = tp.getHour();
-                int min = tp.getMinute();
-                tp.setHour(hour);
-                tp.setMinute(min + 11);
+                TimePicker tp =  (TimePicker) view;
+                int hour=tp.getHour();
+                int min=tp.getMinute();
+                if(min + 11 > 59){
+                    tp.setHour(hour + 1);
+                    tp.setMinute(min);}
+                else
+                    tp.setMinute(min+11);
             }
 
             @Override
@@ -520,5 +616,6 @@ public class BackgroundServiceTest {
     @After
     public void tearDown() throws Exception {
         db.clear();
+        //Intents.release();
     }
 }
