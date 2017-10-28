@@ -2,23 +2,23 @@ package dreamteam.focus;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by bowie on 10/2/17.
+ * A unit Profile.
  */
 
 public class Profile implements Serializable {
     private String name;
     private ArrayList<String> blockedApps;
-    private Date activateNowForTime;
+    //    private Date activateNowForTime;
     private boolean active;
-    private ArrayList<String> blockedNotifications;
+//    private ArrayList<String> blockedNotifications;
 
     public Profile(String name, ArrayList<String> blockedApps) {
         this.name = name;
         this.blockedApps = blockedApps;
-        blockedNotifications = new ArrayList<>();
+//        blockedNotifications = new ArrayList<>();
         active = false;
     }
 
@@ -46,11 +46,11 @@ public class Profile implements Serializable {
         this.active = active;
     }
 
-    public ArrayList<String> getBlockedNotifications() {
-        return blockedNotifications;
-    }
+//    public ArrayList<String> getBlockedNotifications() {
+//        return blockedNotifications;
+//    }
 
-    public void addBlockedNotifications(String notification) {
-        this.blockedNotifications.add(notification);
-    }
+//    public void addBlockedNotifications(String notification) {
+//        this.blockedNotifications.add(notification);
+//    }
 }
