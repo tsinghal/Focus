@@ -533,5 +533,5 @@ public class EditProfileInScheduleActivityTest {
 
         db.clear();
     }
-
+//
 }
