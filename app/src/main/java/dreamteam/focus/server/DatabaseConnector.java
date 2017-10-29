@@ -199,11 +199,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
-    public String getDateString(java.util.Date d) {
+    private String getDateString(java.util.Date d) {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(d);
     }
 
-    public java.util.Date getDate(String d) throws ParseException {
+    private java.util.Date getDate(String d) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).parse(d);
     }
 
@@ -438,7 +438,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     public boolean addProfileInSchedule(ProfileInSchedule pis, String scheduleName) throws SQLException {
 
         if(!scheduleName.equals("AnonymousSchedule") && alreadyExists(pis, scheduleName)) {
-            throw new SQLiteConstraintException("Profile In Schedule Already Exists");
+            throw new SQLiteConstraintException();
         }
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -506,34 +506,34 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return false;
     }
 
-    private boolean addProfileInScheduleDeleted(ProfileInSchedule pis, String scheduleName) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-
-        values.put(KEY_PROFILE_NAME, pis.getProfile().getName());
-        values.put(KEY_START_TIME, getDateString(pis.getStartTime()));
-        values.put(KEY_END_TIME, getDateString(pis.getEndTime()));
-        values.put(KEY_SCHEDULE_NAME, scheduleName);
-        values.put(KEY_REPEAT_ENUM, pis.repeatsOn().get(0).toString());
-
-        try {
-            db.insertOrThrow(TABLE_DELETED_PROFILE_IN_SCHEDULE, null, values);
-        } catch (SQLException e) {
-            Log.d("error", e.getMessage());
-            db.close();
-            throw e;
-        }
-
-        db.close();
-        return true;
-    }
+//    private boolean addProfileInScheduleDeleted(ProfileInSchedule pis, String scheduleName) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//
+//        ContentValues values = new ContentValues();
+//
+//        values.put(KEY_PROFILE_NAME, pis.getProfile().getName());
+//        values.put(KEY_START_TIME, getDateString(pis.getStartTime()));
+//        values.put(KEY_END_TIME, getDateString(pis.getEndTime()));
+//        values.put(KEY_SCHEDULE_NAME, scheduleName);
+//        values.put(KEY_REPEAT_ENUM, pis.repeatsOn().get(0).toString());
+//
+//        try {
+//            db.insertOrThrow(TABLE_DELETED_PROFILE_IN_SCHEDULE, null, values);
+//        } catch (SQLException e) {
+//            Log.d("error", e.getMessage());
+//            db.close();
+//            throw e;
+//        }
+//
+//        db.close();
+//        return true;
+//    }
 
     boolean removeProfileFromSchedule(ProfileInSchedule pis, String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         incrementDatabaseVersion();
-        addProfileInScheduleDeleted(pis, scheduleName);
+        //addProfileInScheduleDeleted(pis, scheduleName);
 
         boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0
                 && db.delete(TABLE_PROFILE_IN_SCHEDULE,
@@ -692,7 +692,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return profilesInSchedule;
     }
 
-    public boolean addBlockedNotification(String notificationAppName) {
+    boolean addBlockedNotification(String notificationAppName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -736,7 +736,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
     }
 
-    public Integer getNotificationsCountForApp(String appName) {
+    Integer getNotificationsCountForApp(String appName) {
 
         String selectQuery = "SELECT * FROM " + TABLE_BLOCKED_NOTIFICATIONS + " WHERE " + KEY_APP_NAME + "='" + appName + "'";
 
@@ -822,7 +822,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return database_version;
     }
 
-    public void clear() {
+    void clear() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BLOCKED_APPS);
