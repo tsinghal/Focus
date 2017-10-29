@@ -1,23 +1,23 @@
-package dreamteam.focus;
+package dreamteam.focus.server;
 
 import android.content.Context;
-import android.database.SQLException;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 
-import dreamteam.focus.server.DatabaseConnector;
+import dreamteam.focus.Profile;
+import dreamteam.focus.ProfileInSchedule;
+import dreamteam.focus.Repeat_Enum;
+import dreamteam.focus.Schedule;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Instrumentation test, which will execute on an Android device.
@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class DatabaseTest {
+public class DatabaseConnectorTest {
 
     Context appContext = InstrumentationRegistry.getTargetContext();
     DatabaseConnector db = new DatabaseConnector(appContext);
