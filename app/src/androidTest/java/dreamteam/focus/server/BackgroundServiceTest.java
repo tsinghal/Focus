@@ -3,11 +3,9 @@ package dreamteam.focus.server;
 import android.content.Context;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
-import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.uiautomator.By;
@@ -16,19 +14,16 @@ import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.Until;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.TextView;
 import android.widget.TimePicker;
-
-import junit.framework.Assert;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,15 +37,9 @@ import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
-import dreamteam.focus.client.Profiles.ProfilesActivity;
 
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
-import static android.support.test.espresso.action.ViewActions.replaceText;
-import static android.support.test.espresso.intent.Intents.intended;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -58,9 +47,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.not;
 
 /**
  * Created by bowie on 10/21/17.
@@ -395,6 +382,53 @@ public class BackgroundServiceTest {
     }
 
     @Test
+    public void instantProfileDeactivateByTime() {
+//        onView(allOf(
+//                withId(R.id.buttonProfiles),
+//                withText("Profiles"),
+//                isDisplayed())).perform(click());
+//
+//        onView(allOf(
+//                withId(R.id.toggleProfileStatus),
+//                withText("OFF"),
+//                withParent(childAtPosition(
+//                       withId(R.id.listViewProfiles),
+//                       1)),
+//                isDisplayed())).perform(click());
+//
+//        onView(withClassName(Matchers.equalTo(TimePicker.class.getName()))).perform(setTime());
+//
+//        onView(allOf(
+//                withId(R.id.buttonSetTime),
+//                withText("Set Time"),
+//                isDisplayed())).perform(click());
+//        onView(allOf(
+//                withId(R.id.toggleProfileStatus),
+//                withText("ON"),
+//                withParent(childAtPosition(
+//                        withId(R.id.listViewProfiles),
+//                        1)),
+//                isDisplayed())).perform(click());
+        try {
+            activateInstantProfile("profile1", 10, 1);
+            Thread.sleep(60000L);
+        } catch (Exception e) {
+            Log.e("oops", e.getMessage());
+        }
+
+        String NOTIFICATION_TEXT = "Profile : profile1 is now inactive";
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.openNotification();
+        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 10000);
+        UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
+        UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
+        assertEquals(NOTIFICATION_TITLE, title.getText());
+        assertEquals(NOTIFICATION_TEXT, text.getText());
+        device.pressHome();
+    }
+
+    @Test
     public void activeProfileDeleted() {
 
         // Added a sleep statement to match the app's execution delay.
@@ -528,7 +562,7 @@ public class BackgroundServiceTest {
             e.printStackTrace();
         }
 
-        ViewInteraction time=onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
+        ViewInteraction time = onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
         time.perform(setTime());
 
 
@@ -547,10 +581,10 @@ public class BackgroundServiceTest {
     }
 
     @Test
-    public void intersectingProfiles(){
+    public void intersectingProfiles() {
         try {
-            activateInstantProfile(profile1,10,1);
-            activateInstantProfile(profile3, 10, 1);
+            activateInstantProfile("profile1", 10, 1);
+            activateInstantProfile("profile3", 10, 1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -582,8 +616,9 @@ public class BackgroundServiceTest {
         //reopen our app
 
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
         Context context = InstrumentationRegistry.getInstrumentation().getContext(); //gets the context based on the instrumentation
-        Intent intent = context.getPackageManager().getLaunchIntentForPackage(FOCUS);  //sets the intent to start your app
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(FACEBOOK_MESSENGER);  //sets the intent to start your app
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);  //clear out any previous task, i.e., make sure it starts on the initial screen
         context.startActivity(intent);  //starts the app
         device.wait(Until.hasObject(By.pkg(FOCUS)), 3000);
@@ -595,7 +630,7 @@ public class BackgroundServiceTest {
             e.printStackTrace();
         }
 
-         appCompatButton = onView(
+        appCompatButton = onView(
                 allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
         appCompatButton.perform(click());
 
@@ -625,7 +660,7 @@ public class BackgroundServiceTest {
     }
 
     //helper function
-    void checkAppOpen(String packageName){
+    private void checkAppOpen(String packageName) {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
         Context context = InstrumentationRegistry.getInstrumentation().getContext(); //gets the context based on the instrumentation
@@ -635,10 +670,10 @@ public class BackgroundServiceTest {
         device.wait(Until.hasObject(By.pkg(packageName)), 3000);
 
         //checks if current display has messenger
-        UiObject title = device.findObject(new UiSelector().packageName(packageName));
+        UiObject title = device.findObject(new UiSelector().packageName(FACEBOOK_MESSENGER));
         assertFalse(title.exists());
-    }
 
+    }
 
     private static Matcher<View> childAtPosition(
             final Matcher<View> parentMatcher, final int position) {
@@ -663,14 +698,14 @@ public class BackgroundServiceTest {
         return new ViewAction() {
             @Override
             public void perform(UiController uiController, View view) {
-                TimePicker tp =  (TimePicker) view;
-                int hour=tp.getHour();
-                int min=tp.getMinute();
-                if(min + 11 > 59){
+                TimePicker tp = (TimePicker) view;
+                int hour = tp.getHour();
+                int min = tp.getMinute();
+                if (min + 11 > 59) {
                     tp.setHour(hour + 1);
-                    tp.setMinute(min);}
-                else
-                    tp.setMinute(min+11);
+                    tp.setMinute(min);
+                } else
+                    tp.setMinute(min + 11);
             }
 
             @Override
@@ -692,16 +727,43 @@ public class BackgroundServiceTest {
      * @param length    length of instant profile activation, in minutes
      * @param timeUntil time until profile deactivation, in minutes
      */
-    private void activateInstantProfile(Profile profile, int length, int timeUntil) throws Exception {
+    private void activateInstantProfile(String profile, int length, int timeUntil) throws Exception {
         if (length < timeUntil) throw new Exception("length < timeUntil");
-        db.activateProfile(new ProfileInSchedule(profile,
+        db.activateProfile(new ProfileInSchedule(db.getProfileByName(profile),
                 new Date(new Date().getTime() - (length - timeUntil) * 60 * 1000),
                 new Date(new Date().getTime() + timeUntil * 60 * 1000)));
     }
 
-    @After
-    public void tearDown() throws Exception {
-        db.clear();
-        //Intents.release();
+    @Test
+    public void activatePISonTime() {
+        ArrayList<Repeat_Enum> cal = new ArrayList<>();
+        cal.add(Repeat_Enum.MONDAY);
+        cal.add(Repeat_Enum.TUESDAY);
+        cal.add(Repeat_Enum.WEDNESDAY);
+        cal.add(Repeat_Enum.THURSDAY);
+        cal.add(Repeat_Enum.FRIDAY);
+        cal.add(Repeat_Enum.SATURDAY);
+        cal.add(Repeat_Enum.SUNDAY);
+        ProfileInSchedule pis = new ProfileInSchedule(profile1,
+                new Date(), new Date(new Date().getTime() + 600000), cal);
+
+
+        ArrayList<ProfileInSchedule> arr = new ArrayList<>();
+        arr.add(pis);
+        db.addSchedule(new Schedule("now", arr, false));
+        db.activateSchedule("now");
+
+
+        String NOTIFICATION_TEXT = "Profile : profile1 is now active";
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.pressHome();
+        device.openNotification();
+        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 70000);
+        UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
+        UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
+        assertEquals(NOTIFICATION_TITLE, title.getText());
+        assertEquals(NOTIFICATION_TEXT, text.getText());
+        device.pressHome();
     }
 }
