@@ -199,11 +199,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
-    private String getDateString(java.util.Date d) {
+    public String getDateString(java.util.Date d) {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(d);
     }
 
-    private java.util.Date getDate(String d) throws ParseException {
+    public java.util.Date getDate(String d) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).parse(d);
     }
 
@@ -692,7 +692,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return profilesInSchedule;
     }
 
-    boolean addBlockedNotification(String notificationAppName) {
+    public boolean addBlockedNotification(String notificationAppName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -736,7 +736,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return db.update(TABLE_SCHEDULES, values, KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
     }
 
-    Integer getNotificationsCountForApp(String appName) {
+    public Integer getNotificationsCountForApp(String appName) {
 
         String selectQuery = "SELECT * FROM " + TABLE_BLOCKED_NOTIFICATIONS + " WHERE " + KEY_APP_NAME + "='" + appName + "'";
 
@@ -822,7 +822,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return database_version;
     }
 
-    void clear() {
+    public void clear() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BLOCKED_APPS);
