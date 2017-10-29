@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class DatabaseTest {
+public class Database {
 
     Context appContext = InstrumentationRegistry.getTargetContext();
     DatabaseConnector db = new DatabaseConnector(appContext);
@@ -128,6 +128,7 @@ public class DatabaseTest {
         db.createProfile(profile2);
         assertEquals(db.getProfiles().get(0).isActive(), false);
 
+        pis2 = new ProfileInSchedule(profile2, db.getDate("1970-01-01T21:31:00Z"), db.getDate("1970-01-01T22:31:00Z"));
         db.activateProfile(pis2);
         assertEquals(db.getProfiles().get(0).isActive(), true);
     }
@@ -140,6 +141,7 @@ public class DatabaseTest {
         db.createProfile(profile1);
         assertEquals(db.getProfiles().get(0).isActive(), false);
 
+        pis1 = new ProfileInSchedule(profile1, db.getDate("1970-01-01T21:31:00Z"), db.getDate("1970-01-01T22:31:00Z"));
         db.activateProfile(pis1);
         assertEquals(db.getProfiles().get(0).isActive(), true);
 
