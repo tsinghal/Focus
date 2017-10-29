@@ -298,91 +298,6 @@ public class BackgroundServiceTest {
 
     @Test
     public void instantProfileScheduledDeactivate() {
-
-        //activate a profile, so as to check behavior when user deactivates is
-        //db.activateProfile(pis2);
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(DELAY_MILLIS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatButton = onView(
-                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
-        appCompatButton.perform(click());
-
-        try {
-            Thread.sleep(DELAY_MILLIS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction toggleButton = onView(
-                allOf(withId(R.id.toggleProfileStatus), withText("OFF"),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewProfiles),
-                                1)),
-                        isDisplayed()));
-        toggleButton.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(DELAY_MILLIS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction time = onView(withClassName(Matchers.equalTo(TimePicker.class.getName())));
-        time.perform(setTime());
-
-
-        ViewInteraction appCompatButton4 = onView(
-                allOf(withId(R.id.buttonSetTime), withText("Set Time"), isDisplayed()));
-        appCompatButton4.perform(click());
-
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        toggleButton = onView(
-                allOf(withId(R.id.toggleProfileStatus), withText("ON"),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewProfiles),
-                                1)),
-                        isDisplayed()));
-        toggleButton.perform(click());
-
-
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        //testing notification
-
-        String NOTIFICATION_TEXT = "Your profile is now inactive.";
-
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        device.openNotification();
-        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 10000);
-        UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
-        UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
-        assertEquals(NOTIFICATION_TITLE, title.getText());
-        assertEquals(NOTIFICATION_TEXT, text.getText());
-        device.pressHome();
-    }
-
-    @Test
-    public void instantProfileDeactivateByTime() {
 //        onView(allOf(
 //                withId(R.id.buttonProfiles),
 //                withText("Profiles"),
@@ -420,13 +335,13 @@ public class BackgroundServiceTest {
 
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.openNotification();
-        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 10000);
+        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 60000);
         UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
         UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
         assertEquals(NOTIFICATION_TITLE, title.getText());
         assertEquals(NOTIFICATION_TEXT, text.getText());
         device.pressHome();
-    }
+    } // DatabaseConnector breaks
 
     @Test
     public void activeProfileDeleted() {
@@ -734,6 +649,7 @@ public class BackgroundServiceTest {
                 new Date(new Date().getTime() + timeUntil * 60 * 1000)));
     }
 
+
     @Test
     public void activatePISonTime() {
         ArrayList<Repeat_Enum> cal = new ArrayList<>();
@@ -745,7 +661,9 @@ public class BackgroundServiceTest {
         cal.add(Repeat_Enum.SATURDAY);
         cal.add(Repeat_Enum.SUNDAY);
         ProfileInSchedule pis = new ProfileInSchedule(profile1,
-                new Date(), new Date(new Date().getTime() + 600000), cal);
+                new Date(new Date().getTime() + 60 * 1000),
+                new Date(new Date().getTime() + 11 * 60 * 1000
+                ), cal);
 
 
         ArrayList<ProfileInSchedule> arr = new ArrayList<>();
@@ -755,6 +673,40 @@ public class BackgroundServiceTest {
 
 
         String NOTIFICATION_TEXT = "Profile : profile1 is now active";
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.pressHome();
+        device.openNotification();
+        device.wait(Until.hasObject(By.text(NOTIFICATION_TITLE)), 70000);
+        UiObject2 title = device.findObject(By.text(NOTIFICATION_TITLE));
+        UiObject2 text = device.findObject(By.text(NOTIFICATION_TEXT));
+        assertEquals(NOTIFICATION_TITLE, title.getText());
+        assertEquals(NOTIFICATION_TEXT, text.getText());
+        device.pressHome();
+    }
+
+    @Test
+    public void deactivatePISonTime() {
+        ArrayList<Repeat_Enum> cal = new ArrayList<>();
+        cal.add(Repeat_Enum.MONDAY);
+        cal.add(Repeat_Enum.TUESDAY);
+        cal.add(Repeat_Enum.WEDNESDAY);
+        cal.add(Repeat_Enum.THURSDAY);
+        cal.add(Repeat_Enum.FRIDAY);
+        cal.add(Repeat_Enum.SATURDAY);
+        cal.add(Repeat_Enum.SUNDAY);
+        ProfileInSchedule pis = new ProfileInSchedule(profile1,
+                new Date(new Date().getTime() - 9 * 60 * 1000),
+                new Date(new Date().getTime() + 60 * 1000), cal);
+
+
+        ArrayList<ProfileInSchedule> arr = new ArrayList<>();
+        arr.add(pis);
+        db.addSchedule(new Schedule("now", arr, false));
+        db.activateSchedule("now");
+
+        String NOTIFICATION_TEXT = "Profile : profile1 is now inactive";
+
 
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.pressHome();
