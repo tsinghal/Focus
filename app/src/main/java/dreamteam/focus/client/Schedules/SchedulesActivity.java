@@ -71,7 +71,7 @@ public class SchedulesActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                if(schedulesInDb.size()<21){
+                if(schedulesInDb.size()<20){
                     Intent i = new Intent(getApplicationContext(), AddScheduleActivity.class);
                     startActivity(i);
                 } else {

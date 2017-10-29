@@ -137,7 +137,6 @@ public class BackgroundServiceTest {
         db.addSchedule(schedule3);
         db.addSchedule(goodSchedule);
 
-        //Intents.init();
     }
 
     @Test
@@ -341,7 +340,7 @@ public class BackgroundServiceTest {
         assertEquals(NOTIFICATION_TITLE, title.getText());
         assertEquals(NOTIFICATION_TEXT, text.getText());
         device.pressHome();
-    } // DatabaseConnector breaks
+    }
 
     @Test
     public void activeProfileDeleted() {
@@ -533,7 +532,7 @@ public class BackgroundServiceTest {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
         Context context = InstrumentationRegistry.getInstrumentation().getContext(); //gets the context based on the instrumentation
-        Intent intent = context.getPackageManager().getLaunchIntentForPackage(FACEBOOK_MESSENGER);  //sets the intent to start your app
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(FOCUS);  //sets the intent to start your app
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);  //clear out any previous task, i.e., make sure it starts on the initial screen
         context.startActivity(intent);  //starts the app
         device.wait(Until.hasObject(By.pkg(FOCUS)), 3000);
@@ -573,82 +572,6 @@ public class BackgroundServiceTest {
         checkAppOpen(FACEBOOK_MESSENGER);       //messenger shouldn't open since it is blocked  by profile3
 
     }
-
-    //helper function
-    private void checkAppOpen(String packageName) {
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-
-        Context context = InstrumentationRegistry.getInstrumentation().getContext(); //gets the context based on the instrumentation
-        Intent intent = context.getPackageManager().getLaunchIntentForPackage(packageName);  //sets the intent to start your app
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);  //clear out any previous task, i.e., make sure it starts on the initial screen
-        context.startActivity(intent);  //starts the app
-        device.wait(Until.hasObject(By.pkg(packageName)), 3000);
-
-        //checks if current display has messenger
-        UiObject title = device.findObject(new UiSelector().packageName(FACEBOOK_MESSENGER));
-        assertFalse(title.exists());
-
-    }
-
-    private static Matcher<View> childAtPosition(
-            final Matcher<View> parentMatcher, final int position) {
-
-        return new TypeSafeMatcher<View>() {
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("Child at position " + position + " in parent ");
-                parentMatcher.describeTo(description);
-            }
-
-            @Override
-            public boolean matchesSafely(View view) {
-                ViewParent parent = view.getParent();
-                return parent instanceof ViewGroup && parentMatcher.matches(parent)
-                        && view.equals(((ViewGroup) parent).getChildAt(position));
-            }
-        };
-    }
-
-    private static ViewAction setTime() {
-        return new ViewAction() {
-            @Override
-            public void perform(UiController uiController, View view) {
-                TimePicker tp = (TimePicker) view;
-                int hour = tp.getHour();
-                int min = tp.getMinute();
-                if (min + 11 > 59) {
-                    tp.setHour(hour + 1);
-                    tp.setMinute(min);
-                } else
-                    tp.setMinute(min + 11);
-            }
-
-            @Override
-            public String getDescription() {
-                return "Set the passed time into the TimePicker";
-            }
-
-            @Override
-            public Matcher<View> getConstraints() {
-                return ViewMatchers.isAssignableFrom(TimePicker.class);
-            }
-        };
-    }
-
-    /**
-     * Activates instant profile for a specified time frame and a certain time until deactivation.
-     *
-     * @param profile   profile to be activated for length minutes.
-     * @param length    length of instant profile activation, in minutes
-     * @param timeUntil time until profile deactivation, in minutes
-     */
-    private void activateInstantProfile(String profile, int length, int timeUntil) throws Exception {
-        if (length < timeUntil) throw new Exception("length < timeUntil");
-        db.activateProfile(new ProfileInSchedule(db.getProfileByName(profile),
-                new Date(new Date().getTime() - (length - timeUntil) * 60 * 1000),
-                new Date(new Date().getTime() + timeUntil * 60 * 1000)));
-    }
-
 
     @Test
     public void activatePISonTime() {
@@ -718,4 +641,80 @@ public class BackgroundServiceTest {
         assertEquals(NOTIFICATION_TEXT, text.getText());
         device.pressHome();
     }
+
+
+    //helper function
+    private void checkAppOpen(String packageName) {
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        Context context = InstrumentationRegistry.getInstrumentation().getContext(); //gets the context based on the instrumentation
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(packageName);  //sets the intent to start your app
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);  //clear out any previous task, i.e., make sure it starts on the initial screen
+        context.startActivity(intent);  //starts the app
+        device.wait(Until.hasObject(By.pkg(packageName)), 3000);
+
+        //checks if current display has messenger
+        UiObject title = device.findObject(new UiSelector().packageName(FACEBOOK_MESSENGER));
+        assertFalse(title.exists());
+    }
+
+    private static Matcher<View> childAtPosition(
+            final Matcher<View> parentMatcher, final int position) {
+
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Child at position " + position + " in parent ");
+                parentMatcher.describeTo(description);
+            }
+
+            @Override
+            public boolean matchesSafely(View view) {
+                ViewParent parent = view.getParent();
+                return parent instanceof ViewGroup && parentMatcher.matches(parent)
+                        && view.equals(((ViewGroup) parent).getChildAt(position));
+            }
+        };
+    }
+
+    private static ViewAction setTime() {
+        return new ViewAction() {
+            @Override
+            public void perform(UiController uiController, View view) {
+                TimePicker tp = (TimePicker) view;
+                int hour = tp.getHour();
+                int min = tp.getMinute();
+                if (min + 11 > 59) {
+                    tp.setHour(hour + 1);
+                    tp.setMinute(min);
+                } else
+                    tp.setMinute(min + 11);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Set the passed time into the TimePicker";
+            }
+
+            @Override
+            public Matcher<View> getConstraints() {
+                return ViewMatchers.isAssignableFrom(TimePicker.class);
+            }
+        };
+    }
+
+    /**
+     * Activates instant profile for a specified time frame and a certain time until deactivation.
+     *
+     * @param profile   profile to be activated for length minutes.
+     * @param length    length of instant profile activation, in minutes
+     * @param timeUntil time until profile deactivation, in minutes
+     */
+    private void activateInstantProfile(String profile, int length, int timeUntil) throws Exception {
+        if (length < timeUntil) throw new Exception("length < timeUntil");
+        db.activateProfile(new ProfileInSchedule(db.getProfileByName(profile),
+                new Date(new Date().getTime() - (length - timeUntil) * 60 * 1000),
+                new Date(new Date().getTime() + timeUntil * 60 * 1000)));
+    }
+
 }

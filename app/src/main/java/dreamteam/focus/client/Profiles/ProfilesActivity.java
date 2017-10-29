@@ -71,14 +71,14 @@ public class ProfilesActivity extends AppCompatActivity {
         addNewProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(MainActivity.db.getProfiles().size()<=profileLimit)
+                if(MainActivity.db.getProfiles().size()<profileLimit)
                 {
                     Intent i = new Intent(getApplicationContext(), CreateProfileActivity.class);
                     startActivity(i);
                 }
                 else
                 {
-                    Toast.makeText(getApplicationContext(),"You cant have more than 20 profiles",Toast.LENGTH_LONG);
+                    Toast.makeText(getApplicationContext(),"You cant have more than 20 profiles",Toast.LENGTH_LONG).show();
                 }
             }
         });
