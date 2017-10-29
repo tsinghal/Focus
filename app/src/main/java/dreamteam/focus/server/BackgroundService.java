@@ -297,7 +297,7 @@ public class BackgroundService extends NotificationListenerService {
                             sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
                                     "Profile : " + pis.getProfile().getName() + " is now inactive");
                         } else if ((startTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now &&
-                                now <= (endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE)) {
+                                now <= (endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
                             addAppsToBlockedApps(pis.getProfile());
                         }
                     }
