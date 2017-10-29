@@ -8,30 +8,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.database.SQLException;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import dreamteam.focus.R;
-import dreamteam.focus.Schedule;
 import dreamteam.focus.client.Profiles.ProfilesActivity;
 import dreamteam.focus.client.Schedules.SchedulesActivity;
 import dreamteam.focus.server.BackgroundService;
 import dreamteam.focus.server.DatabaseConnector;
 
 public class MainActivity extends AppCompatActivity {
-    private Button schedulesButton;
-    private Button profilesButton;
-
-    private AlertDialog enableNotificationListenerAlertDialog;
-    private AlertDialog enableUsageAccessAlertDialog;
-
-
     public static DatabaseConnector db;
 
     @Override
@@ -46,42 +36,33 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (!isNotificationServiceGranted()) {
-            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+            AlertDialog enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
             enableNotificationListenerAlertDialog.show();
         }
 
         if (!isUsageAccessGranted()) {
-            enableUsageAccessAlertDialog = buildUsageAccessAlertDialog();
+            AlertDialog enableUsageAccessAlertDialog = buildUsageAccessAlertDialog();
             enableUsageAccessAlertDialog.show();
         }
 
         db = new DatabaseConnector(getApplicationContext());
 
-        schedulesButton = (Button) findViewById(R.id.buttonSchedules);
-        profilesButton = (Button) findViewById(R.id.buttonProfiles);
+        Button schedulesButton = (Button) findViewById(R.id.buttonSchedules);
+        Button profilesButton = (Button) findViewById(R.id.buttonProfiles);
 
         profilesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), ProfilesActivity.class);
-                startActivity(i);
+                startActivity(new Intent(getApplicationContext(), ProfilesActivity.class));
             }
         });
 
         schedulesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent s = new Intent(getApplicationContext(), SchedulesActivity.class);
-                startActivity(s);
+                startActivity(new Intent(getApplicationContext(), SchedulesActivity.class));
             }
         });
-
-        try {
-            db.addSchedule(new Schedule("AnonymousSchedule"));
-        } catch (SQLException e) {
-            Log.e("SHIT", "IMPLEMENTATION. Y U DO DIS??!?!?!?!?!");
-            // TODO: 10/16/17 Prateek you need to merge this into your connector
-        }
     }
 
 
@@ -123,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
                 "enabled_notification_listeners");
         if (!TextUtils.isEmpty(flat)) {
             final String[] names = flat.split(":");
-            for (int i = 0; i < names.length; i++) {
-                final ComponentName cn = ComponentName.unflattenFromString(names[i]);
+            for (String name : names) {
+                final ComponentName cn = ComponentName.unflattenFromString(name);
                 if (cn != null) {
                     if (TextUtils.equals(pkgName, cn.getPackageName())) {
                         return true;
@@ -163,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * src = https://stackoverflow.com/questions/38686632/how-to-get-usage-access-permission-programatically
+     * src = https://stackoverflow.com/questions/38686632
      *
      * @return True if enabled, false otherwise.
      */
