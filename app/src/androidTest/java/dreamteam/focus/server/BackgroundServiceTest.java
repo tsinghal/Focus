@@ -69,6 +69,7 @@ import static org.hamcrest.Matchers.not;
 @SuppressWarnings({"FieldCanBeLocal", "unused"})
 public class BackgroundServiceTest {
     private static final String WHATSAPP = "com.whatsapp";
+    private static final String FOCUS = "dreamteam.focus";
     private static final String FACEBOOK_MESSENGER = "com.facebook.orca";
     private static final String BAD_SCHEDULE_NAME = "dfsjdofiewoiheegeg";
     private static final String GOOD_SCHEDULE_NAME = "test123";
@@ -76,6 +77,7 @@ public class BackgroundServiceTest {
     private static final String NOTIFICATION_TITLE = "User Alert";
     private static final long DELAY_MILLIS = 250;
 
+    private Profile profile1, profile2, profile3;
     private DatabaseConnector db;
 
     @Rule
@@ -111,9 +113,9 @@ public class BackgroundServiceTest {
         enum3.add(Repeat_Enum.SATURDAY);
         enum3.add(Repeat_Enum.SUNDAY);
 
-        Profile profile1 = new Profile("profile1", appBlacklist1);
-        Profile profile2 = new Profile("profile2", appBlacklist2);
-        Profile profile3 = new Profile("profile3", appBlacklist3);
+        profile1 = new Profile("profile1", appBlacklist1);
+        profile2 = new Profile("profile2", appBlacklist2);
+        profile3 = new Profile("profile3", appBlacklist3);
 
         db.createProfile(profile1);
         db.createProfile(profile2);
@@ -540,19 +542,103 @@ public class BackgroundServiceTest {
             e.printStackTrace();
         }
 
+        checkAppOpen(FACEBOOK_MESSENGER);       //messenger shouldn't open since it is blocked
+
+    }
+
+    @Test
+    public void intersectingProfiles(){
+        try {
+            activateInstantProfile(profile1,10,1);
+            activateInstantProfile(profile3, 10, 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
+        appCompatButton.perform(click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        checkAppOpen(FACEBOOK_MESSENGER);       //messenger shouldn't open since it is blocked by two active profiles
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //reopen our app
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        Context context = InstrumentationRegistry.getInstrumentation().getContext(); //gets the context based on the instrumentation
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(FOCUS);  //sets the intent to start your app
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);  //clear out any previous task, i.e., make sure it starts on the initial screen
+        context.startActivity(intent);  //starts the app
+        device.wait(Until.hasObject(By.pkg(FOCUS)), 3000);
+
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+         appCompatButton = onView(
+                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
+        appCompatButton.perform(click());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction toggleButton = onView(
+                allOf(withId(R.id.toggleProfileStatus), withText("ON"),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewProfiles),
+                                0)),
+                        isDisplayed()));
+        toggleButton.perform(click());
+
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        checkAppOpen(FACEBOOK_MESSENGER);       //messenger shouldn't open since it is blocked  by profile3
+
+    }
+
+    //helper function
+    void checkAppOpen(String packageName){
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
         Context context = InstrumentationRegistry.getInstrumentation().getContext(); //gets the context based on the instrumentation
-        Intent intent = context.getPackageManager().getLaunchIntentForPackage(FACEBOOK_MESSENGER);  //sets the intent to start your app
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(packageName);  //sets the intent to start your app
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);  //clear out any previous task, i.e., make sure it starts on the initial screen
         context.startActivity(intent);  //starts the app
-        device.wait(Until.hasObject(By.pkg(FACEBOOK_MESSENGER)), 3000);
+        device.wait(Until.hasObject(By.pkg(packageName)), 3000);
 
         //checks if current display has messenger
-        UiObject title = device.findObject(new UiSelector().packageName(FACEBOOK_MESSENGER));
+        UiObject title = device.findObject(new UiSelector().packageName(packageName));
         assertFalse(title.exists());
-
     }
+
 
     private static Matcher<View> childAtPosition(
             final Matcher<View> parentMatcher, final int position) {
