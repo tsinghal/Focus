@@ -1,23 +1,23 @@
-package dreamteam.focus.server;
+package dreamteam.focus;
 
 import android.content.Context;
+import android.database.SQLException;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 
-import dreamteam.focus.Profile;
-import dreamteam.focus.ProfileInSchedule;
-import dreamteam.focus.Repeat_Enum;
-import dreamteam.focus.Schedule;
+import dreamteam.focus.server.DatabaseConnector;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Instrumentation test, which will execute on an Android device.
@@ -35,6 +35,7 @@ public class DatabaseConnectorTest {
     Schedule schedule1, schedule2;
     ArrayList<Repeat_Enum> re1, re2, re3;
     ProfileInSchedule pis1, pis2, pis3;
+    ProfileInSchedule profileInstant1, profileInstant2, profileInstant3;
 
     private void populateDatabase() {
         blockedApps1 = new ArrayList<>();
@@ -67,6 +68,10 @@ public class DatabaseConnectorTest {
             pis1 = new ProfileInSchedule(profile1, db.getDate("1970-01-01T21:31:00Z"), db.getDate("1970-01-01T22:31:00Z"), re1);
             pis2 = new ProfileInSchedule(profile2, db.getDate("1970-01-01T22:31:00Z"), db.getDate("1970-01-01T23:31:00Z"), re2);
             pis3 = new ProfileInSchedule(profile3, db.getDate("1970-01-01T18:31:00Z"), db.getDate("1970-01-01T19:31:00Z"), re3);
+
+            profileInstant1 = new ProfileInSchedule(profile1, db.getDate("1970-01-01T21:31:00Z"), db.getDate("1970-01-01T22:31:00Z"));
+            profileInstant2 = new ProfileInSchedule(profile2, db.getDate("1970-01-01T21:31:00Z"), db.getDate("1970-01-01T22:31:00Z"));
+            profileInstant3 = new ProfileInSchedule(profile3, db.getDate("1970-01-01T21:31:00Z"), db.getDate("1970-01-01T22:31:00Z"));
         } catch (ParseException e) {
             Log.d("Populate Error", e.getLocalizedMessage());
         }
@@ -80,11 +85,11 @@ public class DatabaseConnectorTest {
 //        db.addSchedule(schedule2);
     }
 
-    @Test
-    public void useAppContext() throws Exception {
-        // Context of the app under test.
-        assertEquals("dreamteam.focus", appContext.getPackageName());
-    }
+//    @Test
+//    public void useAppContext() throws Exception {
+//        // Context of the app under test.
+//        assertEquals("dreamteam.focus", appContext.getPackageName());
+//    }
 
     @Test
     public void getProfiles_isEmpty() throws Exception {
@@ -128,8 +133,7 @@ public class DatabaseConnectorTest {
         db.createProfile(profile2);
         assertEquals(db.getProfiles().get(0).isActive(), false);
 
-        pis2 = new ProfileInSchedule(profile2, db.getDate("1970-01-01T21:31:00Z"), db.getDate("1970-01-01T22:31:00Z"));
-        db.activateProfile(pis2);
+        db.activateProfile(profileInstant2);
         assertEquals(db.getProfiles().get(0).isActive(), true);
     }
 
@@ -141,8 +145,7 @@ public class DatabaseConnectorTest {
         db.createProfile(profile1);
         assertEquals(db.getProfiles().get(0).isActive(), false);
 
-        pis1 = new ProfileInSchedule(profile1, db.getDate("1970-01-01T21:31:00Z"), db.getDate("1970-01-01T22:31:00Z"));
-        db.activateProfile(pis1);
+        db.activateProfile(profileInstant1);
         assertEquals(db.getProfiles().get(0).isActive(), true);
 
         db.deactivateProfile(profile1);
