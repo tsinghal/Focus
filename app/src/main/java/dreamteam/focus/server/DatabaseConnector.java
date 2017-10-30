@@ -535,8 +535,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         incrementDatabaseVersion();
         //addProfileInScheduleDeleted(pis, scheduleName);
 
-        boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null) > 0
-                && db.delete(TABLE_PROFILE_IN_SCHEDULE,
+        if(!scheduleName.equals("AnonymousSchedule")) {
+            db.delete(TABLE_PROFILE_IN_SCHEDULE_REPEATS, KEY_PROFILE_IN_SCHEDULE_ID + "=" + getProfileID(pis, scheduleName, pis.repeatsOn().get(0)), null);
+        }
+
+        boolean answer = db.delete(TABLE_PROFILE_IN_SCHEDULE,
                 KEY_PROFILE_NAME + "='" + pis.getProfile().getName() + "' AND "
                         + KEY_SCHEDULE_NAME + "='" + scheduleName + "'", null) > 0;
         db.close();
