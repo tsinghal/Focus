@@ -16,8 +16,8 @@ import android.view.View;
 import android.widget.Button;
 
 import dreamteam.focus.R;
-import dreamteam.focus.client.Profiles.ProfilesActivity;
-import dreamteam.focus.client.Schedules.SchedulesActivity;
+import dreamteam.focus.client.profiles.ProfilesActivity;
+import dreamteam.focus.client.schedules.SchedulesActivity;
 import dreamteam.focus.server.BackgroundService;
 import dreamteam.focus.server.DatabaseConnector;
 

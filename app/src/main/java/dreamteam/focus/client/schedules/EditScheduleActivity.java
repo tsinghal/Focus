@@ -1,4 +1,4 @@
-package dreamteam.focus.client.Schedules;
+package dreamteam.focus.client.schedules;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,7 +12,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
@@ -22,8 +21,7 @@ import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.ListUtils;
-import dreamteam.focus.client.MainActivity;
-import dreamteam.focus.client.Adaptors.AdapterCalendarRemove;
+import dreamteam.focus.client.adaptors.AdapterCalendarRemove;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**

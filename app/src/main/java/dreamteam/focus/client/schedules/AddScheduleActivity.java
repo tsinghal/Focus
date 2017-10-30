@@ -1,4 +1,4 @@
-package dreamteam.focus.client.Schedules;
+package dreamteam.focus.client.schedules;
 
 import android.content.Intent;
 import android.database.SQLException;
@@ -6,11 +6,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.View.MeasureSpec;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -22,8 +19,8 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.Adaptors.AdapterCalendarNewRemove;
 import dreamteam.focus.client.ListUtils;
+import dreamteam.focus.client.adaptors.AdapterCalendarNewRemove;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
