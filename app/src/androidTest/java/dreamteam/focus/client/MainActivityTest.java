@@ -13,8 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import dreamteam.focus.R;
-import dreamteam.focus.client.Profiles.ProfilesActivity;
-import dreamteam.focus.client.Schedules.SchedulesActivity;
+import dreamteam.focus.client.profiles.ProfilesActivity;
+import dreamteam.focus.client.schedules.SchedulesActivity;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;

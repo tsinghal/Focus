@@ -1,4 +1,4 @@
-package dreamteam.focus.client.Schedules;
+package dreamteam.focus.client.schedules;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,7 +20,7 @@ import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
-import dreamteam.focus.client.Adaptors.AdapterAddProfileToSchedule;
+import dreamteam.focus.client.adaptors.AdapterAddProfileToSchedule;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -48,141 +48,120 @@ public class AddProfileToScheduleActivity extends AppCompatActivity {
         db = new DatabaseConnector(this);
 
         Bundle bundle = getIntent().getExtras();
-        if(bundle != null){
+        if (bundle != null) {
             scheduleName = bundle.getString("EditScheduleActivity:ScheduleName");
         }
 
         r = new ArrayList<Repeat_Enum>();
 
 
-        startTime = (TimePicker)findViewById(R.id.timePickerStartTime);
-        endTime = (TimePicker)findViewById(R.id.timePickerEndTime);
+        startTime = (TimePicker) findViewById(R.id.timePickerStartTime);
+        endTime = (TimePicker) findViewById(R.id.timePickerEndTime);
 
-        addProfile=(Button)findViewById(R.id.buttonAddProfile);
-        discard=(Button)findViewById(R.id.buttonDiscardProfile);
+        addProfile = (Button) findViewById(R.id.buttonAddProfile);
+        discard = (Button) findViewById(R.id.buttonDiscardProfile);
 
-        monday=(Switch)findViewById(R.id.switch1);
-        tuesday= (Switch)findViewById(R.id.switch2);
-        wednesday= (Switch)findViewById(R.id.switch3);
-        thursday=(Switch)findViewById(R.id.switch4);
-        friday=(Switch)findViewById(R.id.switch5);
-        saturday=(Switch)findViewById(R.id.switch6);
-        sunday=(Switch)findViewById(R.id.switch7);
+        monday = (Switch) findViewById(R.id.switch1);
+        tuesday = (Switch) findViewById(R.id.switch2);
+        wednesday = (Switch) findViewById(R.id.switch3);
+        thursday = (Switch) findViewById(R.id.switch4);
+        friday = (Switch) findViewById(R.id.switch5);
+        saturday = (Switch) findViewById(R.id.switch6);
+        sunday = (Switch) findViewById(R.id.switch7);
 
         ListView lvNames = (ListView) findViewById(R.id.ListViewProfilesToAdd);
-        profileArray=new ArrayList<Profile>();
+        profileArray = new ArrayList<Profile>();
         profileArray = db.getProfiles();
 
-        profileArrayAdapter= new AdapterAddProfileToSchedule(getApplicationContext(), profileArray);
+        profileArrayAdapter = new AdapterAddProfileToSchedule(getApplicationContext(), profileArray);
 
         lvNames.setAdapter(profileArrayAdapter);
 
-        monday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        monday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton cb, boolean on){
-                if(on)
-                {
+            public void onCheckedChanged(CompoundButton cb, boolean on) {
+                if (on) {
                     r.add(Repeat_Enum.MONDAY);
-                }
-                else
-                {
-                    if(r.contains(Repeat_Enum.MONDAY)){
+                } else {
+                    if (r.contains(Repeat_Enum.MONDAY)) {
                         r.remove(Repeat_Enum.MONDAY);
                     }
                 }
             }
         });
 
-        tuesday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        tuesday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton cb, boolean on){
-                if(on)
-                {
+            public void onCheckedChanged(CompoundButton cb, boolean on) {
+                if (on) {
                     r.add(Repeat_Enum.TUESDAY);
-                }
-                else
-                {
-                    if(r.contains(Repeat_Enum.TUESDAY)){
+                } else {
+                    if (r.contains(Repeat_Enum.TUESDAY)) {
                         r.remove(Repeat_Enum.TUESDAY);
                     }
                 }
             }
         });
 
-        wednesday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        wednesday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton cb, boolean on){
-                if(on)
-                {
+            public void onCheckedChanged(CompoundButton cb, boolean on) {
+                if (on) {
                     r.add(Repeat_Enum.WEDNESDAY);
-                }
-                else
-                {
-                    if(r.contains(Repeat_Enum.WEDNESDAY)){
+                } else {
+                    if (r.contains(Repeat_Enum.WEDNESDAY)) {
                         r.remove(Repeat_Enum.WEDNESDAY);
                     }
                 }
             }
         });
 
-        thursday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        thursday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton cb, boolean on){
-                if(on)
-                {
+            public void onCheckedChanged(CompoundButton cb, boolean on) {
+                if (on) {
                     r.add(Repeat_Enum.THURSDAY);
-                }
-                else
-                {
-                    if(r.contains(Repeat_Enum.THURSDAY)){
+                } else {
+                    if (r.contains(Repeat_Enum.THURSDAY)) {
                         r.remove(Repeat_Enum.THURSDAY);
                     }
                 }
             }
         });
 
-        friday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        friday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton cb, boolean on){
-                if(on)
-                {
+            public void onCheckedChanged(CompoundButton cb, boolean on) {
+                if (on) {
                     r.add(Repeat_Enum.FRIDAY);
-                }
-                else
-                {
-                    if(r.contains(Repeat_Enum.FRIDAY)){
+                } else {
+                    if (r.contains(Repeat_Enum.FRIDAY)) {
                         r.remove(Repeat_Enum.FRIDAY);
                     }
                 }
             }
         });
 
-        saturday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        saturday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton cb, boolean on){
-                if(on)
-                {
+            public void onCheckedChanged(CompoundButton cb, boolean on) {
+                if (on) {
                     r.add(Repeat_Enum.SATURDAY);
-                }
-                else
-                {
-                    if(r.contains(Repeat_Enum.SATURDAY)){
+                } else {
+                    if (r.contains(Repeat_Enum.SATURDAY)) {
                         r.remove(Repeat_Enum.SATURDAY);
                     }
                 }
             }
         });
 
-        sunday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        sunday.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton cb, boolean on){
-                if(on)
-                {
+            public void onCheckedChanged(CompoundButton cb, boolean on) {
+                if (on) {
                     r.add(Repeat_Enum.SUNDAY);
-                }
-                else
-                {
-                    if(r.contains(Repeat_Enum.SUNDAY)){
+                } else {
+                    if (r.contains(Repeat_Enum.SUNDAY)) {
                         r.remove(Repeat_Enum.SUNDAY);
                     }
                 }
@@ -196,57 +175,54 @@ public class AddProfileToScheduleActivity extends AppCompatActivity {
                 int startMin = startTime.getMinute();
                 int endHour = endTime.getHour();
                 int endMin = endTime.getMinute();
-                Date startTime = new Date() ;
+                Date startTime = new Date();
                 Date endTime = new Date();
 
-                Log.e("error","ADD PROFILE CLICK INSIDE THE FUNCTION r: "+r.size());
+                Log.e("error", "ADD PROFILE CLICK INSIDE THE FUNCTION r: " + r.size());
 
                 //Error Checking for 10 hours & see at least one day has been selected!
-                if(r.isEmpty() || r.size()==0){
+                if (r.isEmpty() || r.size() == 0) {
                     Toast.makeText(getApplicationContext(), "Select At-least One Day", Toast.LENGTH_LONG).show();
 
                 } else {
                     SimpleDateFormat d1 = new SimpleDateFormat("HH:mm");
                     try {
-                        startTime = d1.parse(startHour+":"+startMin);
-                        endTime = d1.parse(endHour+":"+endMin);
-                        Log.e("error","ADDED PROFILE TO START TIME: "+ startTime.toString() + " END TIME: " + endTime);
+                        startTime = d1.parse(startHour + ":" + startMin);
+                        endTime = d1.parse(endHour + ":" + endMin);
+                        Log.e("error", "ADDED PROFILE TO START TIME: " + startTime.toString() + " END TIME: " + endTime);
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
 
-                    if(endHour<startHour) //if end of night
+                    if (endHour < startHour) //if end of night
                     {
 
-                            Toast.makeText(getApplicationContext(), "Exceeding the ten hour limit", Toast.LENGTH_LONG).show();
-                            return;
+                        Toast.makeText(getApplicationContext(), "Exceeding the ten hour limit", Toast.LENGTH_LONG).show();
+                        return;
 
                     }
-                    if(endHour==startHour && endMin<startMin)
-                    {
-                        Toast.makeText(getApplicationContext(),"Exceeding the ten hour limit",Toast.LENGTH_LONG).show();
+                    if (endHour == startHour && endMin < startMin) {
+                        Toast.makeText(getApplicationContext(), "Exceeding the ten hour limit", Toast.LENGTH_LONG).show();
                         return;
                     }
 
 
+                    int timeLimit = (endHour - startHour) * 60;
+                    timeLimit += (endMin - startMin);
 
-                    int timeLimit=(endHour-startHour)*60;
-                    timeLimit+=(endMin-startMin);
 
-
-                    if(timeLimit>600 || timeLimit<10)
-                    {
-                        Toast.makeText(getApplicationContext(),"Exceeding the 10 minute-10 hour limit",Toast.LENGTH_LONG).show();
+                    if (timeLimit > 600 || timeLimit < 10) {
+                        Toast.makeText(getApplicationContext(), "Exceeding the 10 minute-10 hour limit", Toast.LENGTH_LONG).show();
                         return;
                     }
 
 
-                    if(!profilesToBeBlocked.isEmpty()){
-                        for(int i=0; i<profilesToBeBlocked.size(); i++) {
-                            for(int j=0; j<r.size(); j++) {
+                    if (!profilesToBeBlocked.isEmpty()) {
+                        for (int i = 0; i < profilesToBeBlocked.size(); i++) {
+                            for (int j = 0; j < r.size(); j++) {
                                 ArrayList<Repeat_Enum> individualR = new ArrayList<Repeat_Enum>();
                                 individualR.add(r.get(j));
-                                ProfileInSchedule p = new ProfileInSchedule(profilesToBeBlocked.get(i),startTime,endTime,individualR);
+                                ProfileInSchedule p = new ProfileInSchedule(profilesToBeBlocked.get(i), startTime, endTime, individualR);
                                 //db.addProfileInSchedule(p, scheduleName);
                                 EditScheduleActivity.profileInScheduleArray.add(p);
                                 EditScheduleActivity.profileArray.add(p);

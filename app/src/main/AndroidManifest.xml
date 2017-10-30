@@ -36,19 +36,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".client.Profiles.ProfilesActivity" />
-        <activity android:name=".client.Schedules.SchedulesActivity" />
-        <activity android:name=".client.Schedules.AddProfileToScheduleActivity" />
-        <activity android:name=".client.Schedules.AddProfileToNewSchedule" />
-        <activity android:name=".client.Schedules.AddScheduleActivity" />
-        <activity android:name=".client.Schedules.EditScheduleActivity" />
-        <activity android:name=".client.timePicker" />
-        <activity android:name=".client.Schedules.EditProfileInScheduleActivity" />
+        <activity android:name=".client.profiles.ProfilesActivity" />
+        <activity android:name=".client.schedules.SchedulesActivity" />
+        <activity android:name=".client.schedules.AddProfileToScheduleActivity" />
+        <activity android:name=".client.schedules.AddProfileToNewSchedule" />
+        <activity android:name=".client.schedules.AddScheduleActivity" />
+        <activity android:name=".client.schedules.EditScheduleActivity" />
+        <activity android:name=".client.TimePicker" />
+        <activity android:name=".client.schedules.EditProfileInScheduleActivity" />
         <activity
-            android:name=".client.Profiles.CreateProfileActivity"
+            android:name=".client.profiles.CreateProfileActivity"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".client.Profiles.EditProfileActivity"
+            android:name=".client.profiles.EditProfileActivity"
             android:windowSoftInputMode="adjustPan" />
     </application>
 </manifest>

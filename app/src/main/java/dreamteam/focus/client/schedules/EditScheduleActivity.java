@@ -1,4 +1,4 @@
-package dreamteam.focus.client.Schedules;
+package dreamteam.focus.client.schedules;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -13,12 +13,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
@@ -26,8 +22,7 @@ import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.ListUtils;
-import dreamteam.focus.client.MainActivity;
-import dreamteam.focus.client.Adaptors.AdapterCalendarRemove;
+import dreamteam.focus.client.adaptors.AdapterCalendarRemove;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -35,7 +30,7 @@ import dreamteam.focus.server.DatabaseConnector;
  */
 
 
-public class EditScheduleActivity extends AppCompatActivity implements Serializable{
+public class EditScheduleActivity extends AppCompatActivity implements Serializable {
 
     private Button addSchedule, discard, delete;
     private EditText nameText;
@@ -44,17 +39,17 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
     public static ArrayList<Integer> positionArray;
     public static ArrayList<ProfileInSchedule> pisArray; //contains the profileInSchedules that needs to be removed from the DB
     public static ArrayList<ProfileInSchedule> profileInScheduleArray;//contains the profileInSchedules that needs to be added to the DB
-    AdapterCalendarRemove mon,tue,wed,thu,fri,sat,sun;
+    AdapterCalendarRemove mon, tue, wed, thu, fri, sat, sun;
     private EditText name;
     public static String scheduleName;
     DatabaseConnector db;
     private ArrayList<ProfileInSchedule> mondaySchedules, tuesdaySchedules, wednesdaySchedules, thursdaySchedules,
             fridaySchedules, saturdaySchedules, sundaySchedules;
-    private ListView monday,tuesday, wednesday, thursday, friday, saturday, sunday;
+    private ListView monday, tuesday, wednesday, thursday, friday, saturday, sunday;
     public Schedule CurrentSchedule;
 
-    public static String editPISOld="OldPIS";
-    public static String editPISNew="NewPIS";
+    public static String editPISOld = "OldPIS";
+    public static String editPISNew = "NewPIS";
 
 
     Handler mHandler = new Handler(); //this stuff is to update the list every second Timer
@@ -62,28 +57,25 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
     boolean isRunning = true;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activtiy_edit_schedule);
-        db=new DatabaseConnector(this);
-        pisArray=new ArrayList<ProfileInSchedule>();
-        positionArray=new ArrayList<Integer>();
-        profileInScheduleArray=new ArrayList<ProfileInSchedule>();
+        db = new DatabaseConnector(this);
+        pisArray = new ArrayList<ProfileInSchedule>();
+        positionArray = new ArrayList<Integer>();
+        profileInScheduleArray = new ArrayList<ProfileInSchedule>();
 
 
         Bundle bundle = getIntent().getExtras();
-        if(bundle != null){
+        if (bundle != null) {
             scheduleName = bundle.getString("Schedule Name");
         }
 
         try {
-            for(int i=0;i<db.getSchedules().size();i++)
-            {
-                if(db.getSchedules().get(i).getName().equals(scheduleName))
-                {
-                    CurrentSchedule=db.getSchedules().get(i);
+            for (int i = 0; i < db.getSchedules().size(); i++) {
+                if (db.getSchedules().get(i).getName().equals(scheduleName)) {
+                    CurrentSchedule = db.getSchedules().get(i);
                 }
             }
         } catch (ParseException e) {
@@ -95,7 +87,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
         addSchedule = (Button) findViewById(R.id.buttonAddSchedule);
         discard = (Button) findViewById(R.id.buttonDiscardSchedule);
-        delete = (Button)findViewById(R.id.buttonDeleteChanges2);
+        delete = (Button) findViewById(R.id.buttonDeleteChanges2);
         name = (EditText) findViewById(R.id.textEditScheduleName);
 
         name.setText(scheduleName);
@@ -112,7 +104,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         discard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-             finish();
+                finish();
             }
         });
 
@@ -125,33 +117,26 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
                 int pos;
 
 
-
-
-                for(int i=0;i<profileInScheduleArray.size();i++)
-                {
+                for (int i = 0; i < profileInScheduleArray.size(); i++) {
                     Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
                     try {
 
                         db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
-                    }
-                    catch(android.database.SQLException e)
-                    {
-                        boolean checks=true;
+                    } catch (android.database.SQLException e) {
+                        boolean checks = true;
 
-                        ProfileInSchedule pp=profileInScheduleArray.get(i);
-                        for (int j=0;j<pisArray.size();j++) {
+                        ProfileInSchedule pp = profileInScheduleArray.get(i);
+                        for (int j = 0; j < pisArray.size(); j++) {
 
-                            ProfileInSchedule currentPIS=pisArray.get(j);
+                            ProfileInSchedule currentPIS = pisArray.get(j);
 
-                            if(currentPIS.getProfile().getName().toString().equals(pp.getProfile().getName().toString()))
-                            {
-                                if (currentPIS.getStartTime().getTime()==pp.getStartTime().getTime() && currentPIS.getEndTime().getTime()==pp.getEndTime().getTime())
-                                {
-                                    if(currentPIS.repeatsOn().size()!=0) {
-                                        if(currentPIS.repeatsOn().get(0)==pp.repeatsOn().get(0)) {
-                                            Log.d("Taggss","It does contain");
+                            if (currentPIS.getProfile().getName().toString().equals(pp.getProfile().getName().toString())) {
+                                if (currentPIS.getStartTime().getTime() == pp.getStartTime().getTime() && currentPIS.getEndTime().getTime() == pp.getEndTime().getTime()) {
+                                    if (currentPIS.repeatsOn().size() != 0) {
+                                        if (currentPIS.repeatsOn().get(0) == pp.repeatsOn().get(0)) {
+                                            Log.d("Taggss", "It does contain");
                                             pisArray.remove(currentPIS);
-                                            checks=false;
+                                            checks = false;
 
                                         }
                                     }
@@ -159,27 +144,22 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
                             }
                         }
 
-                        if(checks)
-                            Toast.makeText(getApplicationContext(),"You can't have two Profiles with same components",Toast.LENGTH_SHORT).show();
+                        if (checks)
+                            Toast.makeText(getApplicationContext(), "You can't have two Profiles with same components", Toast.LENGTH_SHORT).show();
 
                     }
 
                 }
 
-                for(int i=0;i<pisArray.size();i++)
-                {
-                    pis=pisArray.get(i);
+                for (int i = 0; i < pisArray.size(); i++) {
+                    pis = pisArray.get(i);
 //                    pos=positionArray.get(i);
-                    db.removeProfileFromSchedule(pis,scheduleName, pis.repeatsOn().get(0));
+                    db.removeProfileFromSchedule(pis, scheduleName, pis.repeatsOn().get(0));
                 }
 
 
-
-
-
-
                 String newName = name.getText().toString();
-                if(name.getText().toString().matches("")){
+                if (name.getText().toString().matches("")) {
                     Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
                 } else {
                     if (!newName.equals(scheduleName)) {
@@ -207,7 +187,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 try {
                     db.removeSchedule(scheduleName);
                 } catch (ParseException e) {
@@ -220,11 +200,10 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
         try {
             profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
+            Log.e("error", "In EditScheduleActivity.java -> getting profileArray of: " + scheduleName + " FOUND: " + profileArray.size());
         } catch (ParseException e) {
             e.getMessage();
         }
-
 
 
         mondaySchedules = new ArrayList<ProfileInSchedule>();
@@ -236,30 +215,28 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         sundaySchedules = new ArrayList<ProfileInSchedule>();
 
 
-
-
         for (int i = 0; i < profileArray.size(); i++) {
             //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
-            Log.e("error","Profile Enum Value: "+ profileArray.get(i).repeatsOn().toString());
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)){
+            Log.e("error", "Profile Enum Value: " + profileArray.get(i).repeatsOn().toString());
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)) {
                 mondaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.TUESDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.TUESDAY)) {
                 tuesdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.WEDNESDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.WEDNESDAY)) {
                 wednesdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.THURSDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.THURSDAY)) {
                 thursdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.FRIDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.FRIDAY)) {
                 fridaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.SATURDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.SATURDAY)) {
                 saturdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.SUNDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.SUNDAY)) {
                 sundaySchedules.add(profileArray.get(i));
             }
 
@@ -331,7 +308,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         //code for Timer ends
 
 
-
     }
 
     @Override
@@ -340,8 +316,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         updateList();
     }
 
-    public void updateList()
-    {
+    public void updateList() {
 //
 //        try {
 //            profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
@@ -362,26 +337,26 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
         for (int i = 0; i < profileArray.size(); i++) {
             //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
-            Log.e("error","Profile Enum Value: "+ profileArray.get(i).repeatsOn().toString());
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)){
+            Log.e("error", "Profile Enum Value: " + profileArray.get(i).repeatsOn().toString());
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)) {
                 mondaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.TUESDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.TUESDAY)) {
                 tuesdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.WEDNESDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.WEDNESDAY)) {
                 wednesdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.THURSDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.THURSDAY)) {
                 thursdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.FRIDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.FRIDAY)) {
                 fridaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.SATURDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.SATURDAY)) {
                 saturdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.SUNDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.SUNDAY)) {
                 sundaySchedules.add(profileArray.get(i));
             }
 
@@ -426,8 +401,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
     }
 
-    public boolean getState()
-    {
+    public boolean getState() {
         return CurrentSchedule.isActive();
     }
 
@@ -437,22 +411,20 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         if (requestCode == 1) {     //Update profile array with new Profile In schedule
             if (resultCode == Activity.RESULT_OK) {
                 String result = data.getStringExtra("result");
-                Bundle b=data.getExtras();
-                ProfileInSchedule oldPIS=(ProfileInSchedule) b.getSerializable(editPISOld);
-                ProfileInSchedule newPIS=(ProfileInSchedule) b.getSerializable(editPISNew);
+                Bundle b = data.getExtras();
+                ProfileInSchedule oldPIS = (ProfileInSchedule) b.getSerializable(editPISOld);
+                ProfileInSchedule newPIS = (ProfileInSchedule) b.getSerializable(editPISNew);
 
 
-                for (int i=0;i<profileArray.size();i++) {
+                for (int i = 0; i < profileArray.size(); i++) {
 
-                    ProfileInSchedule currentPIS=profileArray.get(i);
+                    ProfileInSchedule currentPIS = profileArray.get(i);
 
-                    if(currentPIS.getProfile().getName().toString().equals(oldPIS.getProfile().getName().toString()))
-                    {
-                        if (currentPIS.getStartTime().getTime()==oldPIS.getStartTime().getTime() && currentPIS.getEndTime().getTime()==oldPIS.getEndTime().getTime())
-                        {
-                            if(currentPIS.repeatsOn().size()!=0) {
-                                if(currentPIS.repeatsOn().get(0)==oldPIS.repeatsOn().get(0)) {
-                                    Log.d("Tagsy","It does contain");
+                    if (currentPIS.getProfile().getName().toString().equals(oldPIS.getProfile().getName().toString())) {
+                        if (currentPIS.getStartTime().getTime() == oldPIS.getStartTime().getTime() && currentPIS.getEndTime().getTime() == oldPIS.getEndTime().getTime()) {
+                            if (currentPIS.repeatsOn().size() != 0) {
+                                if (currentPIS.repeatsOn().get(0) == oldPIS.repeatsOn().get(0)) {
+                                    Log.d("Tagsy", "It does contain");
                                     profileArray.remove(currentPIS);
                                     pisArray.add(currentPIS);
                                 }
@@ -462,8 +434,8 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
                 }
 
                 try {
-                    if(db.getProfilesInSchedule(scheduleName).contains(oldPIS)){
-                        Log.d("Tagsy","It does contain"+profileArray.size());
+                    if (db.getProfilesInSchedule(scheduleName).contains(oldPIS)) {
+                        Log.d("Tagsy", "It does contain" + profileArray.size());
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();

@@ -1,15 +1,12 @@
 package dreamteam.focus.client;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
-
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,10 +20,8 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.Profiles.CreateProfileActivity;
-import dreamteam.focus.client.Profiles.ProfilesActivity;
-import dreamteam.focus.client.Schedules.AddScheduleActivity;
-import dreamteam.focus.client.Schedules.SchedulesActivity;
+import dreamteam.focus.client.profiles.CreateProfileActivity;
+import dreamteam.focus.client.schedules.AddScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 import static android.support.test.espresso.Espresso.onView;

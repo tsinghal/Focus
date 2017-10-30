@@ -1,4 +1,4 @@
-package dreamteam.focus.client.Adaptors;
+package dreamteam.focus.client.adaptors;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
-import dreamteam.focus.client.Schedules.AddScheduleActivity;
+import dreamteam.focus.client.schedules.AddScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -28,28 +28,26 @@ public class AdapterCalendarNewRemove extends ArrayAdapter<ProfileInSchedule> {
     public DatabaseConnector db;
 
 
-    public AdapterCalendarNewRemove(Context context, ArrayList<ProfileInSchedule> profilesArray)
-    {
-        super(context,0, profilesArray);
+    public AdapterCalendarNewRemove(Context context, ArrayList<ProfileInSchedule> profilesArray) {
+        super(context, 0, profilesArray);
     }
 
     @Nullable
     @NonNull
     @Override
 
-    public View getView(final int position, View convertView, final ViewGroup parent)
-    {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
         final ProfileInSchedule s = getItem(position);
         Log.d("LOOK", s.repeatsOn().toString());
         db = new DatabaseConnector(getContext());
 
 
-        View    conView = LayoutInflater.from(getContext()).inflate(R.layout.schedule_profiledeleteitem, parent, false);
+        View conView = LayoutInflater.from(getContext()).inflate(R.layout.schedule_profiledeleteitem, parent, false);
 
 
-        TextView textProfileTime=(TextView)conView.findViewById(R.id.textViewScheduleTimeofProfile);
-        TextView textProfileName=(TextView)conView.findViewById(R.id.textViewProfileScheduleName);
-        Button appStatus =(Button) conView.findViewById(R.id.toggleScheduleProfileStatus);
+        TextView textProfileTime = (TextView) conView.findViewById(R.id.textViewScheduleTimeofProfile);
+        TextView textProfileName = (TextView) conView.findViewById(R.id.textViewProfileScheduleName);
+        Button appStatus = (Button) conView.findViewById(R.id.toggleScheduleProfileStatus);
 
 
         SimpleDateFormat d1 = new SimpleDateFormat("HH:mm");
@@ -60,17 +58,17 @@ public class AdapterCalendarNewRemove extends ArrayAdapter<ProfileInSchedule> {
 
         appStatus.setText("Remove");
 
-        appStatus.setOnClickListener(new View.OnClickListener(){
+        appStatus.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                Log.e("error","REMOVE IS CLICKED");
+            public void onClick(View view) {
+                Log.e("error", "REMOVE IS CLICKED");
 
                 AddScheduleActivity.pisArray.add(s);
                 AddScheduleActivity.positionArray.add(position);
 
                 AddScheduleActivity.profileArray.remove(s);
                 AddScheduleActivity.profileInScheduleArray.remove(s);
-                ((AddScheduleActivity)parent.getContext()).updateList();
+                ((AddScheduleActivity) parent.getContext()).updateList();
                 //    db.removeProfileFromSchedule(s,EditScheduleActivity.scheduleName, s.repeatsOn().get(position));
 //                Log.e("error",String.valueOf(s.repeatsOn().size()));
 
