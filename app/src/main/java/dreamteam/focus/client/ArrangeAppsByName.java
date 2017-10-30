@@ -11,7 +11,7 @@ import java.util.TreeMap;
 public class ArrangeAppsByName {
     // src : https://www.programcreek.com/2013/03/java-sort-map-by-value/
 
-    public TreeMap<String, String> sortMapByValue(HashMap<String, String> map){
+    public TreeMap<String, String> sortMapByValue(HashMap<String, String> map) {
         Comparator<String> comparator = new ValueComparator(map);
         TreeMap<String, String> result = new TreeMap<String, String>(comparator);
         result.putAll(map);
@@ -19,11 +19,11 @@ public class ArrangeAppsByName {
     }
 
     // a comparator that compares Strings
-    class ValueComparator implements Comparator<String>{
+    class ValueComparator implements Comparator<String> {
 
         HashMap<String, String> map = new HashMap<String, String>();
 
-        public ValueComparator(HashMap<String, String> map){
+        public ValueComparator(HashMap<String, String> map) {
             this.map.putAll(map);
         }
 

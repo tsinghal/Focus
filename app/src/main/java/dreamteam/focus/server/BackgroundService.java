@@ -47,8 +47,9 @@ public class BackgroundService extends NotificationListenerService {
     private static final String ACTION_STATUS_BROADCAST =
             "com.example.notifyservice.NotificationService_Status";
     private static final String TAG = "BackgroundService";
-    private static final int SCHEDULE_TIMEOUT_SEC = 5;
+    private static final int SCHEDULE_TIMEOUT_SEC = 3;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
+    private static final double WINDOW_SIZE = 0.5;
 
     private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
 
@@ -163,7 +164,7 @@ public class BackgroundService extends NotificationListenerService {
         Intent resultIntent = new Intent(this, MainActivity.class);
 
         Notification.Builder mBuilder = new Notification.Builder(getApplicationContext())
-                .setSmallIcon(R.drawable.ic_stat_name_notify)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("User Alert")
                 .setContentText(message);
 
@@ -286,20 +287,17 @@ public class BackgroundService extends NotificationListenerService {
                         int startTime = getTimeInInt(pis.getStartTime());
                         int endTime = getTimeInInt(pis.getEndTime());
 
-                        if ((startTime - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
-                                now <= (startTime + SCHEDULE_TIMEOUT_SEC / 2)) {
+                        if ((startTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now &&
+                                now <= (startTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE)) {
                             sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
                                     "Profile : " + pis.getProfile().getName() + " is now active");
-                            // TODO tell UI(do only after updating database), use broadcastStatus()
                             addAppsToBlockedApps(pis.getProfile());
-                        } else if ((endTime - SCHEDULE_TIMEOUT_SEC / 2) <= now &&
-                                now <= (endTime + SCHEDULE_TIMEOUT_SEC / 2)) {
+                        } else if ((endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2) <= now &&
+                                now <= (endTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
                             sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
                                     "Profile : " + pis.getProfile().getName() + " is now inactive");
-                            // TODO tell UI(do only after updating database), use broadcastStatus()
-
-                        } else if ((startTime + SCHEDULE_TIMEOUT_SEC / 2) <= now &&
-                                now <= (endTime - SCHEDULE_TIMEOUT_SEC / 2)) {
+                        } else if ((startTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now &&
+                                now <= (endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
                             addAppsToBlockedApps(pis.getProfile());
                         }
                     }
@@ -319,7 +317,7 @@ public class BackgroundService extends NotificationListenerService {
 //                            " <= " + (endTime + SCHEDULE_TIMEOUT_SEC / 2)
 //            );
 
-            if ((startTime - SCHEDULE_TIMEOUT_SEC / 2) <= now && now <= (startTime + 60)) {
+            if ((startTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now && now <= (startTime + 60)) {
                 if (anonymousPISOldSize < anonymousPIS.size()) {
 //                    sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE), "Your profile is now instantly active.");
                     sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE),
@@ -327,7 +325,8 @@ public class BackgroundService extends NotificationListenerService {
                     anonymousPISOldSize = anonymousPIS.size();
                 }
 
-            } else if ((endTime - SCHEDULE_TIMEOUT_SEC / 2) <= now && now <= (endTime + SCHEDULE_TIMEOUT_SEC / 2)) {
+            } else if ((endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2) <= now &&
+                    now <= (endTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
                 sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
                         "Profile : " + pis.getProfile().getName() + " is now inactive");
 
@@ -355,11 +354,11 @@ public class BackgroundService extends NotificationListenerService {
             if (oldBlockedApps.removeAll(blockedApps) || (blockedApps.size() == 0)) { // returns true of something is removed
                 for (String app : oldBlockedApps) {
                     // notify user about missed notifications
-                    int tmp = db.getNotificationsCountForApp(app);
-                    if (tmp != 0) {
-                        // TODO: 10/16/17 getNotificationCount needs verification
+                    int count = db.getNotificationsCountForApp(app);
+                    if (count != 0) {
                         sendNotification(generateNotificationID(NOTIFICATION_ID_UNSEEN_NOTIFICATIONS),
-                                "You have " + tmp + " unseen notifications from " + getAppNameFromPackage(app));
+                                "You have " + count + " unseen notifications from " +
+                                        getAppNameFromPackage(app));
                     }
                 }
             }
@@ -546,4 +545,3 @@ public class BackgroundService extends NotificationListenerService {
         }
     }
 }
-// TODO: 10/14/17 tell UI about shit

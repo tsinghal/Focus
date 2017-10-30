@@ -1,4 +1,4 @@
-package dreamteam.focus.client;
+package dreamteam.focus.client.profiles;
 
 
 import android.support.test.InstrumentationRegistry;
@@ -19,10 +19,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import dreamteam.focus.R;
+import dreamteam.focus.client.MainActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.replaceText;
@@ -37,7 +37,7 @@ import static org.hamcrest.core.IsNot.not;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class EditProfileActivityTest {
+public class CreateProfileActivityTest {
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class);
 
@@ -46,8 +46,9 @@ public class EditProfileActivityTest {
         DatabaseConnector db = new DatabaseConnector(InstrumentationRegistry.getTargetContext());
         db.clear();
     }
+
     @Test
-    public void deleteProfileTest() {
+    public void addingBlankNameProfile() {
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
         // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
@@ -83,200 +84,9 @@ public class EditProfileActivityTest {
             e.printStackTrace();
         }
 
-        ViewInteraction appCompatEditText = onView(
-                allOf(withId(R.id.editViewProfileName), isDisplayed()));
-        appCompatEditText.perform(replaceText("e"), closeSoftKeyboard());
-
-
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-
-        String matchedText="e";
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction checkBox = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewApps),
-                                0)),
-                        isDisplayed()));
-        checkBox.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction checkBox2 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewApps),
-                                1)),
-                        isDisplayed()));
-        checkBox2.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         ViewInteraction appCompatButton3 = onView(
                 allOf(withId(R.id.buttonCreateProfile), withText("Create Profile"), isDisplayed()));
         appCompatButton3.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction textView = onView(
-                allOf(withId(R.id.textViewProfileName), withText("e"),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewProfiles),
-                                0)),
-                        isDisplayed()));
-        textView.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatButton4 = onView(
-                allOf(withId(R.id.buttonDiscardChanges), withText("Delete Profile"), isDisplayed()));
-        appCompatButton4.perform(click());
-
-        onView(withId(R.id.listViewProfiles))
-                .check(matches(not(hasDescendant(withText(matchedText)))));
-
-    }
-
-    @Test
-    public void editProfileLoadsDataCorrectly() {
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatButton = onView(
-                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
-        appCompatButton.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatButton2 = onView(
-                allOf(withId(R.id.buttonAddProfile), withText("+"), isDisplayed()));
-        appCompatButton2.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatEditText = onView(
-                allOf(withId(R.id.editViewProfileName), isDisplayed()));
-        appCompatEditText.perform(replaceText("a"), closeSoftKeyboard());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction checkBox = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewApps),
-                                0)),
-                        isDisplayed()));
-        checkBox.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction checkBox2 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewApps),
-                                1)),
-                        isDisplayed()));
-        checkBox2.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatButton3 = onView(
-                allOf(withId(R.id.buttonCreateProfile), withText("Create Profile"), isDisplayed()));
-        appCompatButton3.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction textView = onView(
-                allOf(withId(R.id.textViewProfileName), withText("a"),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewProfiles),
-                                0)),
-                        isDisplayed()));
-        textView.perform(click());
 
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
@@ -288,44 +98,16 @@ public class EditProfileActivityTest {
         }
 
         ViewInteraction editText = onView(
-                allOf(withId(R.id.editViewEditProfileName),withText("a"),
+                allOf(withId(R.id.editViewProfileName),
                         isDisplayed()));
-        editText.check(matches(withText("a")));
+        editText.check(matches(isDisplayed()));
 
-        ViewInteraction checkBox3 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.listViewEditApps),
-                                        0),
-                                1),
-                        isDisplayed()));
-        checkBox3.check(matches(isDisplayed()));
 
-        ViewInteraction checkBox4 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.listViewEditApps),
-                                        1),
-                                1),
-                        isDisplayed()));
-        checkBox4.check(matches(isDisplayed()));
-
-        ViewInteraction checkBox5 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.listViewEditApps),
-                                        1),
-                                1),
-                        isDisplayed()));
-        checkBox5.check(matches(isDisplayed()));
 
     }
 
     @Test
-    public void editProfileUpdatesProfileTest() {
+    public void addingDuplicateProfile() {
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
         // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
@@ -363,7 +145,7 @@ public class EditProfileActivityTest {
 
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.editViewProfileName), isDisplayed()));
-        appCompatEditText.perform(replaceText("b"), closeSoftKeyboard());
+        appCompatEditText.perform(replaceText("h"), closeSoftKeyboard());
 
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
@@ -421,13 +203,9 @@ public class EditProfileActivityTest {
             e.printStackTrace();
         }
 
-        ViewInteraction textView = onView(
-                allOf(withId(R.id.textViewProfileName), withText("b"),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewProfiles),
-                                0)),
-                        isDisplayed()));
-        textView.perform(click());
+        ViewInteraction appCompatButton4 = onView(
+                allOf(withId(R.id.buttonAddProfile), withText("+"), isDisplayed()));
+        appCompatButton4.perform(click());
 
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
@@ -439,8 +217,8 @@ public class EditProfileActivityTest {
         }
 
         ViewInteraction appCompatEditText2 = onView(
-                allOf(withId(R.id.editViewEditProfileName), isDisplayed()));
-        appCompatEditText2.perform(replaceText("ba"), closeSoftKeyboard());
+                allOf(withId(R.id.editViewProfileName), isDisplayed()));
+        appCompatEditText2.perform(replaceText("h"), closeSoftKeyboard());
 
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
@@ -451,43 +229,9 @@ public class EditProfileActivityTest {
             e.printStackTrace();
         }
 
-        ViewInteraction checkBox3 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewEditApps),
-                                2)),
-                        isDisplayed()));
-        checkBox3.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction appCompatButton4 = onView(
-                allOf(withId(R.id.buttonSaveProfile), withText("Save Profile"), isDisplayed()));
-        appCompatButton4.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction textView2 = onView(
-                allOf(withId(R.id.textViewProfileName), withText("ba"),
-                        withParent(childAtPosition(
-                                withId(R.id.listViewProfiles),
-                                0)),
-                        isDisplayed()));
-        textView2.perform(click());
+        ViewInteraction appCompatButton5 = onView(
+                allOf(withId(R.id.buttonCreateProfile), withText("Create Profile"), isDisplayed()));
+        appCompatButton5.perform(click());
 
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
@@ -499,9 +243,27 @@ public class EditProfileActivityTest {
         }
 
         ViewInteraction editText = onView(
-                allOf(withId(R.id.editViewEditProfileName),
+                allOf(withId(R.id.editViewProfileName), withText("h"),
                         isDisplayed()));
-        editText.check(matches(withText("ba")));
+        editText.check(matches(isDisplayed()));
+
+
+    }
+
+    @Test
+    public void createProfileTest() {
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.buttonProfiles), withText("Profiles"), isDisplayed()));
+        appCompatButton.perform(click());
 
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
@@ -512,50 +274,87 @@ public class EditProfileActivityTest {
             e.printStackTrace();
         }
 
-        ViewInteraction checkBox4 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.listViewEditApps),
-                                        0),
-                                1),
-                        isDisplayed()));
-        checkBox4.check(matches(isDisplayed()));
+        ViewInteraction appCompatButton2 = onView(
+                allOf(withId(R.id.buttonAddProfile), withText("+"), isDisplayed()));
+        appCompatButton2.perform(click());
 
-        ViewInteraction checkBox5 = onView(
-                allOf(withId(R.id.checkBoxAppStatus),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.listViewEditApps),
-                                        1),
-                                1),
-                        isDisplayed()));
-        checkBox5.check(matches(isDisplayed()));
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-        ViewInteraction checkBox6 = onView(
+        ViewInteraction checkBox = onView(
                 allOf(withId(R.id.checkBoxAppStatus),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.listViewEditApps),
-                                        2),
-                                1),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewApps),
+                                6)),
                         isDisplayed()));
-        checkBox6.check(matches(isDisplayed()));
+        checkBox.perform(click());
 
-        ViewInteraction checkBox7 = onView(
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction checkBox2 = onView(
                 allOf(withId(R.id.checkBoxAppStatus),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.listViewEditApps),
-                                        2),
-                                1),
+                        withParent(childAtPosition(
+                                withId(R.id.listViewApps),
+                                5)),
                         isDisplayed()));
-        checkBox7.check(matches(isDisplayed()));
+        checkBox2.perform(click());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatEditText = onView(
+                allOf(withId(R.id.editViewProfileName), isDisplayed()));
+        appCompatEditText.perform(replaceText("p"), closeSoftKeyboard());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ViewInteraction appCompatButton3 = onView(
+                allOf(withId(R.id.buttonCreateProfile), withText("Create Profile"), isDisplayed()));
+        appCompatButton3.perform(click());
+
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+        onView(withId(R.id.listViewProfiles))
+                .check(matches((hasDescendant(withText("p")))));
 
     }
 
     @Test
-    public void nothingSavedOnBackButtonPressed() {
+    public void profileNotSavedOnDiscardProfile() {
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
         // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
@@ -593,7 +392,7 @@ public class EditProfileActivityTest {
 
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.editViewProfileName), isDisplayed()));
-        appCompatEditText.perform(replaceText("j"), closeSoftKeyboard());
+        appCompatEditText.perform(replaceText("i"), closeSoftKeyboard());
 
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
@@ -638,10 +437,13 @@ public class EditProfileActivityTest {
             e.printStackTrace();
         }
 
-        pressBack();
+        ViewInteraction appCompatButton3 = onView(
+                allOf(withId(R.id.buttonDiscardProfile), withText("Discard Profile"), isDisplayed()));
+        appCompatButton3.perform(click());
 
         onView(withId(R.id.listViewProfiles))
-                .check(matches(not(hasDescendant(withText("j")))));
+                .check(matches(not(hasDescendant(withText("i")))));
+
 
     }
 

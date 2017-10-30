@@ -1,4 +1,4 @@
-package dreamteam.focus.client.Schedules;
+package dreamteam.focus.client.schedules;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.Adaptors.AdapterSchedules;
+import dreamteam.focus.client.adaptors.AdapterSchedules;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -58,8 +58,8 @@ public class SchedulesActivity extends AppCompatActivity {
         Profile z = new Profile("Midterm",new ArrayList<String>());
         db.createProfile(z);
         */
-        addNewSchedule=(Button)findViewById(R.id.buttonAddSchedule);
-        name = (TextView)findViewById(R.id.textViewScheduleName);
+        addNewSchedule = (Button) findViewById(R.id.buttonAddSchedule);
+        name = (TextView) findViewById(R.id.textViewScheduleName);
 
         addNewSchedule.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,11 +71,11 @@ public class SchedulesActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                if(schedulesInDb.size()<21){
+                if (schedulesInDb.size() < 20) {
                     Intent i = new Intent(getApplicationContext(), AddScheduleActivity.class);
                     startActivity(i);
                 } else {
-                    Toast.makeText(getApplicationContext(), "You Have Reached a 20 Schedule Max!",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "You Have Reached a 20 Schedule Max!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -86,34 +86,30 @@ public class SchedulesActivity extends AppCompatActivity {
         updateList();
 
 
-
-
     }
 
     @Override
-    protected void onRestart(){
+    protected void onRestart() {
         super.onRestart();
         updateList();
 
     }
 
-    public void updateList()
-    {
+    public void updateList() {
         try {
             scheduleArray = db.getSchedules();
 
 
-
-            for(int i=0; i<scheduleArray.size();i++) {
+            for (int i = 0; i < scheduleArray.size(); i++) {
                 Log.d("err", String.valueOf(scheduleArray.get(i).getCalendar().size()));
             }
 
-        } catch(ParseException e) {
+        } catch (ParseException e) {
             Log.d("error", e.getMessage());
         }
 
 
-        scheduleArrayAdapter=new AdapterSchedules(getApplicationContext(), scheduleArray);
+        scheduleArrayAdapter = new AdapterSchedules(getApplicationContext(), scheduleArray);
 
         lvNames.setAdapter(scheduleArrayAdapter);
     }
@@ -129,7 +125,6 @@ public class SchedulesActivity extends AppCompatActivity {
 //        super.onStop();
 //        LocalBroadcastManager.getInstance(this).unregisterReceiver(MyReceiver);
 //    }
-
 
 
 }
