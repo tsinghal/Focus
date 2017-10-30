@@ -128,6 +128,8 @@ public class EditProfileInScheduleActivity extends AppCompatActivity {
         endTimePicker.setHour(endHour);
         endTimePicker.setMinute(endMin);
 
+
+
         updateSchedule.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
