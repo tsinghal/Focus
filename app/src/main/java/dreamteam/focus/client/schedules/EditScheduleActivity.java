@@ -3,6 +3,7 @@ package dreamteam.focus.client.schedules;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -49,6 +50,10 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
     public static String editPISOld="OldPIS";
     public static String editPISNew="NewPIS";
+
+    Handler mHandler = new Handler(); //this stuff is to update the list every second Timer
+    Thread downloadThread;
+    boolean isRunning = true;
 
 
 
@@ -257,6 +262,34 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         ListUtils.setDynamicHeight(friday);
         ListUtils.setDynamicHeight(saturday);
         ListUtils.setDynamicHeight(sunday);
+
+
+        //This code would be for Timer
+        downloadThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                while (isRunning) {
+                    try {
+                        Thread.sleep(1000); // run at every 1 seconds
+                        mHandler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                // TODO Auto-generated method stub
+                                // Write your code here to update the UI.
+                                updateList();
+                            }
+                        });
+                    } catch (Exception e) {
+                        // TODO: handle exception
+                    }
+                }
+            }
+        });
+
+        downloadThread.start();
+        //code for Timer ends
 
 
     }
