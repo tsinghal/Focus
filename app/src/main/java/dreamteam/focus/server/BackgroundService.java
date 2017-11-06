@@ -372,7 +372,7 @@ public class BackgroundService extends NotificationListenerService {
      * @return notification id in the ten-thousands and thousands, last three digits randomized to avoid conflicts
      */
     private int generateNotificationID(int id) {
-        return id * 1000 + (int) (Math.random() + 100);
+        return id * 1000 + (int) (Math.random() * 100);
     }
 
     /**
