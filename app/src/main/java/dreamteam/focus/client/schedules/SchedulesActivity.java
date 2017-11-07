@@ -1,7 +1,9 @@
 package dreamteam.focus.client.schedules;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -13,8 +15,10 @@ import android.widget.Toast;
 import java.text.ParseException;
 import java.util.ArrayList;
 
+import dreamteam.focus.Profile;
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
+import dreamteam.focus.client.MainActivity;
 import dreamteam.focus.client.adaptors.AdapterSchedules;
 import dreamteam.focus.server.DatabaseConnector;
 
@@ -29,19 +33,10 @@ public class SchedulesActivity extends AppCompatActivity {
     private TextView name;
     public ListView lvNames;
 
-//    private BroadcastReceiver MyReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            Log.i("SchedulesActivity", "Broadcast Recieved: "+intent.getStringExtra("scheduleMessage"));
-//            String message = intent.getStringExtra("serviceMessage");
-//            //Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-//            updateList();
-//        }
-//    };
-
-
     ArrayList<Schedule> scheduleArray;
     AdapterSchedules scheduleArrayAdapter;
+    DialogInterface.OnClickListener dialogClickListener;
+    private Button clear;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +75,43 @@ public class SchedulesActivity extends AppCompatActivity {
             }
         });
 
+        dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        //Yes button clicked
+                        ArrayList<Schedule> temp = null;
+                        try {
+                            temp = db.getSchedules();
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        for(int i=0; i<temp.size(); i++){
+                            try {
+                                db.removeSchedule(temp.get(i).getName());
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        updateList();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        break;
+                }
+            }
+        };
+        clear = (Button) findViewById(R.id.buttonClear);
+        clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+                builder.setMessage("Are you sure you want to delete all schedules?").setPositiveButton("Yes", dialogClickListener)
+                        .setNegativeButton("No", dialogClickListener).show();
+            }
+        });
 
         lvNames = (ListView) findViewById(R.id.ScheduleNames);
 

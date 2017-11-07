@@ -207,14 +207,17 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
         Log.e("TimeActivation", startHour + ":" + startMin + " - " + currentHour + ":" + currentMin + " - " + endHour + ":" + endMin + "-" + condition);
 
-
         if (condition) {
             hoursLeft = endHour - currentHour;
             if (currentMin > endMin) {
                 hoursLeft--;
-                minutesLeft = (60 - currentMin) + endMin;
-            } else
-                minutesLeft = endMin - currentMin;
+                minutesLeft = (59 - currentMin) + endMin;
+            } else if(currentMin < endMin) {
+                minutesLeft = endMin - currentMin - 1;
+            }else{
+                hoursLeft--;
+                minutesLeft = 59 ;
+            }
 
         }
         return condition;

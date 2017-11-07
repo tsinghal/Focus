@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context="dreamteam.focus.client.schedules.SchedulesActivity">
 
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/blue"
+        android:text="Clear"
+        android:id="@+id/buttonClear"
+        android:textColor="@color/white"
+        android:textSize="14dp"
+        android:paddingLeft="3dp"
+        />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="48dp"
