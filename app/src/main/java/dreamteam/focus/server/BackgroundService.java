@@ -55,10 +55,11 @@ public class BackgroundService extends NotificationListenerService {
 
 //    private static final int NOTIFICATION_ID_GENERIC = 0;
     private static final int NOTIFICATION_ID_SUPPRESS_NOTIFICATION = 1;
-    private static final int NOTIFICATION_ID_UNSEEN_NOTIFICATIONS = 3;
     private static final int NOTIFICATION_ID_PROFILE_CHANGE = 2;
+    private static final int NOTIFICATION_ID_UNSEEN_NOTIFICATIONS = 3;
     private static final int NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE = 11;
     private static final int NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE = 12;
+    private static final int NOTIFICATION_ID_ANONYMOUS_SCHEDULE_DELETED = 13;
 
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
@@ -292,10 +293,12 @@ public class BackgroundService extends NotificationListenerService {
                             sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
                                     "Profile : " + pis.getProfile().getName() + " is now active");
                             addAppsToBlockedApps(pis.getProfile());
+                            db.activateProfileInSchedule(pis, schedule.getName());
                         } else if ((endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2) <= now &&
                                 now <= (endTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
                             sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
                                     "Profile : " + pis.getProfile().getName() + " is now inactive");
+                            db.deactivateProfileInSchedule(pis, schedule.getName());
                         } else if ((startTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now &&
                                 now <= (endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
                             addAppsToBlockedApps(pis.getProfile());
@@ -308,14 +311,6 @@ public class BackgroundService extends NotificationListenerService {
         for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
             int startTime = getTimeInInt(pis.getStartTime());
             int endTime = getTimeInInt(pis.getEndTime());
-//            Log.d(TAG + " anonymousPIS - start",
-//                    (startTime - SCHEDULE_TIMEOUT_SEC / 2) + " <= " + now +
-//                            " <= " + (startTime + SCHEDULE_TIMEOUT_SEC / 2)
-//            );
-//            Log.d(TAG + " anonymousPIS -   end",
-//                    (endTime - SCHEDULE_TIMEOUT_SEC / 2) + " <= " + now +
-//                            " <= " + (endTime + SCHEDULE_TIMEOUT_SEC / 2)
-//            );
 
             if ((startTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now && now <= (startTime + 60)) {
                 if (anonymousPISOldSize < anonymousPIS.size()) {
@@ -343,11 +338,32 @@ public class BackgroundService extends NotificationListenerService {
             addAppsToBlockedApps(pis.getProfile());
         }
 
+//        if (anonymousPISOldSize > anonymousPIS.size()) {
+//            sendNotification(
+//                    generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
+//                    "Your profile is now inactive"
+//            );
+//            anonymousPISOldSize = anonymousPIS.size();
+//        }
 
-        if (anonymousPISOldSize > anonymousPIS.size()) {
-            sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE), "Your profile is now inactive.");
-            anonymousPISOldSize = anonymousPIS.size();
+        ArrayList<ProfileInSchedule> temp = null;
+        try {
+            temp = db.getAllDeletedProfileInSchedule();
+        } catch (ParseException e) {
+            Log.e(TAG, "failed to extract deleted PIS");
         }
+
+        if (temp != null) {
+            if (temp.size() > 0) {
+                for (ProfileInSchedule pis : temp) {
+                    sendNotification(
+                            generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_DELETED),
+                            "Profile : " + pis.getProfile().getName() + " is now inactive"
+                    );
+                }
+            }
+        }
+
 
         // compare old and new list, call appropriate function as necessary
         if (!blockedApps.equals(oldBlockedApps)) {
