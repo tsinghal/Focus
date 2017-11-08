@@ -110,6 +110,8 @@ public class BackgroundService extends NotificationListenerService {
                     mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
 //                    Log.d(TAG, "blockingThread");
                     blockApps();
+                    if (needUpdate()) updateFromServer();
+                    fastTick();
                 }
             };
 
@@ -269,6 +271,7 @@ public class BackgroundService extends NotificationListenerService {
     private void tick() {
         final String TAG = "tick()";
 
+        Log.v("tick()", "start");
         int now = getTimeInInt(new Date()); // get system time
 
         // Make a deep copy of `blockedApps`
@@ -307,43 +310,7 @@ public class BackgroundService extends NotificationListenerService {
             }
         }
 
-        for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
-            int startTime = getTimeInInt(pis.getStartTime());
-            int endTime = getTimeInInt(pis.getEndTime());
-
-            if ((startTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now && now <= (startTime + 60)) {
-                if (anonymousPISOldSize < anonymousPIS.size()) {
-//                    sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE), "Your profile is now instantly active.");
-                    sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE),
-                            "Profile : " + pis.getProfile().getName() + " is now active");
-                    anonymousPISOldSize = anonymousPIS.size();
-                }
-
-            } else if ((endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2) <= now &&
-                    now <= (endTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
-                sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
-                        "Profile : " + pis.getProfile().getName() + " is now inactive");
-
-
-                if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {
-                    // TODO: tell UI(do only after updating database)
-                    Log.d(TAG, "to be implemented");
-                }
-                continue; // do not add this profile's apps to blockedApps
-            }
-
-
-            // add this Profile's apps to blockedApps
-            addAppsToBlockedApps(pis.getProfile());
-        }
-
-//        if (anonymousPISOldSize > anonymousPIS.size()) {
-//            sendNotification(
-//                    generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
-//                    "Your profile is now inactive"
-//            );
-//            anonymousPISOldSize = anonymousPIS.size();
-//        }
+//        fastTick();
 
         ArrayList<ProfileInSchedule> temp = null;
         try {
@@ -378,6 +345,42 @@ public class BackgroundService extends NotificationListenerService {
                 }
             }
         }
+        Log.v("tick()", "end");
+    }
+
+
+    private void fastTick() {
+        Log.v("fastTick()", "start");
+        int now = getTimeInInt(new Date()); // get system time
+
+        for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
+            int startTime = getTimeInInt(pis.getStartTime());
+            int endTime = getTimeInInt(pis.getEndTime());
+
+            if ((startTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now && now <= (startTime + 60)) {
+                if (anonymousPISOldSize < anonymousPIS.size()) {
+                    sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE),
+                            "Profile : " + pis.getProfile().getName() + " is now active");
+                    anonymousPISOldSize = anonymousPIS.size();
+                }
+
+            } else if ((endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2) <= now &&
+                    now <= (endTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
+                sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
+                        "Profile : " + pis.getProfile().getName() + " is now inactive");
+
+
+                if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {
+                    Log.d(TAG, "to be implemented");
+                }
+                continue; // do not add this profile's apps to blockedApps
+            }
+
+
+            // add this Profile's apps to blockedApps
+            addAppsToBlockedApps(pis.getProfile());
+        }
+        Log.v("fastTick()", "end");
     }
 
     /**
@@ -540,6 +543,8 @@ public class BackgroundService extends NotificationListenerService {
         @Override
         public void onReceive(Context context, Intent intent) {
 
+            Log.d("broadcastreceived","broadcastreceived");
+
             if (intent.getStringExtra("command").equals("list")) {
                 Intent i1 = new Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
                 i1.putExtra("notification_event", "=====================");
@@ -554,9 +559,19 @@ public class BackgroundService extends NotificationListenerService {
                 Intent i3 = new Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
                 i3.putExtra("notification_event", "===== Notification List ====");
                 sendBroadcast(i3);
-
             }
 
+
+            if (intent.getAction().equals("ProfileInstantActivate")) {
+
+                String message = intent.getStringExtra("message");
+                sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
+                       "Profile : " + message + " is now instantly inactive");
+
+            }
         }
+
     }
+
+
 }

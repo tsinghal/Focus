@@ -41,16 +41,6 @@ public class ProfilesActivity extends AppCompatActivity {
     private Button clear;
 
 
-//    private BroadcastReceiver MyReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//           Log.i("ProfilesActivity", "Broadcast Recieved: " + intent.getAction());
-//
-//            //updateList();
-//        }
-//    };
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -122,17 +112,6 @@ public class ProfilesActivity extends AppCompatActivity {
         updateList();
     }
 
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        LocalBroadcastManager.getInstance(this).registerReceiver(MyReceiver, new IntentFilter("com.dreamteam.broadcastservice"));
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//        LocalBroadcastManager.getInstance(this).unregisterReceiver(MyReceiver);
-//    }
 
     public void updateList() {
         profileArray = new ArrayList<Profile>();
