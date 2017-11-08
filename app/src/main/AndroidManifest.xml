@@ -44,6 +44,8 @@
         <activity android:name=".client.schedules.EditScheduleActivity" />
         <activity android:name=".client.TimePicker" />
         <activity android:name=".client.schedules.EditProfileInScheduleActivity" />
+        <activity android:name=".client.StatisticsActivity" />
+        <activity android:name=".client.GoogleAuthentication" />
         <activity
             android:name=".client.profiles.CreateProfileActivity"
             android:windowSoftInputMode="adjustPan" />

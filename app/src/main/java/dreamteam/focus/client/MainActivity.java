@@ -15,6 +15,9 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
+
+import dreamteam.focus.Profile;
 import dreamteam.focus.R;
 import dreamteam.focus.client.profiles.ProfilesActivity;
 import dreamteam.focus.client.schedules.SchedulesActivity;
@@ -49,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button schedulesButton = (Button) findViewById(R.id.buttonSchedules);
         Button profilesButton = (Button) findViewById(R.id.buttonProfiles);
+        Button statsButton = (Button) findViewById(R.id.buttonStatistics);
 
         profilesButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,6 +65,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(), SchedulesActivity.class));
+            }
+        });
+
+        statsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), StatisticsActivity.class));
             }
         });
     }
