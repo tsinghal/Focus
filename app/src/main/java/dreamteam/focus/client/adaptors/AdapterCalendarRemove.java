@@ -155,11 +155,11 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         String[] parts = startTimeString.split(":");
 
 
-        int currentHour = parseInt(parts[0]);
+        int currentHour = Integer.parseInt(parts[0].toString());
 
-        int currentMin = parseInt(parts[1]);
+        int currentMin = Integer.parseInt(parts[1].toString());
 
-        secondsLeft = 59 - parseInt(parts[2]);
+        secondsLeft = 59 - Integer.parseInt(parts[2].toString());
 
         s = d1.format(startTime);
         try {
@@ -171,8 +171,8 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         startTimeString = new SimpleDateFormat("HH:mm").format(startTime);
         parts = startTimeString.split(":");
 
-        int startHour = parseInt(parts[0]);
-        int startMin = parseInt(parts[1]);
+        int startHour = Integer.parseInt(parts[0]);
+        int startMin = Integer.parseInt(parts[1]);
 
         s = d1.format(endTime);
         try {
@@ -184,8 +184,8 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         startTimeString = new SimpleDateFormat("HH:mm").format(endTime);
         parts = startTimeString.split(":");
 
-        int endHour = parseInt(parts[0]);
-        int endMin = parseInt(parts[1]);
+        int endHour = Integer.parseInt(parts[0]);
+        int endMin = Integer.parseInt(parts[1]);
 
         if (startHour <= currentHour && currentHour <= endHour) {
 
