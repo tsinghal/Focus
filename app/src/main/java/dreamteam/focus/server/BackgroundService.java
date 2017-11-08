@@ -270,8 +270,6 @@ public class BackgroundService extends NotificationListenerService {
      */
     private void tick() {
         final String TAG = "tick()";
-
-        Log.v("tick()", "start");
         int now = getTimeInInt(new Date()); // get system time
 
         // Make a deep copy of `blockedApps`
@@ -345,12 +343,10 @@ public class BackgroundService extends NotificationListenerService {
                 }
             }
         }
-        Log.v("tick()", "end");
     }
 
 
     private void fastTick() {
-        Log.v("fastTick()", "start");
         int now = getTimeInInt(new Date()); // get system time
 
         for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
@@ -380,7 +376,6 @@ public class BackgroundService extends NotificationListenerService {
             // add this Profile's apps to blockedApps
             addAppsToBlockedApps(pis.getProfile());
         }
-        Log.v("fastTick()", "end");
     }
 
     /**
