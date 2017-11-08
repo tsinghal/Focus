@@ -230,7 +230,6 @@ public class BackgroundService extends NotificationListenerService {
 
     @Override
     public void onDestroy() {
-        // TODO check handle thread deletions?
         super.onDestroy();
         unregisterReceiver(nlServiceReceiver);
         Log.i("NotificationService", "NotificationService destroyed.");
@@ -536,7 +535,7 @@ public class BackgroundService extends NotificationListenerService {
     /**
      * Notification Broadcast Receiver
      */
-    class NLServiceReceiver extends BroadcastReceiver {
+    public class NLServiceReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
