@@ -29,6 +29,8 @@ import dreamteam.focus.client.schedules.EditProfileInScheduleActivity;
 import dreamteam.focus.client.schedules.EditScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
+import static java.lang.Integer.parseInt;
+
 /**
  * Created by aarav on 10/14/17.
  */
@@ -80,7 +82,9 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
                 if (getTime(s.getStartTime(), s.getEndTime())) {
                     textProfileTime.setBackgroundColor(Color.GREEN);
 //                       secondsLeft=getSecondsLeft();
-                    textProfileTime.setText(hoursLeft + ":" + minutesLeft + ":" + secondsLeft);
+                    textProfileTime.setText(
+                            leftPad(hoursLeft) + ":" + leftPad(minutesLeft) + ":" + leftPad(secondsLeft)
+                    );
                 } else {
                     textProfileTime.setTextColor(Color.WHITE);
                     textProfileTime.setBackgroundColor(Color.RED);
@@ -115,7 +119,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
                 EditScheduleActivity.pisArray.add(s);
                 EditScheduleActivity.positionArray.add(position);
                 EditScheduleActivity.profileArray.remove(s);
-                Log.d("TAG", s.repeatsOn().toString());
+                Log.d("appStatus.ClickListener", s.repeatsOn().toString());
                 EditScheduleActivity.profileInScheduleArray.remove(s);//Changed
                 ((EditScheduleActivity) parent.getContext()).updateList();
                 //    db.removeProfileFromSchedule(s,EditScheduleActivity.scheduleName, s.repeatsOn().get(pos`ition));
@@ -126,6 +130,13 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         return conView;
     }
 
+    private String leftPad(int num) {
+        if (num < 10) {
+            return "0" + num;
+        } else {
+            return "" + num;
+        }
+    }
 
     public boolean getTime(Date startTime, Date endTime) //check if currentTIme is in between start and end time
     {
@@ -144,11 +155,11 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         String[] parts = startTimeString.split(":");
 
 
-        int currentHour = Integer.parseInt(parts[0]);
+        int currentHour = parseInt(parts[0]);
 
-        int currentMin = Integer.parseInt(parts[1].toString());
+        int currentMin = parseInt(parts[1]);
 
-        secondsLeft = 59 - Integer.parseInt(parts[2].toString());
+        secondsLeft = 59 - parseInt(parts[2]);
 
         s = d1.format(startTime);
         try {
@@ -160,8 +171,8 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         startTimeString = new SimpleDateFormat("HH:mm").format(startTime);
         parts = startTimeString.split(":");
 
-        int startHour = Integer.parseInt(parts[0]);
-        int startMin = Integer.parseInt(parts[1]);
+        int startHour = parseInt(parts[0]);
+        int startMin = parseInt(parts[1]);
 
         s = d1.format(endTime);
         try {
@@ -173,8 +184,8 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         startTimeString = new SimpleDateFormat("HH:mm").format(endTime);
         parts = startTimeString.split(":");
 
-        int endHour = Integer.parseInt(parts[0]);
-        int endMin = Integer.parseInt(parts[1]);
+        int endHour = parseInt(parts[0]);
+        int endMin = parseInt(parts[1]);
 
         if (startHour <= currentHour && currentHour <= endHour) {
 
@@ -212,11 +223,11 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             if (currentMin > endMin) {
                 hoursLeft--;
                 minutesLeft = (59 - currentMin) + endMin;
-            } else if(currentMin < endMin) {
+            } else if (currentMin < endMin) {
                 minutesLeft = endMin - currentMin - 1;
-            }else{
+            } else {
                 hoursLeft--;
-                minutesLeft = 59 ;
+                minutesLeft = 59;
             }
 
         }
