@@ -114,16 +114,16 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         appStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.e("error", "REMOVE IS CLICKED");
+                Log.v("error", "REMOVE IS CLICKED");
                 s = getItem(position);
                 EditScheduleActivity.pisArray.add(s);
                 EditScheduleActivity.positionArray.add(position);
                 EditScheduleActivity.profileArray.remove(s);
-                Log.d("appStatus.ClickListener", s.repeatsOn().toString());
+                Log.v("appStatus.ClickListener", s.repeatsOn().toString());
                 EditScheduleActivity.profileInScheduleArray.remove(s);//Changed
                 ((EditScheduleActivity) parent.getContext()).updateList();
                 //    db.removeProfileFromSchedule(s,EditScheduleActivity.scheduleName, s.repeatsOn().get(pos`ition));
-//                Log.e("error",String.valueOf(s.repeatsOn().size()));
+//                Log.v("error",String.valueOf(s.repeatsOn().size()));
 
             }
         });
@@ -216,7 +216,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
         }
 
-        Log.e("TimeActivation", startHour + ":" + startMin + " - " + currentHour + ":" + currentMin + " - " + endHour + ":" + endMin + "-" + condition);
+        Log.v("TimeActivation", startHour + ":" + startMin + " - " + currentHour + ":" + currentMin + " - " + endHour + ":" + endMin + "-" + condition);
 
         if (condition) {
             hoursLeft = endHour - currentHour;

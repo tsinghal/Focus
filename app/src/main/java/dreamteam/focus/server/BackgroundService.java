@@ -282,7 +282,7 @@ public class BackgroundService extends NotificationListenerService {
         // Reconstruct
         for (Schedule schedule : schedules) {
             if (schedule.isActive()) {
-                Log.i(TAG + " normal schedule", schedule.getName());
+                Log.v(TAG + " normal schedule", schedule.getName());
                 for (ProfileInSchedule pis : schedule.getCalendar()) {
                     if (pis.repeatsOn().contains(todayInRepeatEnum())) { // profile has to be repeated on current day
                         int startTime = getTimeInInt(pis.getStartTime());
@@ -468,7 +468,7 @@ public class BackgroundService extends NotificationListenerService {
                     currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
                 }
             }
-            //Log.i(TAG, "printForegroundTask: " + currentApp);
+            //Log.v(TAG, "printForegroundTask: " + currentApp);
         }
         return currentApp;
     }
@@ -479,7 +479,7 @@ public class BackgroundService extends NotificationListenerService {
      * @return True if local data is needs update, false otherwise
      */
     private boolean needUpdate() {
-//        Log.i("BS.needUpdate()", databaseVersion + " < " + db.getDatabaseVersion());
+//        Log.v("BS.needUpdate()", databaseVersion + " < " + db.getDatabaseVersion());
         return databaseVersion < db.getDatabaseVersion();
     }
 
