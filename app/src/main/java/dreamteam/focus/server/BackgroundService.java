@@ -296,8 +296,8 @@ public class BackgroundService extends NotificationListenerService {
                             db.activateProfileInSchedule(pis, schedule.getName());
                         } else if ((endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2) <= now &&
                                 now <= (endTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
-                            sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
-                                    "Profile : " + pis.getProfile().getName() + " is now inactive");
+                            //sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
+                             //       "Profile : " + pis.getProfile().getName() + " is now inactive");
                             db.deactivateProfileInSchedule(pis, schedule.getName());
                         } else if ((startTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now &&
                                 now <= (endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
