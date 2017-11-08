@@ -368,6 +368,19 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     }
 
     public boolean deactivateProfile(Profile profile) {
+
+        try {
+            ArrayList<ProfileInSchedule> anonymousProfiles = getProfilesInSchedule("AnonymousSchedule");
+
+            for (int i = 0; i < anonymousProfiles.size(); i++) {
+                if (anonymousProfiles.get(i).getProfile().getName().equals(profile.getName())) {
+                    addProfileInScheduleDeleted(anonymousProfiles.get(i));
+                }
+            }
+        } catch (ParseException e) {
+            Log.d("ERROR", "deactivateProfile");
+        }
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
