@@ -216,6 +216,11 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
             } else
                 minutesLeft = endMin - currentMin;
 
+            if(hoursLeft==0 && minutesLeft<39)
+            {
+                minutesLeft--;
+            }
+
         }
         return condition;
 
