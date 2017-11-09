@@ -73,16 +73,15 @@
             android:textColor="@color/white"
             android:textSize="24dp"
             android:typeface="serif" />
-        
+
         <Button
             android:id="@+id/buttonStatistics"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginBottom="34dp"
+            android:layout_marginBottom="44dp"
             android:background="@mipmap/statistics"
-            android:layout_above="@+id/textView12"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="11dp" />
+            android:layout_above="@+id/textViewLogo"
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>
