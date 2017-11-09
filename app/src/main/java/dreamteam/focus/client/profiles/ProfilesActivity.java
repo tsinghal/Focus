@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
@@ -37,8 +38,14 @@ public class ProfilesActivity extends AppCompatActivity {
     AdapterProfiles profileArrayAdapter;
     ListView profileListView;
     int profileLimit = 20;
-    DialogInterface.OnClickListener dialogClickListener;
-    private Button clear;
+
+
+    //code added for Delete multiple - Tushar
+
+    AlertDialog.Builder alertdialogbuilder;
+    String[] AlertDialogItems;
+    boolean[] Selectedtruefalse;
+    private Button delete;
 
 
     @Override
@@ -74,32 +81,77 @@ public class ProfilesActivity extends AppCompatActivity {
             }
         });
 
-        dialogClickListener = new DialogInterface.OnClickListener() {
+
+        delete = (Button) findViewById(R.id.buttonClear);
+        delete.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        //Yes button clicked
+            public void onClick(View v) {
+
+                alertdialogbuilder = new AlertDialog.Builder(ProfilesActivity.this);
+
+
+                int i=-1;
+                AlertDialogItems = new String[profileArray.size()];
+                for(Profile p: profileArray) {
+                    AlertDialogItems[++i] = p.getName();
+                }
+
+                Selectedtruefalse = new boolean[profileArray.size()];
+                for(int j=0; j<profileArray.size(); j++) {
+                    Selectedtruefalse[j] = false;
+                }
+
+                alertdialogbuilder.setMultiChoiceItems(AlertDialogItems, Selectedtruefalse, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+
+                    }
+                });
+
+                alertdialogbuilder.setCancelable(false);
+
+                alertdialogbuilder.setTitle("Delete multiple Profiles");
+
+                alertdialogbuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        int a = 0;
+                        while(a < Selectedtruefalse.length)
+                        {
+                            boolean value = Selectedtruefalse[a];
+
+                            if(value){
+                                MainActivity.db.removeProfile(profileArray.get(a).getName());
+                            }
+                            a++;
+                        }
+                        updateList();
+                    }
+                });
+                alertdialogbuilder.setNeutralButton("Delete All", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
                         ArrayList<Profile> temp = db.getProfiles();
                         for(int i=0; i<temp.size(); i++){
                             MainActivity.db.removeProfile(temp.get(i).getName());
                         }
                         updateList();
-                        break;
+                    }
+                });
 
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        //No button clicked
-                        break;
-                }
-            }
-        };
-        clear = (Button) findViewById(R.id.buttonClear);
-        clear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
-                builder.setMessage("Are you sure you want to delete all profiles?").setPositiveButton("Yes", dialogClickListener)
-                        .setNegativeButton("No", dialogClickListener).show();
+                alertdialogbuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+
+
+                AlertDialog dialog = alertdialogbuilder.create();
+
+                dialog.show();
+
+
             }
         });
     }
@@ -119,5 +171,16 @@ public class ProfilesActivity extends AppCompatActivity {
         profileArrayAdapter = new AdapterProfiles(getApplicationContext(), profileArray);
         profileListView = (ListView) findViewById(R.id.listViewProfiles);
         profileListView.setAdapter(profileArrayAdapter);
+
+        int i=-1;
+        AlertDialogItems = new String[profileArray.size()];
+        for(Profile p: profileArray) {
+            AlertDialogItems[++i] = p.getName();
+        }
+
+        Selectedtruefalse = new boolean[profileArray.size()];
+        for(int j=0; j<profileArray.size(); j++) {
+            Selectedtruefalse[j] = false;
+        }
     }
 }

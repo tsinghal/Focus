@@ -20,6 +20,7 @@ import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
 import dreamteam.focus.client.adaptors.AdapterSchedules;
+import dreamteam.focus.client.profiles.ProfilesActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -36,7 +37,15 @@ public class SchedulesActivity extends AppCompatActivity {
     ArrayList<Schedule> scheduleArray;
     AdapterSchedules scheduleArrayAdapter;
     DialogInterface.OnClickListener dialogClickListener;
-    private Button clear;
+
+
+    //code added for Delete multiple - Tushar
+
+    AlertDialog.Builder alertdialogbuilder;
+    String[] AlertDialogItems;
+    boolean[] Selectedtruefalse;
+    private Button delete;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,12 +84,60 @@ public class SchedulesActivity extends AppCompatActivity {
             }
         });
 
-        dialogClickListener = new DialogInterface.OnClickListener() {
+        delete = (Button) findViewById(R.id.buttonClear);
+        delete.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        //Yes button clicked
+            public void onClick(View v) {
+
+                alertdialogbuilder = new AlertDialog.Builder(SchedulesActivity.this);
+
+
+                int i=-1;
+                AlertDialogItems = new String[scheduleArray.size()];
+                for(Schedule s: scheduleArray) {
+                    AlertDialogItems[++i] = s.getName();
+                }
+
+                Selectedtruefalse = new boolean[scheduleArray.size()];
+                for(int j=0; j<scheduleArray.size(); j++) {
+                    Selectedtruefalse[j] = false;
+                }
+
+                alertdialogbuilder.setMultiChoiceItems(AlertDialogItems, Selectedtruefalse, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+
+                    }
+                });
+
+                alertdialogbuilder.setCancelable(false);
+
+                alertdialogbuilder.setTitle("Delete multiple Schedules");
+
+                alertdialogbuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        int a = 0;
+                        while(a < Selectedtruefalse.length)
+                        {
+                            boolean value = Selectedtruefalse[a];
+
+                            if(value){
+                                try {
+                                    MainActivity.db.removeSchedule(scheduleArray.get(a).getName());
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            a++;
+                        }
+                        updateList();
+                    }
+                });
+                alertdialogbuilder.setNeutralButton("Delete All", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
                         ArrayList<Schedule> temp = null;
                         try {
                             temp = db.getSchedules();
@@ -89,35 +146,31 @@ public class SchedulesActivity extends AppCompatActivity {
                         }
                         for(int i=0; i<temp.size(); i++){
                             try {
-                                db.removeSchedule(temp.get(i).getName());
+                                MainActivity.db.removeSchedule(temp.get(i).getName());
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
                         }
                         updateList();
-                        break;
+                    }
+                });
 
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        //No button clicked
-                        break;
-                }
-            }
-        };
-        clear = (Button) findViewById(R.id.buttonClear);
-        clear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
-                builder.setMessage("Are you sure you want to delete all schedules?").setPositiveButton("Yes", dialogClickListener)
-                        .setNegativeButton("No", dialogClickListener).show();
+                alertdialogbuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+
+
+                AlertDialog dialog = alertdialogbuilder.create();
+
+                dialog.show();
             }
         });
 
         lvNames = (ListView) findViewById(R.id.ScheduleNames);
 
         updateList();
-
-
     }
 
     @Override
@@ -130,33 +183,27 @@ public class SchedulesActivity extends AppCompatActivity {
     public void updateList() {
         try {
             scheduleArray = db.getSchedules();
-
-
             for (int i = 0; i < scheduleArray.size(); i++) {
                 Log.d("err", String.valueOf(scheduleArray.get(i).getCalendar().size()));
             }
-
         } catch (ParseException e) {
             Log.d("error", e.getMessage());
         }
 
-
         scheduleArrayAdapter = new AdapterSchedules(getApplicationContext(), scheduleArray);
 
         lvNames.setAdapter(scheduleArrayAdapter);
+
+        int i=-1;
+        AlertDialogItems = new String[scheduleArray.size()];
+        for(Schedule s: scheduleArray) {
+            AlertDialogItems[++i] = s.getName();
+        }
+
+        Selectedtruefalse = new boolean[scheduleArray.size()];
+        for(int j=0; j<scheduleArray.size(); j++) {
+            Selectedtruefalse[j] = false;
+        }
     }
-
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        LocalBroadcastManager.getInstance(this).registerReceiver(MyReceiver, new IntentFilter("com.example.notifyservice.NotificationService_Status"));
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//        LocalBroadcastManager.getInstance(this).unregisterReceiver(MyReceiver);
-//    }
-
 
 }
