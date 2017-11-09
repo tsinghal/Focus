@@ -29,6 +29,8 @@ import dreamteam.focus.client.schedules.EditProfileInScheduleActivity;
 import dreamteam.focus.client.schedules.EditScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
+import static java.lang.Integer.parseInt;
+
 /**
  * Created by aarav on 10/14/17.
  */
@@ -80,7 +82,9 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
                 if (getTime(s.getStartTime(), s.getEndTime())) {
                     textProfileTime.setBackgroundColor(Color.GREEN);
 //                       secondsLeft=getSecondsLeft();
-                    textProfileTime.setText(hoursLeft + ":" + minutesLeft + ":" + secondsLeft);
+                    textProfileTime.setText(
+                            leftPad(hoursLeft) + ":" + leftPad(minutesLeft) + ":" + leftPad(secondsLeft)
+                    );
                 } else {
                     textProfileTime.setTextColor(Color.WHITE);
                     textProfileTime.setBackgroundColor(Color.RED);
@@ -110,22 +114,29 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         appStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.e("error", "REMOVE IS CLICKED");
+                Log.v("error", "REMOVE IS CLICKED");
                 s = getItem(position);
                 EditScheduleActivity.pisArray.add(s);
                 EditScheduleActivity.positionArray.add(position);
                 EditScheduleActivity.profileArray.remove(s);
-                Log.d("TAG", s.repeatsOn().toString());
+                Log.v("appStatus.ClickListener", s.repeatsOn().toString());
                 EditScheduleActivity.profileInScheduleArray.remove(s);//Changed
                 ((EditScheduleActivity) parent.getContext()).updateList();
                 //    db.removeProfileFromSchedule(s,EditScheduleActivity.scheduleName, s.repeatsOn().get(pos`ition));
-//                Log.e("error",String.valueOf(s.repeatsOn().size()));
+//                Log.v("error",String.valueOf(s.repeatsOn().size()));
 
             }
         });
         return conView;
     }
 
+    private String leftPad(int num) {
+        if (num < 10) {
+            return "0" + num;
+        } else {
+            return "" + num;
+        }
+    }
 
     public boolean getTime(Date startTime, Date endTime) //check if currentTIme is in between start and end time
     {
@@ -144,7 +155,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
         String[] parts = startTimeString.split(":");
 
 
-        int currentHour = Integer.parseInt(parts[0]);
+        int currentHour = Integer.parseInt(parts[0].toString());
 
         int currentMin = Integer.parseInt(parts[1].toString());
 
@@ -205,20 +216,20 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
 
         }
 
-        Log.e("TimeActivation", startHour + ":" + startMin + " - " + currentHour + ":" + currentMin + " - " + endHour + ":" + endMin + "-" + condition);
-
+        Log.v("TimeActivation", startHour + ":" + startMin + " - " + currentHour + ":" + currentMin + " - " + endHour + ":" + endMin + "-" + condition);
 
         if (condition) {
             hoursLeft = endHour - currentHour;
             if (currentMin > endMin) {
                 hoursLeft--;
-                minutesLeft = (60 - currentMin) + endMin;
-            } else
-                minutesLeft = endMin - currentMin;
-            
-                if(hoursLeft==0 && minutesLeft<39)
-            {
-                minutesLeft--;
+                minutesLeft = (59 - currentMin) + endMin;
+            } else if(currentMin < endMin) {
+                minutesLeft = endMin - currentMin - 1;
+            }else{
+                if(hoursLeft -1  >=0){
+                    hoursLeft--;
+                    minutesLeft = 59 ;
+                }
             }
 
         }

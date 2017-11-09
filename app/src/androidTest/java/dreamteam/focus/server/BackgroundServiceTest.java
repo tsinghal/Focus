@@ -425,7 +425,7 @@ public class BackgroundServiceTest {
 
         //testing notification
 
-        String NOTIFICATION_TEXT = "Your profile is now inactive.";
+        String NOTIFICATION_TEXT = "Profile : profile1 is now inactive";
 
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.openNotification();
