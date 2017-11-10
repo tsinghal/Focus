@@ -116,27 +116,61 @@ public class ProfilesActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
-                        int a = 0;
-                        while(a < Selectedtruefalse.length)
-                        {
-                            boolean value = Selectedtruefalse[a];
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which){
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        //Yes button clicked
+                                        int a = 0;
+                                        while(a < Selectedtruefalse.length)
+                                        {
+                                            boolean value = Selectedtruefalse[a];
 
-                            if(value){
-                                MainActivity.db.removeProfile(profileArray.get(a).getName());
+                                            if(value){
+                                                MainActivity.db.removeProfile(profileArray.get(a).getName());
+                                            }
+                                            a++;
+                                        }
+                                        updateList();
+                                        break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        //No button clicked
+                                        break;
+                                }
                             }
-                            a++;
-                        }
-                        updateList();
+                        };
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ProfilesActivity.this);
+                        builder.setMessage("Are you sure you want to delete selected profiles?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+
                     }
                 });
                 alertdialogbuilder.setNeutralButton("Delete All", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ArrayList<Profile> temp = db.getProfiles();
-                        for(int i=0; i<temp.size(); i++){
-                            MainActivity.db.removeProfile(temp.get(i).getName());
-                        }
-                        updateList();
+
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which){
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        //Yes button clicked
+                                        ArrayList<Profile> temp = db.getProfiles();
+                                        for(int i=0; i<temp.size(); i++){
+                                            MainActivity.db.removeProfile(temp.get(i).getName());
+                                        }
+                                        updateList();
+                                        break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                       //No button clicked
+                                        break;
+                                                  }
+                                         }
+                        };
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ProfilesActivity.this);
+                        builder.setMessage("Are you sure you want to delete all profiles?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
                     }
                 });
 
