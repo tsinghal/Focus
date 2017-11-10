@@ -311,16 +311,18 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         incrementDatabaseVersion();
 
         Profile deletedProfile = getProfileByName(profileName);
-        if(deletedProfile.isActive()) {
-            try {
-                ArrayList<ProfileInSchedule> anonymousScheduleProfiles = getProfilesInSchedule("AnonymousSchedule");
-                for(int i=0; i<anonymousScheduleProfiles.size(); i++) {
-                    if(anonymousScheduleProfiles.get(i).getProfile().getName().equals(deletedProfile.getName())) {
-                        addProfileInScheduleDeleted(anonymousScheduleProfiles.get(i));
+        if(deletedProfile != null) {
+            if (deletedProfile.isActive()) {
+                try {
+                    ArrayList<ProfileInSchedule> anonymousScheduleProfiles = getProfilesInSchedule("AnonymousSchedule");
+                    for (int i = 0; i < anonymousScheduleProfiles.size(); i++) {
+                        if (anonymousScheduleProfiles.get(i).getProfile().getName().equals(deletedProfile.getName())) {
+                            addProfileInScheduleDeleted(anonymousScheduleProfiles.get(i));
+                        }
                     }
+                } catch (ParseException e) {
+                    Log.e("ParseException", e.getLocalizedMessage());
                 }
-            } catch(ParseException e) {
-                Log.e("ParseException", e.getLocalizedMessage());
             }
         }
         SQLiteDatabase db = this.getWritableDatabase();
