@@ -162,6 +162,7 @@ public class BackgroundService extends NotificationListenerService {
      *
      * @param id      the id of this notification
      * @param message the message of this notification
+     * @param packageName the package name of the app that should open on clicking the notification
      */
     private void sendNotification(int id, String message, String packageName) {
         // Gets an instance of the NotificationManager service
