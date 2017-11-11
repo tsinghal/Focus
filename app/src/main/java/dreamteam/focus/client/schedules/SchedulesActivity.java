@@ -118,40 +118,75 @@ public class SchedulesActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
-                        int a = 0;
-                        while(a < Selectedtruefalse.length)
-                        {
-                            boolean value = Selectedtruefalse[a];
-
-                            if(value){
-                                try {
-                                    MainActivity.db.removeSchedule(scheduleArray.get(a).getName());
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which){
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        //Yes button clicked
+                                        int a = 0;
+                                        while(a < Selectedtruefalse.length)
+                                        {
+                                            boolean value = Selectedtruefalse[a];
+                                            if(value){
+                                                try {
+                                                    MainActivity.db.removeSchedule(scheduleArray.get(a).getName());
+                                                } catch (ParseException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                            a++;
+                                        }
+                                        updateList();
+                                        break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        //No button clicked
+                                        break;
                                 }
                             }
-                            a++;
-                        }
-                        updateList();
+                        };
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(SchedulesActivity.this);
+                        builder.setMessage("Are you sure you want to delete selected schedules?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+
                     }
                 });
                 alertdialogbuilder.setNeutralButton("Delete All", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ArrayList<Schedule> temp = null;
-                        try {
-                            temp = db.getSchedules();
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                        for(int i=0; i<temp.size(); i++){
-                            try {
-                                MainActivity.db.removeSchedule(temp.get(i).getName());
-                            } catch (ParseException e) {
-                                e.printStackTrace();
+
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which){
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        //Yes button clicked
+                                        ArrayList<Schedule> temp = null;
+                                        try {
+                                            temp = db.getSchedules();
+                                        } catch (ParseException e) {
+                                            e.printStackTrace();
+                                        }
+                                        for(int i=0; i<temp.size(); i++){
+                                            try {
+                                                MainActivity.db.removeSchedule(temp.get(i).getName());
+                                            } catch (ParseException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                        updateList();
+
+                                        break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        //No button clicked
+                                        break;
+                                }
                             }
-                        }
-                        updateList();
+                        };
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(SchedulesActivity.this);
+                        builder.setMessage("Are you sure you want to delete all schedules?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+
                     }
                 });
 

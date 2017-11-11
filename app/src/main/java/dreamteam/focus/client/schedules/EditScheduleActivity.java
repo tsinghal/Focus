@@ -1,9 +1,11 @@
 package dreamteam.focus.client.schedules;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -22,8 +24,12 @@ import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.ListUtils;
+import dreamteam.focus.client.MainActivity;
 import dreamteam.focus.client.adaptors.AdapterCalendarRemove;
+import dreamteam.focus.client.profiles.EditProfileActivity;
 import dreamteam.focus.server.DatabaseConnector;
+
+import static dreamteam.focus.client.profiles.EditProfileActivity.IntentNameString;
 
 /**
  * Created by aarav on 10/13/17.
@@ -169,12 +175,30 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                try {
-                    db.removeSchedule(scheduleName);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                finish();
+
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                //Yes button clicked
+                                MainActivity.db.removeProfile(getIntent().getStringExtra(IntentNameString));
+                                try {
+                                    db.removeSchedule(scheduleName);
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                                finish();
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(EditScheduleActivity.this);
+                builder.setMessage("Are you sure you want to delete the schedule?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+
             }
         });
 
