@@ -36,7 +36,6 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
-import dreamteam.focus.client.MainActivity;
 
 /**
  * src: https://stackoverflow.com/questions/41425986
@@ -91,7 +90,7 @@ public class BackgroundService extends NotificationListenerService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         final Handler mHandler = new Handler();
         if (scheduleThread == null) {
-            Log.d(TAG, "scheduleThread created");
+            Log.i(TAG, "scheduleThread created");
             scheduleThread = new Runnable() {
                 @Override
                 public void run() {
@@ -105,7 +104,7 @@ public class BackgroundService extends NotificationListenerService {
         }
 
         if (blockingThread == null) {
-            Log.d(TAG, "blockingThread created");
+            Log.i(TAG, "blockingThread created");
             blockingThread = new Runnable() {
                 @Override
                 public void run() {
@@ -138,7 +137,7 @@ public class BackgroundService extends NotificationListenerService {
     @Override
     @SuppressWarnings("SpellCheckingInspection")
     public void onNotificationPosted(StatusBarNotification sbn) {
-        Log.i("onNotificationPosted", "ID: " + sbn.getId() + " " + sbn.getNotification().tickerText +
+        Log.v("onNotificationPosted", "ID: " + sbn.getId() + " " + sbn.getNotification().tickerText +
                 "\t" + sbn.getPackageName());
 
         String packageName = getNameFromSBN(sbn);
@@ -196,14 +195,14 @@ public class BackgroundService extends NotificationListenerService {
 
     public void onListenerDisconnected() {
         super.onListenerDisconnected();
-        Log.w("NotificationService", "Notification listener DISCONNECTED from the notification service! " +
+        Log.i("NotificationService", "Notification listener DISCONNECTED from the notification service! " +
                 "\nScheduling a reconnect...");
     }
 
     @Override
     public void onListenerConnected() {
         super.onListenerConnected();
-        Log.w("NotificationService", "Notification listener connected with the notification service!");
+        Log.i("NotificationService", "Notification listener connected with the notification service!");
     }
 
     private String getNameFromSBN(StatusBarNotification sbn) {
