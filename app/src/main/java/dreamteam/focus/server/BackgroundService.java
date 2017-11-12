@@ -183,16 +183,6 @@ public class BackgroundService extends NotificationListenerService {
         Log.i("sendNotification", "A notification was thrown!");
     }
 
-    @Override
-    public void onNotificationRemoved(StatusBarNotification sbn) {
-//        Log.i(TAG, "********** onNotificationRemoved");
-//        Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
-//        Intent i = new  Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
-//        i.putExtra("notification_event","onNotificationRemoved :" + sbn.getPackageName() + "\n");
-//        sendBroadcast(i);
-
-    }
-
     public void onListenerDisconnected() {
         super.onListenerDisconnected();
         Log.i("NotificationService", "Notification listener DISCONNECTED from the notification service! " +
