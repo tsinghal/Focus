@@ -29,8 +29,6 @@ import dreamteam.focus.client.schedules.EditProfileInScheduleActivity;
 import dreamteam.focus.client.schedules.EditScheduleActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
-import static java.lang.Integer.parseInt;
-
 /**
  * Created by aarav on 10/14/17.
  */
@@ -57,7 +55,7 @@ public class AdapterCalendarRemove extends ArrayAdapter<ProfileInSchedule> {
     public View getView(final int position, View convertView, final ViewGroup parent) {
         s = getItem(position);
 
-        Log.d("LOOK", s.repeatsOn().toString());
+        Log.v("AdapterCalendarRemove", s.repeatsOn().toString());
         db = new DatabaseConnector(getContext());
 
         View conView = LayoutInflater.from(getContext()).inflate(R.layout.schedule_profiledeleteitem, parent, false);

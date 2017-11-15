@@ -137,8 +137,10 @@ public class BackgroundService extends NotificationListenerService {
     @Override
     @SuppressWarnings("SpellCheckingInspection")
     public void onNotificationPosted(StatusBarNotification sbn) {
-        Log.v("onNotificationPosted", "ID: " + sbn.getId() + " " + sbn.getNotification().tickerText +
-                "\t" + sbn.getPackageName());
+        Log.v("onNotificationPosted",
+                "ID: " + sbn.getId() +
+                        "\n\tText: " + sbn.getNotification().tickerText +
+                        "\n\tPackage: " + sbn.getPackageName());
 
         String packageName = getNameFromSBN(sbn);
 

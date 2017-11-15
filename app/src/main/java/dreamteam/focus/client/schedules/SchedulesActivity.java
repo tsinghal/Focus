@@ -15,12 +15,10 @@ import android.widget.Toast;
 import java.text.ParseException;
 import java.util.ArrayList;
 
-import dreamteam.focus.Profile;
 import dreamteam.focus.R;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.MainActivity;
 import dreamteam.focus.client.adaptors.AdapterSchedules;
-import dreamteam.focus.client.profiles.ProfilesActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 /**
@@ -218,11 +216,8 @@ public class SchedulesActivity extends AppCompatActivity {
     public void updateList() {
         try {
             scheduleArray = db.getSchedules();
-            for (int i = 0; i < scheduleArray.size(); i++) {
-                Log.d("err", String.valueOf(scheduleArray.get(i).getCalendar().size()));
-            }
         } catch (ParseException e) {
-            Log.d("error", e.getMessage());
+            Log.e("SchedActiv.updateList", e.getMessage());
         }
 
         scheduleArrayAdapter = new AdapterSchedules(getApplicationContext(), scheduleArray);

@@ -56,7 +56,6 @@ public class AdapterAppsEdit extends ArrayAdapter<String> {
         appStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.d("Listener Reached", "Yes");
                 if (EditProfileActivity.blockedPackages.contains(packageName)) {
                     if (!isChecked) {
                         EditProfileActivity.blockedPackages.remove(packageName);

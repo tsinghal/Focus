@@ -126,7 +126,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
                 for(int i=0;i<profileInScheduleArray.size();i++)
                 {
-                    Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
+                    Log.d("EditScheduleActivity", profileInScheduleArray.get(i).repeatsOn().toString());
                     try {
                         db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
                     } catch (android.database.SQLException e){
@@ -430,7 +430,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
                         {
                             if(currentPIS.repeatsOn().size()!=0) {
                                 if(currentPIS.repeatsOn().get(0)==oldPIS.repeatsOn().get(0)) {
-                                    Log.d("Tagsy","It does contain");
+                                    Log.v("Tagsy", "It does contain");
                                     profileArray.remove(currentPIS);
                                     pisArray.add(currentPIS);
                                 }
@@ -441,7 +441,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
                 try {
                     if(db.getProfilesInSchedule(scheduleName).contains(oldPIS)){
-                        Log.d("Tagsy","It does contain"+profileArray.size());
+                        Log.v("Tagsy", "It does contain" + profileArray.size());
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();

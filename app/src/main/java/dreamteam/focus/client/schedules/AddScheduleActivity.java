@@ -37,13 +37,13 @@ public class AddScheduleActivity extends AppCompatActivity {
     public static ArrayList<Integer> positionArray;
     public static ArrayList<ProfileInSchedule> pisArray;
     public static ArrayList<ProfileInSchedule> profileInScheduleArray;
-    AdapterCalendarNewRemove mon,tue,wed,thu,fri,sat,sun;
+    AdapterCalendarNewRemove mon, tue, wed, thu, fri, sat, sun;
     private EditText name;
     private DatabaseConnector db;
     public static String scheduleName;
     private ArrayList<ProfileInSchedule> mondaySchedules, tuesdaySchedules, wednesdaySchedules, thursdaySchedules,
             fridaySchedules, saturdaySchedules, sundaySchedules;
-    private ListView monday,tuesday, wednesday, thursday, friday, saturday, sunday;
+    private ListView monday, tuesday, wednesday, thursday, friday, saturday, sunday;
     private Schedule s;
     private boolean check;
 
@@ -54,9 +54,9 @@ public class AddScheduleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_createschedule);
 
-        pisArray=new ArrayList<ProfileInSchedule>();  //when u add new PIS,it keeps track of it for dubmit button
-        positionArray=new ArrayList<Integer>();  //when u add new PIS,it keeps track of it for submit button
-        profileInScheduleArray=new ArrayList<ProfileInSchedule>(); //when u delete PIS from a schedule,it keeps track of it and deletes it on addSchedulre
+        pisArray = new ArrayList<ProfileInSchedule>();  //when u add new PIS,it keeps track of it for dubmit button
+        positionArray = new ArrayList<Integer>();  //when u add new PIS,it keeps track of it for submit button
+        profileInScheduleArray = new ArrayList<ProfileInSchedule>(); //when u delete PIS from a schedule,it keeps track of it and deletes it on addSchedulre
         check = false;
         db = new DatabaseConnector(this);
         try {
@@ -73,7 +73,6 @@ public class AddScheduleActivity extends AppCompatActivity {
         name = (EditText) findViewById(R.id.textEditScheduleName3);
 
 
-
         addProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,32 +84,29 @@ public class AddScheduleActivity extends AppCompatActivity {
 //                }
 //                else {
 
-                if(!check)
-                {
+                if (!check) {
                     String names = "TemporaryScheduleNameToCreate";
                     s = new Schedule(names);
                     try {
-                        if (!db.hasSchedule(names)){
+                        if (!db.hasSchedule(names)) {
                             try {
                                 db.addSchedule(s);
                                 check = true;
                                 Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
                                 i.putExtra("AddScheduleActivity:ScheduleName", names);
                                 startActivity(i);
-                            }catch (android.database.SQLException e){
+                            } catch (android.database.SQLException e) {
                                 Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             Toast.makeText(getApplicationContext(), "Invalid Name, Name Already Exists!", Toast.LENGTH_SHORT).show();
                         }
-                    } catch(SQLException e) {
+                    } catch (SQLException e) {
                         Log.e("AddScheduleActivity.SQL", e.getMessage());
                         Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
-                }
-                else
-                {
+                } else {
                     Intent i = new Intent(getApplicationContext(), AddProfileToNewSchedule.class);
                     i.putExtra("AddScheduleActivity:ScheduleName", "TemporaryScheduleNameToCreate");
                     startActivity(i);
@@ -123,7 +119,7 @@ public class AddScheduleActivity extends AppCompatActivity {
         discard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(db.hasSchedule("TemporaryScheduleNameToCreate") && check){
+                if (db.hasSchedule("TemporaryScheduleNameToCreate") && check) {
                     try {
                         db.removeSchedule("TemporaryScheduleNameToCreate");
                         finish();
@@ -141,20 +137,18 @@ public class AddScheduleActivity extends AppCompatActivity {
             public void onClick(View v) {
 
 
-                if(!check)
-                {
+                if (!check) {
 
-                    if(name.getText().toString().matches("")){
+                    if (name.getText().toString().matches("")) {
                         Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
+                    } else {
                         String names = name.getText().toString();
                         s = new Schedule(names);
                         try {
                             if (!db.hasSchedule(names)) {
-                                try{
+                                try {
                                     db.addSchedule(s);
-                                }catch (android.database.SQLException e){
+                                } catch (android.database.SQLException e) {
                                     Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
                                 }
                                 check = true;
@@ -170,13 +164,12 @@ public class AddScheduleActivity extends AppCompatActivity {
                         }
                     }
 
-                }
-                else {
-                    if(name.getText().toString().matches("")){
+                } else {
+                    if (name.getText().toString().matches("")) {
                         Toast.makeText(getApplicationContext(), "Please Enter A Name First", Toast.LENGTH_SHORT).show();
                     } else {
                         String names = name.getText().toString();
-                        if(db.hasSchedule(names)){
+                        if (db.hasSchedule(names)) {
                             Toast.makeText(getApplicationContext(), "Please Enter A Unique Name", Toast.LENGTH_SHORT).show();
                         } else {
                             if (s.getName().equals(names)) {
@@ -187,31 +180,29 @@ public class AddScheduleActivity extends AppCompatActivity {
                                 int pos;
 
 
-                                for(int i=0;i<profileInScheduleArray.size();i++)
-                                {
-                                    Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
+                                for (int i = 0; i < profileInScheduleArray.size(); i++) {
+                                    Log.v("AddScheduleActivity", profileInScheduleArray.get(i).repeatsOn().toString());
                                     try {
                                         db.addProfileInSchedule(profileInScheduleArray.get(i), "TemporaryScheduleNameToCreate");
-                                    }catch (android.database.SQLException e){
+                                    } catch (android.database.SQLException e) {
                                         Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
 
-                                for(int i=0;i<pisArray.size();i++)
-                                {
-                                    pis=pisArray.get(i);
+                                for (int i = 0; i < pisArray.size(); i++) {
+                                    pis = pisArray.get(i);
 //                                  pos=positionArray.get(i);
-                                    db.removeProfileFromSchedule(pis,"TemporaryScheduleNameToCreate", pis.repeatsOn().get(0));
+                                    db.removeProfileFromSchedule(pis, "TemporaryScheduleNameToCreate", pis.repeatsOn().get(0));
                                 }
 
                                 db.updateScheduleName("TemporaryScheduleNameToCreate", names);
 
-                                if(db.hasSchedule("TemporaryScheduleNameToCreate")){
+                                if (db.hasSchedule("TemporaryScheduleNameToCreate")) {
                                     try {
                                         db.removeSchedule("TemporaryScheduleNameToCreate");
 
-                                    } catch (ParseException e){
+                                    } catch (ParseException e) {
                                         Toast.makeText(getApplicationContext(), e.getMessage().toString(), Toast.LENGTH_SHORT).show();
                                     }
                                 }
@@ -246,8 +237,7 @@ public class AddScheduleActivity extends AppCompatActivity {
         updateList();
     }
 
-    public void updateList()
-    {
+    public void updateList() {
         mondaySchedules = new ArrayList<ProfileInSchedule>();
         tuesdaySchedules = new ArrayList<ProfileInSchedule>();
         wednesdaySchedules = new ArrayList<ProfileInSchedule>();
@@ -258,26 +248,26 @@ public class AddScheduleActivity extends AppCompatActivity {
 
         for (int i = 0; i < profileArray.size(); i++) {
             //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
-            Log.e("error","Profile Enum Value: "+ profileArray.get(i).repeatsOn().toString());
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)){
+            Log.e("error", "Profile Enum Value: " + profileArray.get(i).repeatsOn().toString());
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)) {
                 mondaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.TUESDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.TUESDAY)) {
                 tuesdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.WEDNESDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.WEDNESDAY)) {
                 wednesdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.THURSDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.THURSDAY)) {
                 thursdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.FRIDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.FRIDAY)) {
                 fridaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.SATURDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.SATURDAY)) {
                 saturdaySchedules.add(profileArray.get(i));
             }
-            if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.SUNDAY)){
+            if (profileArray.get(i).repeatsOn().contains(Repeat_Enum.SUNDAY)) {
                 sundaySchedules.add(profileArray.get(i));
             }
 
@@ -325,9 +315,8 @@ public class AddScheduleActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if(check)
-        {
-            if(db.hasSchedule("TemporaryScheduleNameToCreate") && check){
+        if (check) {
+            if (db.hasSchedule("TemporaryScheduleNameToCreate") && check) {
                 try {
                     db.removeSchedule("TemporaryScheduleNameToCreate");
                     finish();
