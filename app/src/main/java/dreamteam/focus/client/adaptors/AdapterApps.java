@@ -43,7 +43,7 @@ public class AdapterApps extends ArrayAdapter<String> {
         appStatus = (CheckBox) conView.findViewById(R.id.checkBoxAppStatus);
 
         if (CreateProfileActivity.blockedPackages.contains(packageName)) {
-            Log.e("BlockedPackage", packageName + " " + appName + " " + position);
+            Log.v("BlockedPackage", packageName + "\t" + appName + "\t" + position);
             appStatus.setChecked(true);
         }
 

@@ -334,7 +334,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                     }
                 }
             } catch(ParseException e) {
-                Log.e("ParseException", e.getLocalizedMessage());
+                Log.e("DB.removeProfile", e.getLocalizedMessage());
             }
         }
         SQLiteDatabase db = this.getWritableDatabase();

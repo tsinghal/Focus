@@ -61,7 +61,7 @@ public class AdapterCalendarNewRemove extends ArrayAdapter<ProfileInSchedule> {
         appStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.e("error", "REMOVE IS CLICKED");
+                Log.v("AdaptCalendarNewRemove", "remove button is clicked");
 
                 AddScheduleActivity.pisArray.add(s);
                 AddScheduleActivity.positionArray.add(position);

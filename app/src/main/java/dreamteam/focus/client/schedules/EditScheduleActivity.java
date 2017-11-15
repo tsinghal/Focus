@@ -26,7 +26,6 @@ import dreamteam.focus.Schedule;
 import dreamteam.focus.client.ListUtils;
 import dreamteam.focus.client.MainActivity;
 import dreamteam.focus.client.adaptors.AdapterCalendarRemove;
-import dreamteam.focus.client.profiles.EditProfileActivity;
 import dreamteam.focus.server.DatabaseConnector;
 
 import static dreamteam.focus.client.profiles.EditProfileActivity.IntentNameString;
@@ -205,7 +204,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
         try {
             profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
         } catch (ParseException e) {
             e.getMessage();
         }
@@ -224,8 +222,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
 
         for (int i = 0; i < profileArray.size(); i++) {
-            //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
-            Log.e("error","Profile Enum Value: "+ profileArray.get(i).repeatsOn().toString());
             if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)){
                 mondaySchedules.add(profileArray.get(i));
             }
@@ -345,8 +341,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
 
         for (int i = 0; i < profileArray.size(); i++) {
-            //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
-            Log.e("error","Profile Enum Value: "+ profileArray.get(i).repeatsOn().toString());
             if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)){
                 mondaySchedules.add(profileArray.get(i));
             }

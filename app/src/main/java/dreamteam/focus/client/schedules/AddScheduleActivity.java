@@ -104,7 +104,7 @@ public class AddScheduleActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Invalid Name, Name Already Exists!", Toast.LENGTH_SHORT).show();
                         }
                     } catch(SQLException e) {
-                        Log.e("errorS", e.getMessage());
+                        Log.e("AddScheduleActivity.SQL", e.getMessage());
                         Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
@@ -165,7 +165,7 @@ public class AddScheduleActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "Invalid Name, Name Already Exisits!", Toast.LENGTH_SHORT).show();
                             }
                         } catch (SQLException e) {
-                            Log.e("errorS", e.getMessage());
+                            Log.e("AddScheduleActivity.SQL", e.getMessage());
                             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -232,8 +232,7 @@ public class AddScheduleActivity extends AppCompatActivity {
 
 
         try {
-            profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
+            profileArray = db.getProfilesInSchedule(scheduleName);
         } catch (ParseException e) {
             e.getMessage();
         }

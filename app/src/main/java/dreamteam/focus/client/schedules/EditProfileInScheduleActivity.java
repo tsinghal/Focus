@@ -168,7 +168,9 @@ public class EditProfileInScheduleActivity extends AppCompatActivity {
                 try {
                     startT = d1.parse(startH + ":" + startM);
                     endT = d1.parse(endH + ":" + endM);
-                    Log.e("TImeActivationPIS", "ADDED PROFILE TO START TIME: " + startT.toString() + " END TIME: " + endT.toString());
+                    Log.v("EditPISActivity", "Added Profile," +
+                            "\n\tSTART TIME: " + startT.toString() +
+                            "\n\tEND TIME: " + endT.toString());
                 } catch (ParseException qp) {
                     qp.printStackTrace();
                 }
