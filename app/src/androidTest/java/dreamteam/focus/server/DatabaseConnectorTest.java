@@ -422,4 +422,29 @@ public class DatabaseConnectorTest {
         //Data should now be cleared so size should be 0
         assertEquals(db.getAllDeletedProfileInSchedule().size(), 0);
     }
+
+    @Test
+    public void getStats_checkAll() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        assertEquals(db.getStatsBlockedNotifications(), 0);
+        assertEquals(db.getStatsAppInstancesBlocked(), 0);
+        assertEquals(db.getStatsNoDistractHours(), 0);
+
+        db.addToStatsBlockedNotifications(5);
+        assertEquals(db.getStatsBlockedNotifications(), 5);
+
+        db.addToStatsAppInstancesBlocked(3);
+        assertEquals(db.getStatsAppInstancesBlocked(), 3);
+
+        db.addToStatsNoDistractHours(8);
+        assertEquals(db.getStatsNoDistractHours(), 8);
+
+        db.clearStatistics();
+        assertEquals(db.getStatsBlockedNotifications(), 0);
+        assertEquals(db.getStatsAppInstancesBlocked(), 0);
+        assertEquals(db.getStatsNoDistractHours(), 0);
+
+    }
 }

@@ -23,7 +23,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static int DATABASE_VERSION = 45;
+    private static int DATABASE_VERSION = 48;
 
     // This variable is causing more trouble than it solves.
     // It will be factored out in future releases.
@@ -71,6 +71,12 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     // Deleted Profile In Schedule Table
     private static final String TABLE_DELETED_PROFILE_IN_SCHEDULE = "deleted_profile_in_schedule";
 
+    //Statistics Table
+    private static final String TABLE_STATISTICS = "statistics";
+    private static final String KEY_NOTIFICATION_COUNT = "notification_count";
+    private static final String KEY_APP_INSTANCES_COUNT = "app_instances_count";
+    private static final String KEY_NO_DISTRACT_HOURS_COUNT = "no_distract_hours_count";
+
     public DatabaseConnector(Context context) {
         super(context, DATABASE_NAME, null, 1);
     }
@@ -111,6 +117,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 + KEY_START_TIME + " TEXT NOT NULL,"
                 + KEY_END_TIME + " TEXT NOT NULL" + ")";
 
+        String CREATE_STATISTICS_TABLE = "CREATE TABLE " + TABLE_STATISTICS + "("
+                + KEY_NOTIFICATION_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + KEY_APP_INSTANCES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + KEY_NO_DISTRACT_HOURS_COUNT + " INTEGER NOT NULL DEFAULT 0" + ")";
+
         db.execSQL(CREATE_PROFILES_TABLE);
         db.execSQL(CREATE_BLOCKED_APPS_TABLE);
         db.execSQL(CREATE_BLOCKED_NOTIFICATIONS_TABLE);
@@ -118,6 +129,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL(CREATE_SCHEDULES_TABLE);
         db.execSQL(CREATE_PROFILE_IN_SCHEDULE_REPEATS_TABLE);
         db.execSQL(CREATE_DELETED_PROFILE_IN_SCHEDULE);
+        db.execSQL(CREATE_STATISTICS_TABLE);
 
     }
 
@@ -131,9 +143,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCHEDULES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILE_IN_SCHEDULE_REPEATS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DELETED_PROFILE_IN_SCHEDULE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STATISTICS);
         // Create tables again
         onCreate(db);
         db.execSQL("INSERT INTO " + TABLE_SCHEDULES + " VALUES ('AnonymousSchedule', 'true')");
+        db.execSQL("INSERT INTO " + TABLE_STATISTICS + " VALUES (0, 0, 0)");
         database_version = 0;
     }
 
@@ -311,18 +325,16 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         incrementDatabaseVersion();
 
         Profile deletedProfile = getProfileByName(profileName);
-        if(deletedProfile != null) {
-            if (deletedProfile.isActive()) {
-                try {
-                    ArrayList<ProfileInSchedule> anonymousScheduleProfiles = getProfilesInSchedule("AnonymousSchedule");
-                    for (int i = 0; i < anonymousScheduleProfiles.size(); i++) {
-                        if (anonymousScheduleProfiles.get(i).getProfile().getName().equals(deletedProfile.getName())) {
-                            addProfileInScheduleDeleted(anonymousScheduleProfiles.get(i));
-                        }
+        if(deletedProfile.isActive()) {
+            try {
+                ArrayList<ProfileInSchedule> anonymousScheduleProfiles = getProfilesInSchedule("AnonymousSchedule");
+                for(int i=0; i<anonymousScheduleProfiles.size(); i++) {
+                    if(anonymousScheduleProfiles.get(i).getProfile().getName().equals(deletedProfile.getName())) {
+                        addProfileInScheduleDeleted(anonymousScheduleProfiles.get(i));
                     }
-                } catch (ParseException e) {
-                    Log.e("ParseException", e.getLocalizedMessage());
                 }
+            } catch(ParseException e) {
+                Log.e("ParseException", e.getLocalizedMessage());
             }
         }
         SQLiteDatabase db = this.getWritableDatabase();
@@ -983,8 +995,107 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCHEDULES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILE_IN_SCHEDULE_REPEATS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DELETED_PROFILE_IN_SCHEDULE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STATISTICS);
         onCreate(db);
         db.execSQL("INSERT INTO " + TABLE_SCHEDULES + " VALUES ('AnonymousSchedule', 'true')");
+        db.execSQL("INSERT INTO " + TABLE_STATISTICS + " VALUES (0, 0, 0)");
+    }
+
+    //Statistics
+    public int getStatsBlockedNotifications() {
+        String selectQuery = "SELECT * FROM " + TABLE_STATISTICS;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        int count = 0;
+        if(cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+
+        cursor.close();
+        db.close();
+        return count;
+    }
+
+    public void addToStatsBlockedNotifications(int count) {
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_NOTIFICATION_COUNT, getStatsBlockedNotifications() + count);
+
+        incrementDatabaseVersion();
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(TABLE_STATISTICS, values, "1=1", null);
+        db.close();
+    }
+
+    public int getStatsAppInstancesBlocked() {
+
+        String selectQuery = "SELECT * FROM " + TABLE_STATISTICS;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        int count = 0;
+        if(cursor.moveToFirst()) {
+            count = cursor.getInt(1);
+        }
+
+        cursor.close();
+        db.close();
+        return count;
+    }
+
+    public void addToStatsAppInstancesBlocked(int count) {
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_APP_INSTANCES_COUNT, getStatsAppInstancesBlocked() + count);
+
+        incrementDatabaseVersion();
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(TABLE_STATISTICS, values, "1=1", null);
+        db.close();
+    }
+
+    public int getStatsNoDistractHours() {
+        String selectQuery = "SELECT * FROM " + TABLE_STATISTICS;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        int count = 0;
+        if(cursor.moveToFirst()) {
+            count = cursor.getInt(2);
+        }
+
+        cursor.close();
+        db.close();
+        return count;
+    }
+
+    public void addToStatsNoDistractHours(int count) {
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_NO_DISTRACT_HOURS_COUNT, getStatsNoDistractHours() + count);
+
+        incrementDatabaseVersion();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.update(TABLE_STATISTICS, values, "1=1", null);
+        db.close();
+    }
+
+    public void clearStatistics() {
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_NOTIFICATION_COUNT, 0);
+        values.put(KEY_APP_INSTANCES_COUNT, 0);
+        values.put(KEY_NO_DISTRACT_HOURS_COUNT, 0);
+
+        incrementDatabaseVersion();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.update(TABLE_STATISTICS, values, "1=1", null);
+        db.close();
     }
 
 }
