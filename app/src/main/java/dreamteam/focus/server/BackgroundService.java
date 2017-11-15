@@ -112,7 +112,7 @@ public class BackgroundService extends NotificationListenerService {
 //                    Log.d(TAG, "blockingThread");
                     blockApps();
                     if (needUpdate()) updateFromServer();
-                    fastTick();
+                    fastTick(false);
                 }
             };
 
@@ -304,7 +304,7 @@ public class BackgroundService extends NotificationListenerService {
             }
         }
 
-//        fastTick();
+        fastTick(true);
 
         ArrayList<ProfileInSchedule> temp = null;
         try {
@@ -342,7 +342,7 @@ public class BackgroundService extends NotificationListenerService {
     }
 
 
-    private void fastTick() {
+    private void fastTick(boolean call) {               //call will be true if called by tick, else false
         int now = getTimeInInt(new Date()); // get system time
 
         for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
@@ -351,6 +351,7 @@ public class BackgroundService extends NotificationListenerService {
 
             if ((startTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now && now <= (startTime + 60)) {
                 if (anonymousPISOldSize < anonymousPIS.size()) {
+                    if(!call)
                     sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE),
                             "Profile : " + pis.getProfile().getName() + " is now active", FOCUS_PACKAGE_NAME);
                     anonymousPISOldSize = anonymousPIS.size();
@@ -358,7 +359,8 @@ public class BackgroundService extends NotificationListenerService {
 
             } else if ((endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2) <= now &&
                     now <= (endTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
-                sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
+                if(!call)
+                    sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
                         "Profile : " + pis.getProfile().getName() + " is now inactive", FOCUS_PACKAGE_NAME);
 
 
