@@ -447,4 +447,31 @@ public class DatabaseConnectorTest {
         assertEquals(db.getStatsNoDistractHours(), 0);
 
     }
+
+    @Test
+    public void profileFrequency_getProfileFrequency() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        db.createProfile(profile1);
+        db.createProfile(profile2);
+
+        assertEquals(db.getProfileFrequency(profile1.getName()), 0);
+        assertEquals(db.getProfileFrequency(profile2.getName()), 0);
+
+        db.activateProfile(pis1);
+        db.deactivateProfile(profile1);
+
+        assertEquals(db.getProfileFrequency(profile1.getName()), 1);
+        assertEquals(db.getProfileFrequency(profile2.getName()), 0);
+
+        db.activateProfile(pis1);
+        db.deactivateProfile(profile1);
+        db.activateProfile(pis2);
+        db.deactivateProfile(profile2);
+
+        assertEquals(db.getProfileFrequency(profile1.getName()), 2);
+        assertEquals(db.getProfileFrequency(profile2.getName()), 1);
+
+    }
 }
