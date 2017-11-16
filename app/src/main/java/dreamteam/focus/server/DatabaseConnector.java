@@ -39,6 +39,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     // Profiles Table Columns names
     private static final String KEY_NAME = "name";
     private static final String KEY_ACTIVE = "active";
+    private static final String KEY_FREQUENCY = "frequency";
 
     // Blocked Apps Table Name
     private static final String TABLE_BLOCKED_APPS = "blocked_apps";
@@ -87,7 +88,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
         String CREATE_PROFILES_TABLE = "CREATE TABLE " + TABLE_PROFILES + "("
                 + KEY_NAME + " TEXT NOT NULL PRIMARY KEY UNIQUE,"
-                + KEY_ACTIVE + " TEXT NOT NULL" + ")";
+                + KEY_ACTIVE + " TEXT NOT NULL,"
+                + KEY_FREQUENCY + " INTEGER NOT NULL DEFAULT 0" + ")";
 
         String CREATE_BLOCKED_APPS_TABLE = "CREATE TABLE " + TABLE_BLOCKED_APPS + "("
                 + KEY_PROFILE_NAME + " TEXT NOT NULL,"
@@ -201,7 +203,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             try {
                 db.insertOrThrow(TABLE_BLOCKED_APPS, null, values);
             } catch (SQLException e) {
-                Log.e("DatabaseConnector", e.getMessage());
+                Log.d("error", e.getMessage());
                 db.close();
                 throw e;
             }
@@ -212,11 +214,45 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     }
 
     public String getDateString(java.util.Date d) {
+        Log.d("TAG", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(d));
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(d);
     }
 
     public java.util.Date getDate(String d) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).parse(d);
+    }
+
+    public int getProfileFrequency(String profileName) {
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILES + " WHERE " + KEY_NAME + "='" + profileName + "'";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            return cursor.getInt(2);
+        }
+
+        // return contact list
+        cursor.close();
+        db.close();
+        return 0;
+    }
+
+    private boolean incrementProfileFrequency(String profileName) {
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_FREQUENCY, getProfileFrequency(profileName) + 1);
+
+        incrementDatabaseVersion();
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        boolean answer = db.update(TABLE_PROFILES, values, KEY_NAME + "='" + profileName + "'", null) > 0;
+        db.close();
+        return answer;
     }
 
     public boolean updateProfile(String originalProfileName, Profile updatedProfile) {
@@ -333,7 +369,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                     }
                 }
             } catch(ParseException e) {
-                Log.e("DB.removeProfile", e.getLocalizedMessage());
+                Log.e("ParseException", e.getLocalizedMessage());
             }
         }
         SQLiteDatabase db = this.getWritableDatabase();
@@ -375,7 +411,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         incrementDatabaseVersion();
 
         boolean answer = db.update(TABLE_PROFILES, values, KEY_NAME + "='" + pis.getProfile().getName() + "'", null) > 0 &&
-                addProfileInSchedule(pis, "AnonymousSchedule", true);
+                addProfileInSchedule(pis, "AnonymousSchedule", true) && incrementProfileFrequency(pis.getProfile().getName());
         db.close();
         return answer;
     }
@@ -391,7 +427,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 }
             }
         } catch (ParseException e) {
-            Log.e("DatabaseConnector", e.getMessage());
+            Log.d("ERROR", "deactivateProfile");
         }
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -522,7 +558,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 return true;
             }
         } catch (SQLException e) {
-            Log.e("DatabaseConnector", e.getMessage());
+            Log.d("error", e.getMessage());
             db.close();
             throw e;
         }
@@ -865,7 +901,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         try {
             db.insertOrThrow(TABLE_BLOCKED_NOTIFICATIONS, null, values);
         } catch (SQLException e) {
-            Log.e("DatabaseConnector", e.getMessage());
+            Log.d("error", e.getMessage());
             db.close();
             throw e;
         }
@@ -948,7 +984,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         try {
             db.insertOrThrow(TABLE_SCHEDULES, null, values);
         } catch (SQLException e) {
-            Log.e("DatabaseConnector", e.getMessage());
+            Log.d("error", e.getMessage());
             db.close();
             throw e;
         }
