@@ -176,7 +176,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         try {
             db.insertOrThrow(TABLE_PROFILES, null, values);
         } catch (SQLException e) {
-            Log.d("error", e.getMessage());
+            Log.e("DatabaseConnector", e.getMessage());
             db.close();
             throw e;
         }
@@ -203,7 +203,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             try {
                 db.insertOrThrow(TABLE_BLOCKED_APPS, null, values);
             } catch (SQLException e) {
-                Log.d("error", e.getMessage());
+                Log.e("DatabaseConnector", e.getMessage());
                 db.close();
                 throw e;
             }
@@ -214,7 +214,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     }
 
     public String getDateString(java.util.Date d) {
-        Log.d("TAG", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(d));
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(d);
     }
 
@@ -369,7 +368,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                     }
                 }
             } catch(ParseException e) {
-                Log.e("ParseException", e.getLocalizedMessage());
+                Log.e("DatabaseConnector", e.getMessage());
             }
         }
         SQLiteDatabase db = this.getWritableDatabase();
@@ -558,7 +557,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 return true;
             }
         } catch (SQLException e) {
-            Log.d("error", e.getMessage());
+            Log.e("DatabaseConnector", e.getMessage());
             db.close();
             throw e;
         }
@@ -606,7 +605,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 return true;
             }
         } catch (SQLException e) {
-            Log.d("error", e.getMessage());
+            Log.e("DatabaseConnector", e.getMessage());
             db.close();
             throw e;
         }
@@ -669,7 +668,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         try {
             db.insertOrThrow(TABLE_DELETED_PROFILE_IN_SCHEDULE, null, values);
         } catch (SQLException e) {
-            Log.d("error", e.getMessage());
+            Log.e("DatabaseConnector", e.getMessage());
             db.close();
             throw e;
         }
@@ -901,7 +900,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         try {
             db.insertOrThrow(TABLE_BLOCKED_NOTIFICATIONS, null, values);
         } catch (SQLException e) {
-            Log.d("error", e.getMessage());
+            Log.e("DatabaseConnector", e.getMessage());
             db.close();
             throw e;
         }
@@ -984,7 +983,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         try {
             db.insertOrThrow(TABLE_SCHEDULES, null, values);
         } catch (SQLException e) {
-            Log.d("error", e.getMessage());
+            Log.e("DatabaseConnector", e.getMessage());
             db.close();
             throw e;
         }
