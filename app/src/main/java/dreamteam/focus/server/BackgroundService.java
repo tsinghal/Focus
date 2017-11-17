@@ -25,6 +25,7 @@ import android.widget.Toast;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -48,11 +49,15 @@ public class BackgroundService extends NotificationListenerService {
     private static final String TAG = "BackgroundService";
     private static final String FOCUS_PACKAGE_NAME =
             "dreamteam.focus";
+
+    private List<String> erraticNotificationApps = Arrays.asList("com.whatsapp", "com.google.android.gm");       //this list is unchanged in program, contains package names of apps that throw multiple notifications for a single notification given to user -- irratic behavior
+
     private static final int SCHEDULE_TIMEOUT_SEC = 3;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
     private static final double WINDOW_SIZE = 0.5;
 
     private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
+    private String mPreviousNotificationKey; //src:https://stackoverflow.com/questions/33412124/android-notificationlistenerservice-onnotificationposted-fire-twice
 
 //    private static final int NOTIFICATION_ID_GENERIC = 0;
     private static final int NOTIFICATION_ID_SUPPRESS_NOTIFICATION = 1;
@@ -142,7 +147,19 @@ public class BackgroundService extends NotificationListenerService {
                         "\n\tText: " + sbn.getNotification().tickerText +
                         "\n\tPackage: " + sbn.getPackageName());
 
+
         String packageName = getNameFromSBN(sbn);
+        // cancel only that notification of Focus (used to dismiss heads-up notifications from other apps
+        if (packageName.equals("dreamteam.focus") && sbn.getId() == NOTIFICATION_ID_SUPPRESS_NOTIFICATION) {
+            cancelNotification(sbn.getKey());
+            return;
+        }
+
+        if(sbn.getTag() == null &&  erraticNotificationApps.contains(packageName))
+        {
+            cancelNotification(sbn.getKey());
+            return;
+        }
 
         // block each app's notifications in `blockedApps`
         for (String app : blockedApps) {
@@ -153,10 +170,7 @@ public class BackgroundService extends NotificationListenerService {
                 db.addToStatsBlockedNotifications(1);
             }
         }
-        // cancel only that notification of Focus (used to dismiss heads-up notifications from other apps
-        if (packageName.equals("dreamteam.focus") && sbn.getId() == NOTIFICATION_ID_SUPPRESS_NOTIFICATION) {
-            cancelNotification(sbn.getKey());
-        }
+
     }
 
     /**
