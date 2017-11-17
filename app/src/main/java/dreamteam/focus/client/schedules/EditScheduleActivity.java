@@ -1,9 +1,11 @@
 package dreamteam.focus.client.schedules;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -22,8 +24,11 @@ import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
 import dreamteam.focus.client.ListUtils;
+import dreamteam.focus.client.MainActivity;
 import dreamteam.focus.client.adaptors.AdapterCalendarRemove;
 import dreamteam.focus.server.DatabaseConnector;
+
+import static dreamteam.focus.client.profiles.EditProfileActivity.IntentNameString;
 
 /**
  * Created by aarav on 10/13/17.
@@ -121,7 +126,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
                 for(int i=0;i<profileInScheduleArray.size();i++)
                 {
-                    Log.d("TAG2:", profileInScheduleArray.get(i).repeatsOn().toString());
+                    Log.d("EditScheduleActivity", profileInScheduleArray.get(i).repeatsOn().toString());
                     try {
                         db.addProfileInSchedule(profileInScheduleArray.get(i), scheduleName);
                     } catch (android.database.SQLException e){
@@ -169,19 +174,36 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                try {
-                    db.removeSchedule(scheduleName);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                finish();
+
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                //Yes button clicked
+                                MainActivity.db.removeProfile(getIntent().getStringExtra(IntentNameString));
+                                try {
+                                    db.removeSchedule(scheduleName);
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                                finish();
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(EditScheduleActivity.this);
+                builder.setMessage("Are you sure you want to delete the schedule?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+
             }
         });
 
 
         try {
             profileArray = (ArrayList<ProfileInSchedule>) db.getProfilesInSchedule(scheduleName);
-            Log.e("error","In EditScheduleActivity.java -> getting profileArray of: "+scheduleName+ " FOUND: "+profileArray.size());
         } catch (ParseException e) {
             e.getMessage();
         }
@@ -200,8 +222,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
 
         for (int i = 0; i < profileArray.size(); i++) {
-            //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
-            Log.e("error","Profile Enum Value: "+ profileArray.get(i).repeatsOn().toString());
             if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)){
                 mondaySchedules.add(profileArray.get(i));
             }
@@ -321,8 +341,6 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
 
         for (int i = 0; i < profileArray.size(); i++) {
-            //ArrayList<Repeat_Enum> r = profileArray.get(i).repeatsOn();
-            Log.e("error","Profile Enum Value: "+ profileArray.get(i).repeatsOn().toString());
             if(profileArray.get(i).repeatsOn().contains(Repeat_Enum.MONDAY)){
                 mondaySchedules.add(profileArray.get(i));
             }
@@ -412,7 +430,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
                         {
                             if(currentPIS.repeatsOn().size()!=0) {
                                 if(currentPIS.repeatsOn().get(0)==oldPIS.repeatsOn().get(0)) {
-                                    Log.d("Tagsy","It does contain");
+                                    Log.v("Tagsy", "It does contain");
                                     profileArray.remove(currentPIS);
                                     pisArray.add(currentPIS);
                                 }
@@ -423,7 +441,7 @@ public class EditScheduleActivity extends AppCompatActivity implements Serializa
 
                 try {
                     if(db.getProfilesInSchedule(scheduleName).contains(oldPIS)){
-                        Log.d("Tagsy","It does contain"+profileArray.size());
+                        Log.v("Tagsy", "It does contain" + profileArray.size());
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();

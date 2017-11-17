@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,15 +77,10 @@ public class AdapterSchedules extends ArrayAdapter<Schedule> {
         textAppName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 Intent y = new Intent(context.getApplicationContext(), EditScheduleActivity.class);
-                Log.e("error", "intent created");
                 y.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 y.putExtra("Schedule Name", s.getName().toString());
-                Log.e("error", "intent created with extra");
                 v.getContext().startActivity(y);
-                Log.e("error", "Activity statrted created");
             }
         });
 

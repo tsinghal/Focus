@@ -356,4 +356,122 @@ public class DatabaseConnectorTest {
         db.removeProfile(profile1.getName());
         assertEquals(db.getSchedules().get(0).getCalendar().size(), 0);
     }
+
+    @Test
+    public void deleteActiveProfile_getAllDeletedProfileInSchedule() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        db.createProfile(profile1);
+        db.createProfile(profile2);
+        db.createProfile(profile3);
+
+        db.activateProfile(pis1);
+        db.activateProfile(pis2);
+        db.activateProfile(pis3);
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 0);
+
+        db.removeProfile(profile1.getName());
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 1);
+
+        //Data should now be cleared so size should be 0
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 0);
+
+        db.removeProfile(profile2.getName());
+        db.removeProfile(profile3.getName());
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 2);
+
+        //Data should now be cleared so size should be 0
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 0);
+    }
+
+    @Test
+    public void deleteActiveProfileInSchedule_getAllDeletedProfileInSchedule() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        db.createProfile(profile1);
+        db.addSchedule(schedule1);
+
+        db.addProfileInSchedule(pis1, schedule1.getName());
+
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 0);
+
+        db.activateProfileInSchedule(pis1, schedule1.getName());
+
+        db.removeProfileFromSchedule(pis1, schedule1.getName(), re1.get(0));
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 1);
+
+        //Data should now be cleared so size should be 0
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 0);
+    }
+
+    @Test
+    public void deactiveProfile_getAllDeletedProfileInSchedule() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        db.createProfile(profile1);
+
+        db.activateProfile(pis1);
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 0);
+
+        db.deactivateProfile(profile1);
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 1);
+
+        //Data should now be cleared so size should be 0
+        assertEquals(db.getAllDeletedProfileInSchedule().size(), 0);
+    }
+
+    @Test
+    public void getStats_checkAll() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        assertEquals(db.getStatsBlockedNotifications(), 0);
+        assertEquals(db.getStatsAppInstancesBlocked(), 0);
+        assertEquals(db.getStatsNoDistractHours(), 0);
+
+        db.addToStatsBlockedNotifications(5);
+        assertEquals(db.getStatsBlockedNotifications(), 5);
+
+        db.addToStatsAppInstancesBlocked(3);
+        assertEquals(db.getStatsAppInstancesBlocked(), 3);
+
+        db.addToStatsNoDistractHours(8);
+        assertEquals(db.getStatsNoDistractHours(), 8);
+
+        db.clearStatistics();
+        assertEquals(db.getStatsBlockedNotifications(), 0);
+        assertEquals(db.getStatsAppInstancesBlocked(), 0);
+        assertEquals(db.getStatsNoDistractHours(), 0);
+
+    }
+
+    @Test
+    public void profileFrequency_getProfileFrequency() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        db.createProfile(profile1);
+        db.createProfile(profile2);
+
+        assertEquals(db.getProfileFrequency(profile1.getName()), 0);
+        assertEquals(db.getProfileFrequency(profile2.getName()), 0);
+
+        db.activateProfile(pis1);
+        db.deactivateProfile(profile1);
+
+        assertEquals(db.getProfileFrequency(profile1.getName()), 1);
+        assertEquals(db.getProfileFrequency(profile2.getName()), 0);
+
+        db.activateProfile(pis1);
+        db.deactivateProfile(profile1);
+        db.activateProfile(pis2);
+        db.deactivateProfile(profile2);
+
+        assertEquals(db.getProfileFrequency(profile1.getName()), 2);
+        assertEquals(db.getProfileFrequency(profile2.getName()), 1);
+
+    }
 }

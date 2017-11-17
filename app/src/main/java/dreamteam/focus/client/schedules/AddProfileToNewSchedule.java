@@ -175,7 +175,7 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
                 Date startTime = new Date();
                 Date endTime = new Date();
 
-                Log.e("error", "ADD PROFILE CLICK INSIDE THE FUNCTION r: " + r.size());
+                Log.v("AddProfileToNewSchedule", "r = " + r.size());
 
                 //Error Checking for 10 hours & see at least one day has been selected!
                 if (r.isEmpty() || r.size() == 0) {
@@ -186,7 +186,9 @@ public class AddProfileToNewSchedule extends AppCompatActivity {
                     try {
                         startTime = d1.parse(startHour + ":" + startMin);
                         endTime = d1.parse(endHour + ":" + endMin);
-                        Log.e("error", "ADDED PROFILE TO START TIME: " + startTime.toString() + " END TIME: " + endTime);
+                        Log.v("AddProfileToNewSchedule", "Added Profile" +
+                                "\n\tSTART TIME: " + startTime.toString() +
+                                "\n\tEND TIME: " + endTime);
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }

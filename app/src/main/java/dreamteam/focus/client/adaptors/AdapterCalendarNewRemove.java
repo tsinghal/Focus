@@ -1,8 +1,6 @@
 package dreamteam.focus.client.adaptors;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,13 +30,9 @@ public class AdapterCalendarNewRemove extends ArrayAdapter<ProfileInSchedule> {
         super(context, 0, profilesArray);
     }
 
-    @Nullable
-    @NonNull
-    @Override
-
     public View getView(final int position, View convertView, final ViewGroup parent) {
         final ProfileInSchedule s = getItem(position);
-        Log.d("LOOK", s.repeatsOn().toString());
+        Log.v("AdaptCalendarNewRemove", s.repeatsOn().toString());
         db = new DatabaseConnector(getContext());
 
 

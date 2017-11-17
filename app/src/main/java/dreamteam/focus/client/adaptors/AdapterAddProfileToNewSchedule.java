@@ -54,7 +54,7 @@ public class AdapterAddProfileToNewSchedule extends ArrayAdapter<Profile> {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    Log.e("error", "iIS CHECKED!!!!!");
+                    Log.v("AdaptAddProfToNewSched", "isChecked = true");
                     AddProfileToNewSchedule.profilesToBeBlocked.add(s);
                 } else {
                     if (AddProfileToNewSchedule.profilesToBeBlocked.contains(s)) {

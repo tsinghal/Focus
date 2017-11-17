@@ -76,8 +76,8 @@ public class TimePicker extends AppCompatActivity {
                     return;
                 }
 
-                Log.d("Start Time", startHour + ":" + startMin);
-                Log.d("End Time", endHour + ":" + endMin);
+                Log.v("TimePicker.StartTime\t", startHour + ":" + startMin);
+                Log.v("TimePicker.EndTime\t", endHour + ":" + endMin);
 
 
                 int timeLimit = (endHour - startHour) * 60;
@@ -88,7 +88,7 @@ public class TimePicker extends AppCompatActivity {
                     timeLimit += endMin - startMin;
                 }
 
-                Log.d("Limit", timeLimit + "");
+                Log.v("TimePicker.limit\t", timeLimit + "");
 //                Toast.makeText(getApplicationContext(),timeLimit+"", Toast.LENGTH_SHORT).show();
                 if (timeLimit > 600 || timeLimit < 10) {
                     Toast.makeText(getApplicationContext(), "Exceeding the 10 minute-10 hour limit", Toast.LENGTH_LONG).show();
