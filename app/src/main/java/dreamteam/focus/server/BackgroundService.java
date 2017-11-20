@@ -1,5 +1,21 @@
 package dreamteam.focus.server;
 
+/*
+  ____             _                                   _  _____                 _
+ |  _ \           | |                                 | |/ ____|               (_)
+ | |_) | __ _  ___| | ____ _ _ __ ___  _   _ _ __   __| | (___   ___ _ ____   ___  ___ ___
+ |  _ < / _` |/ __| |/ / _` | '__/ _ \| | | | '_ \ / _` |\___ \ / _ \ '__\ \ / / |/ __/ _ \
+ | |_) | (_| | (__|   < (_| | | | (_) | |_| | | | | (_| |____) |  __/ |   \ V /| | (_|  __/
+ |____/ \__,_|\___|_|\_\__, |_|  \___/ \__,_|_| |_|\__,_|_____/ \___|_|_   \_/ |_|\___\___|
+ | |           |  _ \   __/ |      (_)                      | | |__   __|      | |
+ | |__  _   _  | |_) | |___/      ___  ___    __ _ _ __   __| |    | |_   _ ___| |__   __ _ _ __
+ | '_ \| | | | |  _ < / _ \ \ /\ / / |/ _ \  / _` | '_ \ / _` |    | | | | / __| '_ \ / _` | '__|
+ | |_) | |_| | | |_) | (_) \ V  V /| |  __/ | (_| | | | | (_| |    | | |_| \__ \ | | | (_| | |
+ |_.__/ \__, | |____/ \___/ \_/\_/ |_|\___|  \__,_|_| |_|\__,_|    |_|\__,_|___/_| |_|\__,_|_|
+         __/ |
+        |___/
+ */
+
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
 import android.app.Notification;
@@ -26,6 +42,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -50,22 +67,31 @@ public class BackgroundService extends NotificationListenerService {
     private static final String FOCUS_PACKAGE_NAME =
             "dreamteam.focus";
 
-    private List<String> erraticNotificationApps = Arrays.asList("com.whatsapp", "com.google.android.gm");       //this list is unchanged in program, contains package names of apps that throw multiple notifications for a single notification given to user -- irratic behavior
+    /*
+     this list is unchanged in program, contains package names of apps that throw multiple
+     notifications for a single notification given to user.
+    */
+    private static final List<String> erraticNotificationApps =
+            Arrays.asList("com.whatsapp", "com.google.android.gm");
 
     private static final int SCHEDULE_TIMEOUT_SEC = 3;
     private static final int BLOCKING_TIMEOUT_SEC = 1;
     private static final double WINDOW_SIZE = 0.5;
 
     private static final String ANONYMOUS_SCHEDULE = "AnonymousSchedule";
-    private String mPreviousNotificationKey; //src:https://stackoverflow.com/questions/33412124/android-notificationlistenerservice-onnotificationposted-fire-twice
 
-//    private static final int NOTIFICATION_ID_GENERIC = 0;
+    private static final int NOTIFICATION_ID_GENERIC = 0;
     private static final int NOTIFICATION_ID_SUPPRESS_NOTIFICATION = 1;
     private static final int NOTIFICATION_ID_PROFILE_CHANGE = 2;
     private static final int NOTIFICATION_ID_UNSEEN_NOTIFICATIONS = 3;
     private static final int NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE = 11;
     private static final int NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE = 12;
     private static final int NOTIFICATION_ID_ANONYMOUS_SCHEDULE_DELETED = 13;
+
+    /**
+     * src: https://www.redcort.com/us-federal-bank-holidays/
+     */
+    private ArrayList<String> publicHolidays;
 
     private Runnable scheduleThread = null;
     private Runnable blockingThread = null;
@@ -81,6 +107,13 @@ public class BackgroundService extends NotificationListenerService {
         schedules = new ArrayList<>();
         blockedApps = new HashSet<>();
         anonymousPIS = new ArrayList<>();
+
+        publicHolidays = new ArrayList<>(Arrays.asList(
+                "2017-01-02", "2017-01-16", "2017-02-20", "2017-05-29", "2017-07-04", "2017-09-04",
+                "2017-10-09", "2017-11-10", "2017-11-23", "2017-12-25",
+                "2018-01-01", "2018-01-15", "2018-02-19", "2018-05-28", "2018-07-04", "2018-09-03",
+                "2018-10-08", "2018-11-12", "2018-11-22", "2018-12-25"
+        ));
     }
 
     @Override
@@ -95,7 +128,6 @@ public class BackgroundService extends NotificationListenerService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         final Handler mHandler = new Handler();
         if (scheduleThread == null) {
-            Log.i(TAG, "scheduleThread created");
             scheduleThread = new Runnable() {
                 @Override
                 public void run() {
@@ -105,11 +137,19 @@ public class BackgroundService extends NotificationListenerService {
                     tick();
                 }
             };
-            mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
+            Log.i(TAG, "scheduleThread created");
+            if (publicHolidays.contains(getDateString(new Date()))) {
+                Log.v("onStart.scheduleThread", "Thread is now asleep till end of day");
+                sendNotification(NOTIFICATION_ID_GENERIC,
+                        "Today is a public holiday. This app is disabled.",
+                        FOCUS_PACKAGE_NAME);
+                mHandler.postDelayed(scheduleThread, millisToEndOfDay());
+            } else {
+                mHandler.postDelayed(scheduleThread, SCHEDULE_TIMEOUT_SEC * 1000);
+            }
         }
 
         if (blockingThread == null) {
-            Log.i(TAG, "blockingThread created");
             blockingThread = new Runnable() {
                 @Override
                 public void run() {
@@ -120,8 +160,16 @@ public class BackgroundService extends NotificationListenerService {
                     fastTick(false);
                 }
             };
-
-            mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
+            Log.i(TAG, "blockingThread created");
+            if (publicHolidays.contains(getDateString(new Date()))) {
+                Log.v("onStart.blockingThread", "Thread is now asleep till end of day");
+                sendNotification(NOTIFICATION_ID_GENERIC,
+                        "Today is a public holiday. This app is disabled.",
+                        FOCUS_PACKAGE_NAME);
+                mHandler.postDelayed(blockingThread, millisToEndOfDay());
+            } else {
+                mHandler.postDelayed(blockingThread, BLOCKING_TIMEOUT_SEC * 1000);
+            }
         }
         if (intent != null) {
             if (intent.hasExtra("command")) {
@@ -137,6 +185,21 @@ public class BackgroundService extends NotificationListenerService {
 
         // NOTE: We return STICKY to prevent the automatic service termination
         return START_STICKY;
+    }
+
+    /**
+     * src= https://stackoverflow.com/questions/11989555
+     *
+     * @return millis to 12:01am
+     */
+    private long millisToEndOfDay() {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DAY_OF_MONTH, 1);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c.getTimeInMillis() - System.currentTimeMillis() + 60000;
     }
 
     @Override
@@ -155,8 +218,7 @@ public class BackgroundService extends NotificationListenerService {
             return;
         }
 
-        if(sbn.getTag() == null &&  erraticNotificationApps.contains(packageName))
-        {
+        if (sbn.getTag() == null && erraticNotificationApps.contains(packageName)) {
             cancelNotification(sbn.getKey());
             return;
         }
@@ -176,8 +238,8 @@ public class BackgroundService extends NotificationListenerService {
     /**
      * Sends a notification from this application package to the Android System
      *
-     * @param id      the id of this notification
-     * @param message the message of this notification
+     * @param id          the id of this notification
+     * @param message     the message of this notification
      * @param packageName the package name of the app that should open on clicking the notification
      */
     private void sendNotification(int id, String message, String packageName) {
@@ -221,7 +283,7 @@ public class BackgroundService extends NotificationListenerService {
         Intent i1 = new Intent(ACTION_STATUS_BROADCAST);
 //        i1.putExtra("serviceMessage", "Added: " + nAdded + " | Removed: " + nRemoved);
         LocalBroadcastManager.getInstance(this).sendBroadcast(i1);
-        //TODO: profileMessage, scheduleMessage
+        //NOT A TO-DO ANYMORE! profileMessage, scheduleMessage
     }
 
     @Override
@@ -239,7 +301,6 @@ public class BackgroundService extends NotificationListenerService {
         }
 
     }
-
 
     @Override
     public void onDestroy() {
@@ -310,7 +371,7 @@ public class BackgroundService extends NotificationListenerService {
                             sendNotification(generateNotificationID(NOTIFICATION_ID_PROFILE_CHANGE),
                                     "Profile : " + pis.getProfile().getName() + " is now inactive", FOCUS_PACKAGE_NAME);
                             db.deactivateProfileInSchedule(pis, schedule.getName());
-                            db.addToStatsNoDistractHours((int)(endTime - startTime) / 10000);
+                            db.addToStatsNoDistractHours((endTime - startTime) / 10000);
                         } else if ((startTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now &&
                                 now <= (endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
                             addAppsToBlockedApps(pis.getProfile());
@@ -350,7 +411,7 @@ public class BackgroundService extends NotificationListenerService {
                     if (count != 0) {
                         sendNotification(generateNotificationID(NOTIFICATION_ID_UNSEEN_NOTIFICATIONS),
                                 "You have " + count + " unseen notifications from " +
-                                        getAppNameFromPackage(app), app) ;
+                                        getAppNameFromPackage(app), app);
                     }
                 }
             }
@@ -367,17 +428,17 @@ public class BackgroundService extends NotificationListenerService {
 
             if ((startTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now && now <= (startTime + 60)) {
                 if (anonymousPISOldSize < anonymousPIS.size()) {
-                    if(!call)
-                    sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE),
-                            "Profile : " + pis.getProfile().getName() + " is now active", FOCUS_PACKAGE_NAME);
+                    if (!call)
+                        sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_ACTIVE),
+                                "Profile : " + pis.getProfile().getName() + " is now active", FOCUS_PACKAGE_NAME);
                     anonymousPISOldSize = anonymousPIS.size();
                 }
 
             } else if ((endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2) <= now &&
                     now <= (endTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
-                if(!call)
+                if (!call)
                     sendNotification(generateNotificationID(NOTIFICATION_ID_ANONYMOUS_SCHEDULE_INACTIVE),
-                        "Profile : " + pis.getProfile().getName() + " is now inactive", FOCUS_PACKAGE_NAME);
+                            "Profile : " + pis.getProfile().getName() + " is now inactive", FOCUS_PACKAGE_NAME);
 
 
                 if (db.removeProfileFromSchedule(pis, ANONYMOUS_SCHEDULE)) {
@@ -553,7 +614,7 @@ public class BackgroundService extends NotificationListenerService {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            Log.d("broadcastreceived","broadcastreceived");
+            Log.d("broadcastreceived", "broadcastreceived");
 
             if (intent.getStringExtra("command").equals("list")) {
                 Intent i1 = new Intent("com.example.notify.NOTIFICATION_LISTENER_EXAMPLE");
@@ -575,5 +636,8 @@ public class BackgroundService extends NotificationListenerService {
 
     }
 
+    public String getDateString(java.util.Date d) {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(d);
+    }
 
 }
