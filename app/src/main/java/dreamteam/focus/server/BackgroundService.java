@@ -218,7 +218,7 @@ public class BackgroundService extends NotificationListenerService {
             return;
         }
 
-        if (sbn.getTag() == null && erraticNotificationApps.contains(packageName)) {
+        if (sbn.getTag() == null && erraticNotificationApps.contains(packageName) && blockedApps.contains(packageName)) {
             cancelNotification(sbn.getKey());
             return;
         }
