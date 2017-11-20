@@ -230,6 +230,7 @@ public class BackgroundService extends NotificationListenerService {
                 db.addBlockedNotification(app); // tell database to add count to this app
                 sendNotification(NOTIFICATION_ID_SUPPRESS_NOTIFICATION, "Notification blocked by Focus!", FOCUS_PACKAGE_NAME);
                 db.addToStatsBlockedNotifications(1);
+                Log.v(BackgroundService.class.getName(), "addToStatsBlockedNotifications, now = " + db.getStatsBlockedNotifications());
             }
         }
 
@@ -372,6 +373,7 @@ public class BackgroundService extends NotificationListenerService {
                                     "Profile : " + pis.getProfile().getName() + " is now inactive", FOCUS_PACKAGE_NAME);
                             db.deactivateProfileInSchedule(pis, schedule.getName());
                             db.addToStatsNoDistractHours((endTime - startTime) / 10000);
+                            Log.v(BackgroundService.class.getName(), "addToStatsNoDistractHours, now = " + db.getStatsNoDistractHours());
                         } else if ((startTime + SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE) <= now &&
                                 now <= (endTime - SCHEDULE_TIMEOUT_SEC * WINDOW_SIZE * 2)) {
                             addAppsToBlockedApps(pis.getProfile());
@@ -512,8 +514,8 @@ public class BackgroundService extends NotificationListenerService {
                         "Focus! has blocked " + getAppNameFromPackage(appInForeground),
                         Toast.LENGTH_SHORT
                 ).show();
-
                 db.addToStatsAppInstancesBlocked(1);
+                Log.v(BackgroundService.class.getName(), "addToStatsAppInstancesBlocked, now = " + db.getStatsAppInstancesBlocked());
             }
         }
     }
