@@ -53,6 +53,14 @@ public class MainActivity extends AppCompatActivity {
         Button schedulesButton = (Button) findViewById(R.id.buttonSchedules);
         Button profilesButton = (Button) findViewById(R.id.buttonProfiles);
         Button statsButton = (Button) findViewById(R.id.buttonStatistics);
+        Button googleDriveButton = (Button) findViewById(R.id.buttonGoogleDrive);
+
+        googleDriveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), GoogleAuthentication.class));
+            }
+        });
         
         profilesButton.setOnClickListener(new View.OnClickListener() {
             @Override

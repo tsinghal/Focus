@@ -78,10 +78,21 @@
             android:id="@+id/buttonStatistics"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginBottom="44dp"
-            android:background="@mipmap/statistics"
             android:layout_above="@+id/textViewLogo"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="44dp"
+            android:background="@mipmap/statistics" />
+
+        <Button
+            android:id="@+id/buttonGoogleDrive"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="36dp"
+            android:background="@mipmap/google_drive"
+            android:layout_alignBottom="@+id/textViewLogo"
+            android:layout_alignStart="@+id/buttonStatistics" />
+
+
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

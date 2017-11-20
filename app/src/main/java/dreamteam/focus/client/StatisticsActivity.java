@@ -21,22 +21,5 @@ public class StatisticsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activtiy_statistics);
-
-        Button uploadButton = (Button) findViewById(R.id.buttonUploadStatistics);
-        Button downloadButton = (Button) findViewById(R.id.buttonDownloadStatistics);
-
-        uploadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), GoogleAuthentication.class));
-            }
-        });
-
-        downloadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), GoogleAuthentication.class));
-            }
-        });
     }
 }

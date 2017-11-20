@@ -26,28 +26,6 @@
         android:layout_height="wrap_content"
         android:minHeight="460dp">
 
-        <Button
-            android:layout_width="192dp"
-            android:layout_height="40dp"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="12dp"
-            android:background="@color/blue"
-            android:textColor="@color/white"
-            android:text="Upload Statistics"
-            android:id="@+id/buttonUploadStatistics"/>
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@color/blue"
-            android:textColor="@color/white"
-            android:text="Download Statistics"
-            android:layout_marginLeft="4dp"
-            android:id="@+id/buttonDownloadStatistics"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_toEndOf="@+id/buttonUploadStatistics" />
-
         <TextView
             android:id="@+id/textView16"
             android:layout_width="wrap_content"
