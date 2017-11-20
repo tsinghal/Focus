@@ -133,6 +133,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL(CREATE_DELETED_PROFILE_IN_SCHEDULE);
         db.execSQL(CREATE_STATISTICS_TABLE);
 
+        db.execSQL("INSERT INTO " + TABLE_STATISTICS + " VALUES (0, 0, 0)");
     }
 
     @Override
@@ -149,7 +150,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // Create tables again
         onCreate(db);
         db.execSQL("INSERT INTO " + TABLE_SCHEDULES + " VALUES ('AnonymousSchedule', 'true')");
-        db.execSQL("INSERT INTO " + TABLE_STATISTICS + " VALUES (0, 0, 0)");
         database_version = 0;
     }
 
