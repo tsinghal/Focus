@@ -34,6 +34,17 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="@color/blue"
+        android:text="SORT"
+        android:backgroundTint="@color/blue"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="48dp"
+        android:id="@+id/buttonSortProfiles"
+        android:textColor="@color/white"/>
+
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/blue"
         android:text="+"
         android:id="@+id/buttonAddProfile"
         android:textColor="@color/white"

@@ -16,15 +16,22 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import dreamteam.focus.Profile;
 import dreamteam.focus.R;
+import dreamteam.focus.client.ArrangeAppsByName;
 import dreamteam.focus.client.MainActivity;
 import dreamteam.focus.client.adaptors.AdapterProfiles;
 import dreamteam.focus.server.DatabaseConnector;
 
 import static dreamteam.focus.client.profiles.EditProfileActivity.IntentNameString;
+import static dreamteam.focus.client.profiles.EditProfileActivity.map;
 
 /**
  * Created by shatrujeet lawa on 10/8/2017.
@@ -33,8 +40,10 @@ import static dreamteam.focus.client.profiles.EditProfileActivity.IntentNameStri
 public class ProfilesActivity extends AppCompatActivity {
 
     private Button addNewProfile;
+    private Button sortProfile;
 
     ArrayList<Profile> profileArray;
+    ArrayList<Profile> pArray;
     AdapterProfiles profileArrayAdapter;
     ListView profileListView;
     int profileLimit = 20;
@@ -56,9 +65,26 @@ public class ProfilesActivity extends AppCompatActivity {
         //add profileList from the database
 
         final DatabaseConnector db = new DatabaseConnector(getApplicationContext());
-        // updateList(); //every time list opens up,update Profile list
+
+        //Sort the Profiles according to frequency
         profileArray = new ArrayList<Profile>();
         profileArray = MainActivity.db.getProfiles();
+
+//        HashMap<Profile,Integer> mapping=new HashMap<Profile ,Integer>(); //for displaying profile according to frequency
+//
+//        for(int i=0;i<pArray.size();i++)
+//        {
+//          mapping.put(pArray.get(i),MainActivity.db.getProfileFrequency(pArray.get(i).getName()));
+//        }
+//        Map sortedMap = sortByValue(mapping);
+//        Iterator it = sortedMap.entrySet().iterator();
+//        while (it.hasNext()) {
+//            Map.Entry pair = (Map.Entry)it.next();
+//            profileArray.add((Profile)pair.getKey());
+//            it.remove(); // avoids a ConcurrentModificationException
+//        }
+
+
         profileArrayAdapter = new AdapterProfiles(getApplicationContext(), profileArray);
         profileListView = (ListView) findViewById(R.id.listViewProfiles);
         profileListView.setAdapter(profileArrayAdapter);
@@ -78,6 +104,14 @@ public class ProfilesActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(getApplicationContext(), "You cant have more than 20 profiles", Toast.LENGTH_LONG).show();
                 }
+            }
+        });
+
+        sortProfile=(Button)findViewById(R.id.buttonSortProfiles);
+        sortProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sortProfiles();
             }
         });
 
@@ -216,5 +250,69 @@ public class ProfilesActivity extends AppCompatActivity {
         for(int j=0; j<profileArray.size(); j++) {
             Selectedtruefalse[j] = false;
         }
+    }
+
+    public void sortProfiles() {
+        HashMap<Profile,Integer> mapping=new HashMap<Profile ,Integer>(); //for displaying profile according to frequency
+        pArray=new ArrayList<Profile>();
+        pArray=MainActivity.db.getProfiles();
+        for(int i=0;i<pArray.size();i++)
+        {
+            mapping.put(pArray.get(i),MainActivity.db.getProfileFrequency(pArray.get(i).getName()));
+        }
+
+        Map sortedMap = sortByValue(mapping);
+        Iterator it = sortedMap.entrySet().iterator();
+
+        profileArray = new ArrayList<Profile>();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            profileArray.add((Profile)pair.getKey());
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+
+        Toast.makeText(getApplicationContext(),profileArray.size()+" ",Toast.LENGTH_LONG).show();
+
+        profileArrayAdapter = new AdapterProfiles(getApplicationContext(), profileArray);
+        profileListView = (ListView) findViewById(R.id.listViewProfiles);
+        profileListView.setAdapter(profileArrayAdapter);
+
+        int i=-1;
+        AlertDialogItems = new String[profileArray.size()];
+        for(Profile p: profileArray) {
+            AlertDialogItems[++i] = p.getName();
+        }
+
+        Selectedtruefalse = new boolean[profileArray.size()];
+        for(int j=0; j<profileArray.size(); j++) {
+            Selectedtruefalse[j] = false;
+        }
+    }
+
+    public static Map sortByValue(Map unsortedMap) { //for profile frequence
+        Map sortMap = new TreeMap(new ValueComparator(unsortedMap));
+        Log.d("Shatrujet","a:"+unsortedMap.size()+"");
+
+        sortMap.putAll(unsortedMap);
+        Log.d("Shatrujet","b:"+sortMap.size()+"");
+        return sortMap;
+    }
+}
+
+class ValueComparator implements Comparator { //for Profile Frequency
+    Map map;
+
+    public ValueComparator(Map map) {
+        this.map = map;
+    }
+
+    public int compare(Object keyA, Object keyB) {
+        Comparable valueA = (Comparable) map.get(keyA);
+        Comparable valueB = (Comparable) map.get(keyB);
+        return valueB.compareTo(valueA);
+
+
+
     }
 }
