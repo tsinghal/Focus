@@ -258,6 +258,7 @@ public class ProfilesActivity extends AppCompatActivity {
         //src: https://stackoverflow.com/questions/34381536/sort-a-hashmap-by-the-integer-value-desc
 
         Map<String, Integer> map = new HashMap<>();
+        profileArray=new ArrayList<Profile>();
 
         pArray=new ArrayList<Profile>();
         pArray=MainActivity.db.getProfiles();
@@ -269,7 +270,7 @@ public class ProfilesActivity extends AppCompatActivity {
         Object[] a = map.entrySet().toArray();
         Arrays.sort(a, new Comparator() {
             public int compare(Object o1, Object o2) {
-                return ((Map.Entry<String, Integer>) o1).getValue().compareTo(
+                return -((Map.Entry<String, Integer>) o1).getValue().compareTo(
                         ((Map.Entry<String, Integer>) o2).getValue());
             }
         });
@@ -290,32 +291,6 @@ public class ProfilesActivity extends AppCompatActivity {
         Selectedtruefalse = new boolean[profileArray.size()];
         for(int j=0; j<profileArray.size(); j++) {
             Selectedtruefalse[j] = false;
-        }
-    }
-
-    public Map sortByValue(Map unsortedMap) { //for profile frequence
-        Map sortMap = new TreeMap(new ValueComparator(unsortedMap));
-        Log.d("Shatrujet","a:"+unsortedMap.size()+"");
-
-        sortMap.putAll(unsortedMap);
-        Log.d("Shatrujet","b:"+sortMap.size()+"");
-        return sortMap;
-    }
-
-    private class ValueComparator implements Comparator { //for Profile Frequency
-        Map map;
-
-        public ValueComparator(Map map) {
-            this.map = map;
-        }
-
-        public int compare(Object keyA, Object keyB) {
-            Comparable valueA = (Comparable) map.get(keyA);
-            Comparable valueB = (Comparable) map.get(keyB);
-            return valueB.compareTo(valueA);
-
-
-
         }
     }
 
