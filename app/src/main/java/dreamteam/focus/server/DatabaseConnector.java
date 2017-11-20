@@ -169,7 +169,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
 
         values.put(KEY_NAME, profile.getName());
-        values.put(KEY_ACTIVE, profile.isActive());
+        values.put(KEY_ACTIVE, String.valueOf(profile.isActive()));
         //values.put(KEY_ACTIVATE_NOW_FOR_TIME, profile.getTimeActivate());
 
         // Inserting Row
