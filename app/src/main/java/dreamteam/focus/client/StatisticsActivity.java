@@ -27,9 +27,9 @@ public class StatisticsActivity extends AppCompatActivity {
         notificationsBlocked=(TextView)findViewById(R.id.textViewTotalNotificationsBlocked);
         appsBlocked=(TextView)findViewById(R.id.textViewTotalAppInstancesBlocked);
 
-        distractionHours.setText(MainActivity.db.getStatsNoDistractHours());
-        notificationsBlocked.setText(MainActivity.db.getStatsBlockedNotifications());
-        appsBlocked.setText(MainActivity.db.getStatsAppInstancesBlocked());
+        distractionHours.setText(MainActivity.db.getStatsNoDistractHours()+"");
+        notificationsBlocked.setText(MainActivity.db.getStatsBlockedNotifications()+"");
+        appsBlocked.setText(MainActivity.db.getStatsAppInstancesBlocked()+"");
 
         Button uploadButton = (Button) findViewById(R.id.buttonUploadStatistics);
         Button downloadButton = (Button) findViewById(R.id.buttonDownloadStatistics);
