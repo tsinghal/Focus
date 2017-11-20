@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -253,26 +254,28 @@ public class ProfilesActivity extends AppCompatActivity {
     }
 
     public void sortProfiles() {
-        HashMap<Profile,Integer> mapping=new HashMap<Profile ,Integer>(); //for displaying profile according to frequency
+
+        //src: https://stackoverflow.com/questions/34381536/sort-a-hashmap-by-the-integer-value-desc
+
+        Map<String, Integer> map = new HashMap<>();
+
         pArray=new ArrayList<Profile>();
         pArray=MainActivity.db.getProfiles();
         for(int i=0;i<pArray.size();i++)
         {
-            mapping.put(pArray.get(i),MainActivity.db.getProfileFrequency(pArray.get(i).getName()));
+            map.put(pArray.get(i).getName(),MainActivity.db.getProfileFrequency(pArray.get(i).getName()));
         }
 
-        Map sortedMap = sortByValue(mapping);
-        Iterator it = sortedMap.entrySet().iterator();
-
-        profileArray = new ArrayList<Profile>();
-
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            profileArray.add((Profile)pair.getKey());
-            it.remove(); // avoids a ConcurrentModificationException
+        Object[] a = map.entrySet().toArray();
+        Arrays.sort(a, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((Map.Entry<String, Integer>) o1).getValue().compareTo(
+                        ((Map.Entry<String, Integer>) o2).getValue());
+            }
+        });
+        for (Object e : a) {
+           profileArray.add(MainActivity.db.getProfileByName(((Map.Entry<String, Integer>) e).getKey()));
         }
-
-        Toast.makeText(getApplicationContext(),profileArray.size()+" ",Toast.LENGTH_LONG).show();
 
         profileArrayAdapter = new AdapterProfiles(getApplicationContext(), profileArray);
         profileListView = (ListView) findViewById(R.id.listViewProfiles);
@@ -290,7 +293,7 @@ public class ProfilesActivity extends AppCompatActivity {
         }
     }
 
-    public static Map sortByValue(Map unsortedMap) { //for profile frequence
+    public Map sortByValue(Map unsortedMap) { //for profile frequence
         Map sortMap = new TreeMap(new ValueComparator(unsortedMap));
         Log.d("Shatrujet","a:"+unsortedMap.size()+"");
 
@@ -298,21 +301,23 @@ public class ProfilesActivity extends AppCompatActivity {
         Log.d("Shatrujet","b:"+sortMap.size()+"");
         return sortMap;
     }
-}
 
-class ValueComparator implements Comparator { //for Profile Frequency
-    Map map;
+    private class ValueComparator implements Comparator { //for Profile Frequency
+        Map map;
 
-    public ValueComparator(Map map) {
-        this.map = map;
+        public ValueComparator(Map map) {
+            this.map = map;
+        }
+
+        public int compare(Object keyA, Object keyB) {
+            Comparable valueA = (Comparable) map.get(keyA);
+            Comparable valueB = (Comparable) map.get(keyB);
+            return valueB.compareTo(valueA);
+
+
+
+        }
     }
 
-    public int compare(Object keyA, Object keyB) {
-        Comparable valueA = (Comparable) map.get(keyA);
-        Comparable valueB = (Comparable) map.get(keyB);
-        return valueB.compareTo(valueA);
-
-
-
-    }
 }
+
