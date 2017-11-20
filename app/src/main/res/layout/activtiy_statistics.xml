@@ -50,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="36dp"
             android:id="@+id/textView2"
-            android:text="Total Blocked Applications"
+            android:text="Total Blocked Notifications"
             android:typeface="sans"
             android:textSize="22dp"
             android:textColor="#ff0000"
