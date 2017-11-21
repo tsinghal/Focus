@@ -28,7 +28,6 @@ import dreamteam.focus.server.DatabaseConnector;
 
 public class StatisticsActivity extends AppCompatActivity {
     public static DatabaseConnector db;
-    BarGraphSeries<DataPoint> series1, series2, series3;
     private TextView distractionHours,notificationsBlocked,appsBlocked;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,6 +201,8 @@ public class StatisticsActivity extends AppCompatActivity {
     }
 
     public void updateGraphs() {
+        BarGraphSeries<DataPoint> series1, series2, series3;
+
 
         GraphView graph1, graph2, graph3;
 
@@ -227,8 +228,8 @@ public class StatisticsActivity extends AppCompatActivity {
         series1.setValuesOnTopColor(Color.RED);
 
         series2 = new BarGraphSeries<>(new DataPoint[]{
-                new DataPoint(0, MainActivity.db.getStatsAppInstancesBlocked()),
-                new DataPoint(1, MainActivity.db.getStatsNoDistractHours()),
+                new DataPoint(0, MainActivity.db.getStatsNoDistractHours()),
+                new DataPoint(1, MainActivity.db.getStatsAppInstancesBlocked()),
 
         });
 
@@ -246,8 +247,8 @@ public class StatisticsActivity extends AppCompatActivity {
         series2.setValuesOnTopColor(Color.RED);
 
         series3 = new BarGraphSeries<>(new DataPoint[]{
-                new DataPoint(0, MainActivity.db.getStatsAppInstancesBlocked()),
-                new DataPoint(1, MainActivity.db.getStatsBlockedNotifications()),
+                new DataPoint(0, MainActivity.db.getStatsBlockedNotifications()),
+                new DataPoint(1, MainActivity.db.getStatsAppInstancesBlocked()),
 
         });
 
@@ -293,7 +294,6 @@ public class StatisticsActivity extends AppCompatActivity {
         graph3.getViewport().setMaxY(150);
         graph3.getViewport().setYAxisBoundsManual(true);
         graph3.getViewport().setXAxisBoundsManual(true);
-
 
     }
 }
