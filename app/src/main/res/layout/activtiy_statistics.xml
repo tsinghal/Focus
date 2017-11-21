@@ -23,8 +23,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="460dp">
+        android:layout_height="match_parent">
 
 
 
@@ -139,16 +138,16 @@
 
     </ScrollView>
 
-<LinearLayout
+<RelativeLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal">
+    android:layout_height="match_parent">
     <Button
         android:layout_width="192dp"
         android:layout_height="40dp"
         android:background="@color/blue"
         android:textColor="@color/white"
         android:text="Upload Statistics"
+        android:layout_alignParentBottom="true"
         android:id="@+id/buttonUploadStatistics"/>
 
     <Button
@@ -157,7 +156,9 @@
         android:background="@color/blue"
         android:textColor="@color/white"
         android:layout_marginLeft="2dp"
+        android:layout_toEndOf="@id/buttonUploadStatistics"
         android:text="Download Statistics"
+        android:layout_alignParentBottom="true"
         android:id="@+id/buttonDownloadStatistics"/>
-</LinearLayout>
+</RelativeLayout>
 </LinearLayout>

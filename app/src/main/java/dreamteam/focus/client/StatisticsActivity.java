@@ -60,7 +60,7 @@ public class StatisticsActivity extends AppCompatActivity {
             }
         });
 
-        updateGraphs();
+        //updateGraphs();
 
 //
 //        graph1 = (GraphView) findViewById(R.id.graph1);
@@ -273,22 +273,22 @@ public class StatisticsActivity extends AppCompatActivity {
         graph2.addSeries(series2);
         graph3.addSeries(series3);
 
-        graph1.getViewport().setMinX(0.1);
-        graph1.getViewport().setMaxX(0.9);
+        graph1.getViewport().setMinX(0);
+        graph1.getViewport().setMaxX(1.2);
         graph1.getViewport().setMinY(0);
         graph1.getViewport().setMaxY(150);
         graph1.getViewport().setYAxisBoundsManual(true);
         graph1.getViewport().setXAxisBoundsManual(true);
 
-        graph2.getViewport().setMinX(0.1);
-        graph2.getViewport().setMaxX(0.9);
+        graph2.getViewport().setMinX(0);
+        graph2.getViewport().setMaxX(1.2);
         graph2.getViewport().setMinY(0);
         graph2.getViewport().setMaxY(150);
         graph2.getViewport().setYAxisBoundsManual(true);
         graph2.getViewport().setXAxisBoundsManual(true);
 
-        graph3.getViewport().setMinX(0.1);
-        graph3.getViewport().setMaxX(0.9);
+        graph3.getViewport().setMinX(0);
+        graph3.getViewport().setMaxX(1.2);
         graph3.getViewport().setMinY(0);
         graph3.getViewport().setMaxY(150);
         graph3.getViewport().setYAxisBoundsManual(true);
