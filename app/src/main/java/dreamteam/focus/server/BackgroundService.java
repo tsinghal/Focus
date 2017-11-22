@@ -54,6 +54,9 @@ import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
+import dreamteam.focus.client.BlockAppActivity;
+
+import static android.R.attr.value;
 
 /**
  * src: https://stackoverflow.com/questions/41425986
@@ -109,7 +112,7 @@ public class BackgroundService extends NotificationListenerService {
         anonymousPIS = new ArrayList<>();
 
         publicHolidays = new ArrayList<>(Arrays.asList(
-                "2017-01-02", "2017-01-16", "2017-02-20", "2017-05-29", "2017-07-04", "2017-09-04",
+                "2017-11-02", "2017-01-16", "2017-02-20", "2017-05-29", "2017-07-04", "2017-09-04",
                 "2017-10-09", "2017-11-10", "2017-11-23", "2017-12-25",
                 "2018-01-01", "2018-01-15", "2018-02-19", "2018-05-28", "2018-07-04", "2018-09-03",
                 "2018-10-08", "2018-11-12", "2018-11-22", "2018-12-25"
@@ -425,6 +428,7 @@ public class BackgroundService extends NotificationListenerService {
         int now = getTimeInInt(new Date()); // get system time
 
         for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
+
             int startTime = getTimeInInt(pis.getStartTime());
             int endTime = getTimeInInt(pis.getEndTime());
 
@@ -503,19 +507,23 @@ public class BackgroundService extends NotificationListenerService {
                 ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
                 // go back to main screen
-                Intent startMain = new Intent(Intent.ACTION_MAIN);
-                startMain.addCategory(Intent.CATEGORY_HOME);
-                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                this.startActivity(startMain);
+//                Intent startMain = new Intent(Intent.ACTION_MAIN);
+//                startMain.addCategory(Intent.CATEGORY_HOME);
+//                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                this.startActivity(startMain);
+
+                //go to BlockAppActivty
+                Intent myIntent = new Intent(getApplicationContext(), BlockAppActivity.class);
+                myIntent.putExtra("app", getAppNameFromPackage(appInForeground)); //Optional parameters
+                myIntent.putExtra("number", ""); //Optional parameters
+                this.startActivity(myIntent);
 
                 // kill process
                 am.killBackgroundProcesses(appInForeground);
-                Toast.makeText(getBaseContext(),
-                        "Focus! has blocked " + getAppNameFromPackage(appInForeground),
-                        Toast.LENGTH_SHORT
-                ).show();
+                //Toast.makeText(getBaseContext(), "Focus! has blocked " + getAppNameFromPackage(appInForeground), Toast.LENGTH_SHORT).show();
+
                 db.addToStatsAppInstancesBlocked(1);
-                Log.v(BackgroundService.class.getName(), "addToStatsAppInstancesBlocked, now = " + db.getStatsAppInstancesBlocked());
+                //Log.v(BackgroundService.class.getName(), "addToStatsAppInstancesBlocked, now = " + db.getStatsAppInstancesBlocked());
             }
         }
     }

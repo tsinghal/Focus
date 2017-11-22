@@ -52,5 +52,7 @@
         <activity
             android:name=".client.profiles.EditProfileActivity"
             android:windowSoftInputMode="adjustPan" />
+        <activity android:name=".client.BlockAppActivity"></activity>
     </application>
+
 </manifest>
