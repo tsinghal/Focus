@@ -410,13 +410,6 @@ public class BackgroundService extends NotificationListenerService {
         // compare old and new list, call appropriate function as necessary
         if (!blockedApps.equals(oldBlockedApps)) {
 
-            //clear db of times app opened
-            for(String app : oldBlockedApps){
-                if(!blockedApps.contains(app)){
-                    db.clearAppInstancesBlocked(app);
-                }
-            }
-
             if (oldBlockedApps.removeAll(blockedApps) || (blockedApps.size() == 0)) { // returns true of something is removed
                 for (String app : oldBlockedApps) {
                     // notify user about missed notifications
@@ -426,6 +419,7 @@ public class BackgroundService extends NotificationListenerService {
                                 "You have " + count + " unseen notifications from " +
                                         getAppNameFromPackage(app), app);
                     }
+                    db.clearAppInstancesBlocked(app); //clear db of times app opened
                 }
             }
         }
