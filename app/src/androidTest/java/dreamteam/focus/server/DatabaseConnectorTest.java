@@ -474,4 +474,48 @@ public class DatabaseConnectorTest {
         assertEquals(db.getProfileFrequency(profile2.getName()), 1);
 
     }
+
+    @Test
+    public void getAppInstancesBlockedCount_addBlockedAppInstance() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        assertEquals(db.getAppInstancesBlockedCount("Facebook").intValue(), 0);
+
+        db.addBlockedAppInstance("Facebook");
+        assertEquals(db.getAppInstancesBlockedCount("Facebook").intValue(), 1);
+
+        //Note: call to getNotificationsCountForApp sets the count to zero
+        assertEquals(db.getAppInstancesBlockedCount("Facebook").intValue(), 0);
+
+        db.addBlockedAppInstance("Whatsapp");
+        db.addBlockedAppInstance("Whatsapp");
+        assertEquals(db.getAppInstancesBlockedCount("Whatsapp").intValue(), 2);
+
+        db.clearAppInstancesBlocked("Whatsapp");
+        assertEquals(db.getAppInstancesBlockedCount("Whatsapp").intValue(), 0);
+    }
+
+    @Test
+    public void blocksApp_blocksNotification() throws Exception {
+        db.clear();
+        populateDatabase();
+
+        db.createProfile(profile1);
+        assertEquals(db.blocksApp(profile1.getName()), true);
+        assertEquals(db.blocksNotifications(profile1.getName()), true);
+
+        db.createProfile(profile2, true, false);
+        assertEquals(db.blocksApp(profile2.getName()), true);
+        assertEquals(db.blocksNotifications(profile2.getName()), false);
+
+        db.createProfile(profile3, false, true);
+        assertEquals(db.blocksApp(profile3.getName()), false);
+        assertEquals(db.blocksNotifications(profile3.getName()), true);
+
+        db.updateProfile(profile3.getName(), profile3, false, false);
+        assertEquals(db.blocksApp(profile3.getName()), false);
+        assertEquals(db.blocksNotifications(profile3.getName()), false);
+
+    }
 }
