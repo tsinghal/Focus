@@ -87,7 +87,7 @@
             android:layout_height="wrap_content"
             android:layout_alignEnd="@+id/textViewLogo"
             android:layout_alignTop="@+id/numberLabel"
-            android:text="times."
+            android:text="times"
             android:textColor="@color/white"
             android:textSize="20dp" />
 

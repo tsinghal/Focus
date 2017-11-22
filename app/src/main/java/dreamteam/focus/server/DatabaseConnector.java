@@ -23,7 +23,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static int DATABASE_VERSION = 51;
+    private static int DATABASE_VERSION = 48;
 
     // This variable is causing more trouble than it solves.
     // It will be factored out in future releases.
@@ -40,6 +40,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     private static final String KEY_NAME = "name";
     private static final String KEY_ACTIVE = "active";
     private static final String KEY_FREQUENCY = "frequency";
+    private static final String KEY_BLOCKS_APP = "blocks_apps";
+    private static final String KEY_BLOCKS_NOTIFICATIONS = "blocks_notifications";
 
     // Blocked Apps Table Name
     private static final String TABLE_BLOCKED_APPS = "blocked_apps";
@@ -78,6 +80,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     private static final String KEY_APP_INSTANCES_COUNT = "app_instances_count";
     private static final String KEY_NO_DISTRACT_HOURS_COUNT = "no_distract_hours_count";
 
+    //App Instances Blocked Table
+    private static final String TABLE_APP_INSTANCES_BLOCKED = "app_instances_blocked";
+
     public DatabaseConnector(Context context) {
         super(context, DATABASE_NAME, null, 1);
     }
@@ -89,7 +94,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         String CREATE_PROFILES_TABLE = "CREATE TABLE " + TABLE_PROFILES + "("
                 + KEY_NAME + " TEXT NOT NULL PRIMARY KEY UNIQUE,"
                 + KEY_ACTIVE + " TEXT NOT NULL,"
-                + KEY_FREQUENCY + " INTEGER NOT NULL DEFAULT 0" + ")";
+                + KEY_FREQUENCY + " INTEGER NOT NULL DEFAULT 0,"
+                + KEY_BLOCKS_APP + " TEXT NOT NULL DEFAULT true,"
+                + KEY_BLOCKS_NOTIFICATIONS + " TEXT NOT NULL DEFAULT true" + ")";
 
         String CREATE_BLOCKED_APPS_TABLE = "CREATE TABLE " + TABLE_BLOCKED_APPS + "("
                 + KEY_PROFILE_NAME + " TEXT NOT NULL,"
@@ -124,6 +131,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
                 + KEY_APP_INSTANCES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + KEY_NO_DISTRACT_HOURS_COUNT + " INTEGER NOT NULL DEFAULT 0" + ")";
 
+        String CREATE_APP_INSTANCES_BLOCKED_TABLE = "CREATE TABLE " + TABLE_APP_INSTANCES_BLOCKED + "("
+                + KEY_APP_NAME + " TEXT NOT NULL" + ")";
+
         db.execSQL(CREATE_PROFILES_TABLE);
         db.execSQL(CREATE_BLOCKED_APPS_TABLE);
         db.execSQL(CREATE_BLOCKED_NOTIFICATIONS_TABLE);
@@ -132,8 +142,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL(CREATE_PROFILE_IN_SCHEDULE_REPEATS_TABLE);
         db.execSQL(CREATE_DELETED_PROFILE_IN_SCHEDULE);
         db.execSQL(CREATE_STATISTICS_TABLE);
+        db.execSQL(CREATE_APP_INSTANCES_BLOCKED_TABLE);
 
-        db.execSQL("INSERT INTO " + TABLE_STATISTICS + " VALUES (0, 0, 0)");
     }
 
     @Override
@@ -147,9 +157,11 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILE_IN_SCHEDULE_REPEATS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DELETED_PROFILE_IN_SCHEDULE);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_STATISTICS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_APP_INSTANCES_BLOCKED);
         // Create tables again
         onCreate(db);
         db.execSQL("INSERT INTO " + TABLE_SCHEDULES + " VALUES ('AnonymousSchedule', 'true')");
+        db.execSQL("INSERT INTO " + TABLE_STATISTICS + " VALUES (0, 0, 0)");
         database_version = 0;
     }
 
@@ -187,6 +199,79 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.close();
         incrementDatabaseVersion();
         return true;
+    }
+
+    public boolean createProfile(Profile profile, boolean blocksApp, boolean blocksNotifications) throws SQLException {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        //Throws on profile duplicate
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_NAME, profile.getName());
+        values.put(KEY_ACTIVE, String.valueOf(profile.isActive()));
+        values.put(KEY_BLOCKS_APP, String.valueOf(blocksApp));
+        values.put(KEY_BLOCKS_NOTIFICATIONS, String.valueOf(blocksNotifications));
+        //values.put(KEY_ACTIVATE_NOW_FOR_TIME, profile.getTimeActivate());
+
+        // Inserting Row
+        try {
+            db.insertOrThrow(TABLE_PROFILES, null, values);
+        } catch (SQLException e) {
+            Log.d("error", e.getMessage());
+            db.close();
+            throw e;
+        }
+
+        addBlockedApps(profile);
+
+
+        db.close();
+        incrementDatabaseVersion();
+        return true;
+    }
+
+    public boolean blocksApp(String profileName) {
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILES + " WHERE " + KEY_NAME + "='" + profileName + "'";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            boolean answer = Boolean.parseBoolean(cursor.getString(3));
+            cursor.close();
+            db.close();
+            return answer;
+        }
+
+        // return contact list
+        cursor.close();
+        db.close();
+        return true;
+    }
+
+    public boolean blocksNotifications(String profileName) {
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROFILES + " WHERE " + KEY_NAME + "='" + profileName + "'";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            boolean answer = Boolean.parseBoolean(cursor.getString(4));
+            cursor.close();
+            db.close();
+            return answer;
+        }
+
+        // return contact list
+        cursor.close();
+        db.close();
+        return false;
     }
 
     private boolean addBlockedApps(Profile profile) throws SQLException {
@@ -271,6 +356,24 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.delete(TABLE_BLOCKED_APPS, KEY_PROFILE_NAME + "='" + originalProfileName + "'", null);
         return db.delete(TABLE_PROFILES, KEY_NAME + "='" + originalProfileName + "'", null) > 0 &&
                 createProfile(updatedProfile);
+    }
+
+    public boolean updateProfile(String originalProfileName, Profile updatedProfile, boolean blocksApps, boolean blocksNotifications) {
+        updatedProfile.setActive(getProfileByName(originalProfileName).isActive());
+
+        if(!updatedProfile.getName().equals(originalProfileName)) {
+            ContentValues args = new ContentValues();
+            args.put(KEY_PROFILE_NAME, updatedProfile.getName());
+            SQLiteDatabase db = this.getWritableDatabase();
+            db.update(TABLE_PROFILE_IN_SCHEDULE, args, KEY_PROFILE_NAME + "='" + originalProfileName + "'", null);
+            db.close();
+        }
+
+        incrementDatabaseVersion();
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_BLOCKED_APPS, KEY_PROFILE_NAME + "='" + originalProfileName + "'", null);
+        return db.delete(TABLE_PROFILES, KEY_NAME + "='" + originalProfileName + "'", null) > 0 &&
+                createProfile(updatedProfile, blocksApps, blocksNotifications);
     }
 
     private int getProfileID(ProfileInSchedule pis, String scheduleName, Repeat_Enum re) {
@@ -912,6 +1015,45 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return true;
     }
 
+    public boolean addBlockedAppInstance(String appName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_APP_NAME, appName);
+
+        try {
+            db.insertOrThrow(TABLE_APP_INSTANCES_BLOCKED, null, values);
+        } catch (SQLException e) {
+            Log.d("error", e.getMessage());
+            db.close();
+            throw e;
+        }
+
+        incrementDatabaseVersion();
+        db.close();
+        return true;
+    }
+
+    public Integer getAppInstancesBlockedCount(String appName) {
+
+        String selectQuery = "SELECT * FROM " + TABLE_APP_INSTANCES_BLOCKED + " WHERE " + KEY_APP_NAME + "='" + appName + "'";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        int count = cursor.getCount();
+
+        cursor.close();
+        db.close();
+        return count;
+    }
+
+    public void clearAppInstancesBlocked(String appName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_APP_INSTANCES_BLOCKED, KEY_APP_NAME + "='" + appName + "'", null);
+        db.close();
+    }
+
     public boolean activateSchedule(String scheduleName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -1032,6 +1174,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILE_IN_SCHEDULE_REPEATS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DELETED_PROFILE_IN_SCHEDULE);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_STATISTICS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_APP_INSTANCES_BLOCKED);
         onCreate(db);
         db.execSQL("INSERT INTO " + TABLE_SCHEDULES + " VALUES ('AnonymousSchedule', 'true')");
         db.execSQL("INSERT INTO " + TABLE_STATISTICS + " VALUES (0, 0, 0)");

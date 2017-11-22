@@ -409,6 +409,14 @@ public class BackgroundService extends NotificationListenerService {
 
         // compare old and new list, call appropriate function as necessary
         if (!blockedApps.equals(oldBlockedApps)) {
+
+            //clear db of times app opened
+            for(String app : oldBlockedApps){
+                if(!blockedApps.contains(app)){
+                    db.clearAppInstancesBlocked(app);
+                }
+            }
+
             if (oldBlockedApps.removeAll(blockedApps) || (blockedApps.size() == 0)) { // returns true of something is removed
                 for (String app : oldBlockedApps) {
                     // notify user about missed notifications
@@ -512,10 +520,12 @@ public class BackgroundService extends NotificationListenerService {
 //                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //                this.startActivity(startMain);
 
+                db.addBlockedAppInstance(app);          //add number of times user tried to open this app
+
                 //go to BlockAppActivty
                 Intent myIntent = new Intent(getApplicationContext(), BlockAppActivity.class);
                 myIntent.putExtra("app", getAppNameFromPackage(appInForeground)); //Optional parameters
-                myIntent.putExtra("number", ""); //Optional parameters
+                myIntent.putExtra("number", ""+ db.getAppInstancesBlockedCount(app)); //Optional parameters
                 this.startActivity(myIntent);
 
                 // kill process
