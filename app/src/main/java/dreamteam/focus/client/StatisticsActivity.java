@@ -28,7 +28,6 @@ import dreamteam.focus.server.DatabaseConnector;
 
 public class StatisticsActivity extends AppCompatActivity {
     public static DatabaseConnector db;
-    BarGraphSeries<DataPoint> series1, series2, series3;
     private TextView distractionHours,notificationsBlocked,appsBlocked;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +59,7 @@ public class StatisticsActivity extends AppCompatActivity {
             }
         });
 
-        updateGraphs();
+        //updateGraphs();
 
 //
 //        graph1 = (GraphView) findViewById(R.id.graph1);
@@ -202,6 +201,8 @@ public class StatisticsActivity extends AppCompatActivity {
     }
 
     public void updateGraphs() {
+        BarGraphSeries<DataPoint> series1, series2, series3;
+
 
         GraphView graph1, graph2, graph3;
 
@@ -227,8 +228,8 @@ public class StatisticsActivity extends AppCompatActivity {
         series1.setValuesOnTopColor(Color.RED);
 
         series2 = new BarGraphSeries<>(new DataPoint[]{
-                new DataPoint(0, MainActivity.db.getStatsAppInstancesBlocked()),
-                new DataPoint(1, MainActivity.db.getStatsNoDistractHours()),
+                new DataPoint(0, MainActivity.db.getStatsNoDistractHours()),
+                new DataPoint(1, MainActivity.db.getStatsAppInstancesBlocked()),
 
         });
 
@@ -246,8 +247,8 @@ public class StatisticsActivity extends AppCompatActivity {
         series2.setValuesOnTopColor(Color.RED);
 
         series3 = new BarGraphSeries<>(new DataPoint[]{
-                new DataPoint(0, MainActivity.db.getStatsAppInstancesBlocked()),
-                new DataPoint(1, MainActivity.db.getStatsBlockedNotifications()),
+                new DataPoint(0, MainActivity.db.getStatsBlockedNotifications()),
+                new DataPoint(1, MainActivity.db.getStatsAppInstancesBlocked()),
 
         });
 
@@ -273,27 +274,26 @@ public class StatisticsActivity extends AppCompatActivity {
         graph2.addSeries(series2);
         graph3.addSeries(series3);
 
-        graph1.getViewport().setMinX(0.1);
-        graph1.getViewport().setMaxX(0.9);
+        graph1.getViewport().setMinX(0);
+        graph1.getViewport().setMaxX(1.2);
         graph1.getViewport().setMinY(0);
         graph1.getViewport().setMaxY(150);
         graph1.getViewport().setYAxisBoundsManual(true);
         graph1.getViewport().setXAxisBoundsManual(true);
 
-        graph2.getViewport().setMinX(0.1);
-        graph2.getViewport().setMaxX(0.9);
+        graph2.getViewport().setMinX(0);
+        graph2.getViewport().setMaxX(1.2);
         graph2.getViewport().setMinY(0);
         graph2.getViewport().setMaxY(150);
         graph2.getViewport().setYAxisBoundsManual(true);
         graph2.getViewport().setXAxisBoundsManual(true);
 
-        graph3.getViewport().setMinX(0.1);
-        graph3.getViewport().setMaxX(0.9);
+        graph3.getViewport().setMinX(0);
+        graph3.getViewport().setMaxX(1.2);
         graph3.getViewport().setMinY(0);
         graph3.getViewport().setMaxY(150);
         graph3.getViewport().setYAxisBoundsManual(true);
         graph3.getViewport().setXAxisBoundsManual(true);
-
 
     }
 }
