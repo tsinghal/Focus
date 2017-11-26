@@ -225,8 +225,11 @@ public class BackgroundService extends NotificationListenerService {
             return;
         }
 
-        if(blockAppsAndStates.get(packageName) == 1)        //means user decided to not block this app's notifications
-            return;
+        Integer getState = blockAppsAndStates.get(packageName);
+        if( getState!= null){
+            if(getState == 1)        //means user decided to not block this app's notifications
+                return;
+        }
 
         if (sbn.getTag() == null && erraticNotificationApps.contains(packageName) && blockedApps.contains(packageName)) {
             cancelNotification(sbn.getKey());
