@@ -485,9 +485,6 @@ public class DatabaseConnectorTest {
         db.addBlockedAppInstance("Facebook");
         assertEquals(db.getAppInstancesBlockedCount("Facebook").intValue(), 1);
 
-        //Note: call to getNotificationsCountForApp sets the count to zero
-        assertEquals(db.getAppInstancesBlockedCount("Facebook").intValue(), 0);
-
         db.addBlockedAppInstance("Whatsapp");
         db.addBlockedAppInstance("Whatsapp");
         assertEquals(db.getAppInstancesBlockedCount("Whatsapp").intValue(), 2);
