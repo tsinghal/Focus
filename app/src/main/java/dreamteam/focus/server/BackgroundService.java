@@ -237,14 +237,12 @@ public class BackgroundService extends NotificationListenerService {
         }
 
         // block each app's notifications in `blockedApps`
-        for (String app : blockedApps) {
-            if (packageName.equals(app)) {
-                cancelNotification(sbn.getKey());
-                db.addBlockedNotification(app); // tell database to add count to this app
-                sendNotification(NOTIFICATION_ID_SUPPRESS_NOTIFICATION, "Notification blocked by Focus!", FOCUS_PACKAGE_NAME);
-                db.addToStatsBlockedNotifications(1);
-                Log.v(BackgroundService.class.getName(), "addToStatsBlockedNotifications, now = " + db.getStatsBlockedNotifications());
-            }
+        if (blockedApps.equals(packageName)) {
+            cancelNotification(sbn.getKey());
+            db.addBlockedNotification(packageName); // tell database to add count to this app
+            sendNotification(NOTIFICATION_ID_SUPPRESS_NOTIFICATION, "Notification blocked by Focus!", FOCUS_PACKAGE_NAME);
+            db.addToStatsBlockedNotifications(1);
+            Log.v(BackgroundService.class.getName(), "addToStatsBlockedNotifications, now = " + db.getStatsBlockedNotifications());
         }
     }
 
@@ -541,8 +539,8 @@ public class BackgroundService extends NotificationListenerService {
         if(checkState == null ||checkState == 0)        //if user decided to only block notifications
             return;
 
-        for (String app : blockedApps) { // block each app in blockedApps
-            if (appInForeground.equals(app)) {
+        //for (String app : blockedApps) { // block each app in blockedApps
+            if (blockedApps.contains(appInForeground)) {
                 ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
                 // go back to main screen
@@ -551,12 +549,12 @@ public class BackgroundService extends NotificationListenerService {
 //                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //                this.startActivity(startMain);
 
-                db.addBlockedAppInstance(app);          //add number of times user tried to open this app
+                db.addBlockedAppInstance(appInForeground);          //add number of times user tried to open this app
 
                 //go to BlockAppActivty
                 Intent myIntent = new Intent(getApplicationContext(), BlockAppActivity.class);
                 myIntent.putExtra("app", getAppNameFromPackage(appInForeground)); //Optional parameters
-                myIntent.putExtra("number", ""+ db.getAppInstancesBlockedCount(app)); //Optional parameters
+                myIntent.putExtra("number", ""+ db.getAppInstancesBlockedCount(appInForeground)); //Optional parameters
                 this.startActivity(myIntent);
 
                 // kill process
@@ -566,7 +564,7 @@ public class BackgroundService extends NotificationListenerService {
                 db.addToStatsAppInstancesBlocked(1);
                 //Log.v(BackgroundService.class.getName(), "addToStatsAppInstancesBlocked, now = " + db.getStatsAppInstancesBlocked());
             }
-        }
+    //    }
     }
 
 
