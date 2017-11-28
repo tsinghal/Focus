@@ -50,7 +50,7 @@ public class AdapterApps extends ArrayAdapter<String> {
         appStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (CreateProfileActivity.blockedPackages.contains(appName)) {
+                if (CreateProfileActivity.blockedPackages.contains(packageName)) {
                     if (!isChecked) {
                         CreateProfileActivity.blockedPackages.remove(packageName);
 

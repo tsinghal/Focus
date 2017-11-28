@@ -44,16 +44,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import dreamteam.focus.Profile;
 import dreamteam.focus.ProfileInSchedule;
 import dreamteam.focus.R;
 import dreamteam.focus.Repeat_Enum;
 import dreamteam.focus.Schedule;
+import dreamteam.focus.client.BlockAppActivity;
+
+import static android.R.attr.value;
 
 /**
  * src: https://stackoverflow.com/questions/41425986
@@ -101,15 +106,17 @@ public class BackgroundService extends NotificationListenerService {
     private int anonymousPISOldSize;
     private int databaseVersion = -1;
     private HashSet<String> blockedApps;
+    private HashMap<String, Integer> blockAppsAndStates; //2nd param : 0->blocked noti, 1->blocked app, 2-> blocked both
     private NLServiceReceiver nlServiceReceiver;
 
     public BackgroundService() {
         schedules = new ArrayList<>();
         blockedApps = new HashSet<>();
         anonymousPIS = new ArrayList<>();
+        blockAppsAndStates = new HashMap<>();
 
         publicHolidays = new ArrayList<>(Arrays.asList(
-                "2017-01-02", "2017-01-16", "2017-02-20", "2017-05-29", "2017-07-04", "2017-09-04",
+                "2017-11-02", "2017-01-16", "2017-02-20", "2017-05-29", "2017-07-04", "2017-09-04",
                 "2017-10-09", "2017-11-10", "2017-11-23", "2017-12-25",
                 "2018-01-01", "2018-01-15", "2018-02-19", "2018-05-28", "2018-07-04", "2018-09-03",
                 "2018-10-08", "2018-11-12", "2018-11-22", "2018-12-25"
@@ -218,22 +225,25 @@ public class BackgroundService extends NotificationListenerService {
             return;
         }
 
+        Integer getState = blockAppsAndStates.get(packageName);
+        if( getState!= null){
+            if(getState == 1)        //means user decided to not block this app's notifications
+                return;
+        }
+
         if (sbn.getTag() == null && erraticNotificationApps.contains(packageName) && blockedApps.contains(packageName)) {
             cancelNotification(sbn.getKey());
             return;
         }
 
         // block each app's notifications in `blockedApps`
-        for (String app : blockedApps) {
-            if (packageName.equals(app)) {
-                cancelNotification(sbn.getKey());
-                db.addBlockedNotification(app); // tell database to add count to this app
-                sendNotification(NOTIFICATION_ID_SUPPRESS_NOTIFICATION, "Notification blocked by Focus!", FOCUS_PACKAGE_NAME);
-                db.addToStatsBlockedNotifications(1);
-                Log.v(BackgroundService.class.getName(), "addToStatsBlockedNotifications, now = " + db.getStatsBlockedNotifications());
-            }
+        if (blockedApps.equals(packageName)) {
+            cancelNotification(sbn.getKey());
+            db.addBlockedNotification(packageName); // tell database to add count to this app
+            sendNotification(NOTIFICATION_ID_SUPPRESS_NOTIFICATION, "Notification blocked by Focus!", FOCUS_PACKAGE_NAME);
+            db.addToStatsBlockedNotifications(1);
+            Log.v(BackgroundService.class.getName(), "addToStatsBlockedNotifications, now = " + db.getStatsBlockedNotifications());
         }
-
     }
 
     /**
@@ -351,6 +361,7 @@ public class BackgroundService extends NotificationListenerService {
             oldBlockedApps.add(app);
         }
         blockedApps.clear();
+        blockAppsAndStates.clear();
 
         // Reconstruct
         for (Schedule schedule : schedules) {
@@ -406,6 +417,7 @@ public class BackgroundService extends NotificationListenerService {
 
         // compare old and new list, call appropriate function as necessary
         if (!blockedApps.equals(oldBlockedApps)) {
+
             if (oldBlockedApps.removeAll(blockedApps) || (blockedApps.size() == 0)) { // returns true of something is removed
                 for (String app : oldBlockedApps) {
                     // notify user about missed notifications
@@ -415,6 +427,7 @@ public class BackgroundService extends NotificationListenerService {
                                 "You have " + count + " unseen notifications from " +
                                         getAppNameFromPackage(app), app);
                     }
+                    db.clearAppInstancesBlocked(app); //clear db of times app opened
                 }
             }
         }
@@ -425,6 +438,7 @@ public class BackgroundService extends NotificationListenerService {
         int now = getTimeInInt(new Date()); // get system time
 
         for (ProfileInSchedule pis : anonymousPIS) { // separate case for ANONYMOUS_SCHEDULE
+
             int startTime = getTimeInInt(pis.getStartTime());
             int endTime = getTimeInInt(pis.getEndTime());
 
@@ -454,6 +468,28 @@ public class BackgroundService extends NotificationListenerService {
         }
     }
 
+    //store the state for the app to be blocked or only notification to be blocked or both
+    void storeBlockState(Profile p){
+        boolean blockApp = db.blocksApp(p.getName());
+        boolean blockNoti = db.blocksNotifications(p.getName());
+
+        int state = 2 ;            //block both by default
+        if(blockApp && !blockNoti){
+            state = 1;
+        }else if(!blockApp && blockNoti){
+            state = 0;
+        }
+
+        for (String app : p.getApps()) {
+
+            if(blockAppsAndStates.get(app) != null && blockAppsAndStates.get(app) != state){
+                blockAppsAndStates.put(app, 2);   //this means where is a conflict, take union of options
+            }
+            else
+                blockAppsAndStates.put(app, state);
+        }
+    }
+
     /**
      * This function randomizes notification ID to prevent notifications from overwriting one another
      *
@@ -474,6 +510,7 @@ public class BackgroundService extends NotificationListenerService {
         for (String app : activeProfile.getApps()) {
             blockedApps.add(app);
         }
+        storeBlockState(activeProfile);         //store user choice regarding block of apps/notifications/both
     }
 
     /**
@@ -498,26 +535,36 @@ public class BackgroundService extends NotificationListenerService {
         if (appInForeground == null)
             return;
 
-        for (String app : blockedApps) { // block each app in blockedApps
-            if (appInForeground.equals(app)) {
+        Integer checkState = blockAppsAndStates.get(appInForeground);
+        if(checkState == null ||checkState == 0)        //if user decided to only block notifications
+            return;
+
+        //for (String app : blockedApps) { // block each app in blockedApps
+            if (blockedApps.contains(appInForeground)) {
                 ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
 
                 // go back to main screen
-                Intent startMain = new Intent(Intent.ACTION_MAIN);
-                startMain.addCategory(Intent.CATEGORY_HOME);
-                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                this.startActivity(startMain);
+//                Intent startMain = new Intent(Intent.ACTION_MAIN);
+//                startMain.addCategory(Intent.CATEGORY_HOME);
+//                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                this.startActivity(startMain);
+
+                db.addBlockedAppInstance(appInForeground);          //add number of times user tried to open this app
+
+                //go to BlockAppActivty
+                Intent myIntent = new Intent(getApplicationContext(), BlockAppActivity.class);
+                myIntent.putExtra("app", getAppNameFromPackage(appInForeground)); //Optional parameters
+                myIntent.putExtra("number", ""+ db.getAppInstancesBlockedCount(appInForeground)); //Optional parameters
+                this.startActivity(myIntent);
 
                 // kill process
                 am.killBackgroundProcesses(appInForeground);
-                Toast.makeText(getBaseContext(),
-                        "Focus! has blocked " + getAppNameFromPackage(appInForeground),
-                        Toast.LENGTH_SHORT
-                ).show();
+                //Toast.makeText(getBaseContext(), "Focus! has blocked " + getAppNameFromPackage(appInForeground), Toast.LENGTH_SHORT).show();
+
                 db.addToStatsAppInstancesBlocked(1);
-                Log.v(BackgroundService.class.getName(), "addToStatsAppInstancesBlocked, now = " + db.getStatsAppInstancesBlocked());
+                //Log.v(BackgroundService.class.getName(), "addToStatsAppInstancesBlocked, now = " + db.getStatsAppInstancesBlocked());
             }
-        }
+    //    }
     }
 
 

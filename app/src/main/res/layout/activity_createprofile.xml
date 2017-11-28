@@ -73,10 +73,6 @@
         android:id="@+id/listViewApps"
         android:divider="@color/background">
 
-
-
-
-
     </ListView>
 
     <Button
