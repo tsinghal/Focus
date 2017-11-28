@@ -294,6 +294,4 @@
             android:textSize="18sp" />
 
     </RelativeLayout>
-    </ScrollView>
-
 </LinearLayout>
