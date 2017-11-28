@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ public class CreateProfileActivity extends AppCompatActivity {
     Button submit;
     Button discard;
     String profileName;
+    CheckBox radioAppsBlocked,radioNotificationsBlocked;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,12 +68,19 @@ public class CreateProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 profileName = ((EditText) findViewById(R.id.editViewProfileName)).getText().toString();
 
+                if(!radioNotificationsBlocked.isChecked() && !radioAppsBlocked.isChecked())
+                {
+                    Toast.makeText(getApplicationContext(),"Select an option to block",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 if (!profileName.isEmpty()) {
                     Profile p = new Profile(profileName, blockedPackages);
 
                     try {
-                        MainActivity.db.createProfile(p);
+                        MainActivity.db.createProfile(p,radioAppsBlocked.isChecked(),radioNotificationsBlocked.isChecked());
                     } catch (Exception e) {
+
                         Toast.makeText(getApplicationContext(), "Choose unique name", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -89,6 +99,12 @@ public class CreateProfileActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        radioAppsBlocked=(CheckBox) findViewById(R.id.radioButtonApps);
+        radioNotificationsBlocked=(CheckBox) findViewById(R.id.radioButtonNotifications);
+
+        radioAppsBlocked.setChecked(true);
+        radioNotificationsBlocked.setChecked(true);
 
     }
 

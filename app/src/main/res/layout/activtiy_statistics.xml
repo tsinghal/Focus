@@ -19,8 +19,148 @@
 
     <ScrollView
         android:layout_width="match_parent"
+        android:layout_height="416dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textView1"
+            android:text="Total Distraction Free Hours"
+            android:typeface="sans"
+            android:textSize="22dp"
+            android:textColor="#ff0000"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textViewTotalDistractonFreeHours"
+            android:layout_below="@id/textView1"
+            android:text="0"
+            android:typeface="sans"
+            android:textSize="22dp"
+            android:textColor="#ff0000"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textView2"
+            android:text="Total Blocked Notifications"
+            android:typeface="sans"
+            android:textSize="22dp"
+            android:textColor="#ff0000"
+            android:layout_below="@id/textViewTotalDistractonFreeHours"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textViewTotalNotificationsBlocked"
+            android:layout_below="@id/textView2"
+            android:text="0"
+            android:typeface="sans"
+            android:textSize="22dp"
+            android:textColor="#ff0000"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textView3"
+            android:text="Total App instances blocked"
+            android:typeface="sans"
+            android:layout_below="@id/textViewTotalNotificationsBlocked"
+            android:textSize="22dp"
+            android:textColor="#ff0000"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textViewTotalAppInstancesBlocked"
+            android:layout_below="@id/textView3"
+            android:text="0"
+            android:typeface="sans"
+            android:textSize="22dp"
+            android:textColor="#ff0000"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textViewgraph1"
+            android:text="Blocked Apps/Total Apps:"
+            android:typeface="sans"
+            android:layout_below="@id/textViewTotalAppInstancesBlocked"
+            android:textSize="22dp"
+            android:textColor="#ff0000"/>
+
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:id="@+id/graph1"
+            android:layout_below="@id/textViewgraph1"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textViewgraph2"
+            android:text="Distraction Free Hours/App Instances:"
+            android:typeface="sans"
+            android:layout_below="@id/graph1"
+            android:textSize="18dp"
+            android:textColor="#ff0000"/>
+
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:id="@+id/graph2"
+            android:layout_below="@id/textViewgraph2"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:id="@+id/textViewgraph3"
+            android:text="Blocked Notification/App Instances:"
+            android:typeface="sans"
+            android:layout_below="@id/graph2"
+            android:textSize="22dp"
+            android:textColor="#ff0000"/>
+
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:id="@+id/graph3"
+            android:layout_below="@id/textViewgraph3"/>
+
+
+
+    </RelativeLayout>
+
+
+    </ScrollView>
+
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <Button
+        android:layout_width="192dp"
+        android:layout_height="40dp"
+        android:background="@color/blue"
+        android:textColor="@color/white"
+        android:text="Upload Statistics"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/buttonUploadStatistics"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/blue"
+        android:textColor="@color/white"
+        android:layout_marginLeft="2dp"
+        android:layout_toEndOf="@id/buttonUploadStatistics"
+        android:text="Download Statistics"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/buttonDownloadStatistics"/>
+</RelativeLayout>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
