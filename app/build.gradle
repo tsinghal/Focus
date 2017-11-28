@@ -34,6 +34,7 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
     androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
     compile 'com.google.android.gms:play-services:11.6.0'
+    compile 'com.google.android.gms:play-services-drive:11.6.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
