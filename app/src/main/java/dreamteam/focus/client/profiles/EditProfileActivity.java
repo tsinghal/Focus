@@ -13,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -48,6 +49,8 @@ public class EditProfileActivity extends AppCompatActivity {
     private SearchView searchView;
     private MenuItem searchMenuItem;
 
+    CheckBox radioAppsBlocked,radioNotificationsBlocked;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,12 +85,31 @@ public class EditProfileActivity extends AppCompatActivity {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                profileName = ((EditText) findViewById(R.id.editViewEditProfileName)).getText().toString();
-                Profile p = new Profile(profileName, blockedPackages); //change it from null
-                MainActivity.db.updateProfile(getIntent().getStringExtra(IntentNameString), p);
 
-                Toast.makeText(getApplicationContext(), "Profile updated successfully", Toast.LENGTH_SHORT);
-                finish();
+                if(!radioNotificationsBlocked.isChecked() && !radioAppsBlocked.isChecked())
+                {
+                    Toast.makeText(getApplicationContext(),"Select an option to block",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                profileName = ((EditText) findViewById(R.id.editViewEditProfileName)).getText().toString();
+
+
+                if (!profileName.isEmpty()) {
+                    Profile p = new Profile(profileName, blockedPackages); //change it from null
+
+                    try {
+                        MainActivity.db.updateProfile(getIntent().getStringExtra(IntentNameString), p,radioAppsBlocked.isChecked(),radioNotificationsBlocked.isChecked());
+                    } catch (Exception e) {
+                        Toast.makeText(getApplicationContext(), "Choose unique name", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Toast.makeText(getApplicationContext(), "Profile updated succesfully", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Name is empty", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
         });
 
@@ -115,8 +137,13 @@ public class EditProfileActivity extends AppCompatActivity {
 
             }
         });
-    }
 
+        radioAppsBlocked=(CheckBox) findViewById(R.id.radioButtonApps);
+        radioNotificationsBlocked=(CheckBox) findViewById(R.id.radioButtonNotifications);
+
+        radioAppsBlocked.setChecked(MainActivity.db.blocksApp(profileName));
+        radioNotificationsBlocked.setChecked(MainActivity.db.blocksNotifications(profileName));
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();

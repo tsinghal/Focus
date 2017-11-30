@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -46,6 +47,8 @@ public class CreateProfileActivity extends AppCompatActivity {
     private SearchView searchView;
     private MenuItem searchMenuItem;
 
+    CheckBox radioAppsBlocked,radioNotificationsBlocked;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_createprofile);
@@ -74,12 +77,19 @@ public class CreateProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 profileName = ((EditText) findViewById(R.id.editViewProfileName)).getText().toString();
 
+                if(!radioNotificationsBlocked.isChecked() && !radioAppsBlocked.isChecked())
+                {
+                    Toast.makeText(getApplicationContext(),"Select an option to block",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 if (!profileName.isEmpty()) {
                     Profile p = new Profile(profileName, blockedPackages);
 
                     try {
-                        MainActivity.db.createProfile(p);
+                        MainActivity.db.createProfile(p,radioAppsBlocked.isChecked(),radioNotificationsBlocked.isChecked());
                     } catch (Exception e) {
+
                         Toast.makeText(getApplicationContext(), "Choose unique name", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -99,8 +109,14 @@ public class CreateProfileActivity extends AppCompatActivity {
             }
         });
 
+        radioAppsBlocked=(CheckBox) findViewById(R.id.radioButtonApps);
+        radioNotificationsBlocked=(CheckBox) findViewById(R.id.radioButtonNotifications);
+
+        radioAppsBlocked.setChecked(true);
+        radioNotificationsBlocked.setChecked(true);
 
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
