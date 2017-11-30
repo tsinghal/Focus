@@ -1,17 +1,21 @@
 package dreamteam.focus.client.profiles;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioButton;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -38,10 +42,11 @@ public class EditProfileActivity extends AppCompatActivity {
     AdapterAppsEdit appsList;
     Button submit;
     Button discard;
-    CheckBox radioAppsBlocked,radioNotificationsBlocked;
     String profileName;
     public static String IntentNameString = "ProfileName";
 
+    private SearchView searchView;
+    private MenuItem searchMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,31 +82,12 @@ public class EditProfileActivity extends AppCompatActivity {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if(!radioNotificationsBlocked.isChecked() && !radioAppsBlocked.isChecked())
-                {
-                    Toast.makeText(getApplicationContext(),"Select an option to block",Toast.LENGTH_LONG).show();
-                    return;
-                }
-
                 profileName = ((EditText) findViewById(R.id.editViewEditProfileName)).getText().toString();
+                Profile p = new Profile(profileName, blockedPackages); //change it from null
+                MainActivity.db.updateProfile(getIntent().getStringExtra(IntentNameString), p);
 
-
-                if (!profileName.isEmpty()) {
-                    Profile p = new Profile(profileName, blockedPackages); //change it from null
-
-                    try {
-                        MainActivity.db.updateProfile(getIntent().getStringExtra(IntentNameString), p,radioAppsBlocked.isChecked(),radioNotificationsBlocked.isChecked());
-                    } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), "Choose unique name", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    Toast.makeText(getApplicationContext(), "Profile updated succesfully", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Name is empty", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                Toast.makeText(getApplicationContext(), "Profile updated successfully", Toast.LENGTH_SHORT);
+                finish();
             }
         });
 
@@ -109,7 +95,7 @@ public class EditProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-              DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which){
@@ -129,12 +115,33 @@ public class EditProfileActivity extends AppCompatActivity {
 
             }
         });
+    }
 
-        radioAppsBlocked=(CheckBox) findViewById(R.id.radioButtonApps);
-        radioNotificationsBlocked=(CheckBox) findViewById(R.id.radioButtonNotifications);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_search, menu);
 
-        radioAppsBlocked.setChecked(MainActivity.db.blocksApp(profileName));
-        radioNotificationsBlocked.setChecked(MainActivity.db.blocksNotifications(profileName));
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchMenuItem = menu.findItem(R.id.search);
+        searchView = (SearchView) searchMenuItem.getActionView();
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setSubmitButtonEnabled(false);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                appsList.getFilter().filter(newText);
+                return false;
+            }
+        });
+
+        return true;
     }
 
     public void getSystemApps() {
@@ -167,4 +174,3 @@ public class EditProfileActivity extends AppCompatActivity {
         return (String) (info != null ? manager.getApplicationLabel(info) : "this app");
     }
 }
-

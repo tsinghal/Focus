@@ -1,15 +1,19 @@
 package dreamteam.focus.client.profiles;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioButton;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -38,7 +42,9 @@ public class CreateProfileActivity extends AppCompatActivity {
     Button submit;
     Button discard;
     String profileName;
-    CheckBox radioAppsBlocked,radioNotificationsBlocked;
+
+    private SearchView searchView;
+    private MenuItem searchMenuItem;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,19 +74,12 @@ public class CreateProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 profileName = ((EditText) findViewById(R.id.editViewProfileName)).getText().toString();
 
-                if(!radioNotificationsBlocked.isChecked() && !radioAppsBlocked.isChecked())
-                {
-                    Toast.makeText(getApplicationContext(),"Select an option to block",Toast.LENGTH_LONG).show();
-                    return;
-                }
-
                 if (!profileName.isEmpty()) {
                     Profile p = new Profile(profileName, blockedPackages);
 
                     try {
-                        MainActivity.db.createProfile(p,radioAppsBlocked.isChecked(),radioNotificationsBlocked.isChecked());
+                        MainActivity.db.createProfile(p);
                     } catch (Exception e) {
-
                         Toast.makeText(getApplicationContext(), "Choose unique name", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -100,13 +99,36 @@ public class CreateProfileActivity extends AppCompatActivity {
             }
         });
 
-        radioAppsBlocked=(CheckBox) findViewById(R.id.radioButtonApps);
-        radioNotificationsBlocked=(CheckBox) findViewById(R.id.radioButtonNotifications);
-
-        radioAppsBlocked.setChecked(true);
-        radioNotificationsBlocked.setChecked(true);
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_search, menu);
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchMenuItem = menu.findItem(R.id.search);
+        searchView = (SearchView) searchMenuItem.getActionView();
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setSubmitButtonEnabled(false);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                appsList.getFilter().filter(newText);
+                return false;
+            }
+        });
+
+        return true;
+    }
+
 
     public void getSystemApps() {
         PackageManager pm = getPackageManager();
